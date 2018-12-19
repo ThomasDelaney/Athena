@@ -16,7 +16,6 @@ import datetime
 #create flask app
 app = Flask(__name__)
 
-
 #initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -135,7 +134,11 @@ def get_photos():
 #route to deal with voice command, currently only works with timetable
 @app.route('/command', methods=['POST'])
 def get_command_keywords():
+	auth = firebase.auth()
+
 	try:
+		user = auth.refresh(request.args['refreshToken'])
+
 		#use audio segment to get the raw audio from the posted file (which is in a .mp4 format)
 		raw_audio = AudioSegment.from_file(request.files['file'])
 
@@ -182,7 +185,7 @@ def get_command_keywords():
 		    print("Could not request results from Google Cloud Speech service; {0}".format(e))
 
 		    #return the function and day
-		return jsonify(function=funct, day=day)
+		return jsonify(function=funct, day=day, refreshToken=user['refreshToken'])
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
 		parsedError = new[new.index("{"):]

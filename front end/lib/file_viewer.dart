@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import 'video_manager.dart';
 import 'audio_manager.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'filetype_manager.dart';
 
 //Widget that displays an interactive file list
 class FileViewer extends StatefulWidget
@@ -34,14 +35,14 @@ class _FileViewerState extends State<FileViewer>
           child: new Swiper(
             itemBuilder: (BuildContext context, int index){
               //photo view allows for zooming in and out of images
-              return getFileTypeFromURL(widget.list[index]) == "image" ? new PhotoView(
+              return FileTypeManger.getFileTypeFromURL(widget.list[index]) == "image" ? new PhotoView(
                   maxScale: PhotoViewComputedScale.contained * 2.0,
                   minScale: (PhotoViewComputedScale.contained) * 0.5,
                   //get a cached network image from the current URL in the list, this will ensure the image URL does not need to be loaded every time
                   imageProvider: new CachedNetworkImageProvider(widget.list[index]))
 
-                  : getFileTypeFromURL(widget.list[index]) == "video" ? new VideoManager(controller: new VideoPlayerController.network(widget.list[index]))
-                  : getFileTypeFromURL(widget.list[index]) == "audio" ? new AudioManager(url: widget.list[index], audioPlayer: new AudioPlayer(),) : new Container();
+                  : FileTypeManger.getFileTypeFromURL(widget.list[index]) == "video" ? new VideoManager(controller: new VideoPlayerController.network(widget.list[index]))
+                  : FileTypeManger.getFileTypeFromURL(widget.list[index]) == "audio" ? new AudioManager(url: widget.list[index], audioPlayer: new AudioPlayer(),) : new Container();
             },
             itemCount: widget.list.length,
             pagination: new SwiperPagination(),
@@ -51,25 +52,5 @@ class _FileViewerState extends State<FileViewer>
           ),
       ),
     );
-  }
-
-  String getFileTypeFromURL(String url)
-  {
-    List<String> imageTypes = const <String>["jpeg", "jfif", "jpg", "tiff", "gif", "bmp", "png", "ppm", "pgm", "pbm", "pnm"];
-    List<String> videoTypes = const <String>["mp4", "m4a", "m4v", "f4v", "f4a", "m4b", "m4r", "f4b", "mov", "3gp", "3gp2", "3g2", "3gpp", "3gpp2", "wmv", "wma", "webm", "flv"];
-    List<String> audioTypes = const <String>["wav", "mp3", "aif", "mid", "flp", "m4a", "flac", "ogg"];
-
-    if (imageTypes.contains(url.substring(0, url.indexOf("?alt=media")).split('.')[5].toLowerCase())) {
-      return "image";
-    }
-    else if (videoTypes.contains(url.substring(0, url.indexOf("?alt=media")).split('.')[5].toLowerCase())) {
-      return "video";
-    }
-    else if (audioTypes.contains(url.substring(0, url.indexOf("?alt=media")).split('.')[5].toLowerCase())) {
-      return "audio";
-    }
-    else {
-      return "unknown";
-    }
   }
 }

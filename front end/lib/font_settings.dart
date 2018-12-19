@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
 import 'login_page.dart';
+import 'request_manager.dart';
 
 //Widget that displays the settings that allow the user to change the font used in the application
 class FontSettings extends StatefulWidget {
@@ -15,8 +15,7 @@ class _FontSettingsState extends State<FontSettings> {
   String currentFont = "";
   bool uploadingFont = false;
 
-  //Dio object, used to make rich HTTP requests
-  Dio dio = new Dio();
+  RequestManager requestManager = RequestManager.singleton;
 
 
   void initState() {
@@ -145,43 +144,16 @@ class _FontSettingsState extends State<FontSettings> {
   //method to submit the new font
   void changeFont(BuildContext _context) async
   {
-    //API URL for changing font
-    String url = "http://mystudentlife-220716.appspot.com/font";
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    //create form data for the request, with the new font
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "refreshToken": await prefs.getString("refreshToken"),
-      "font": currentFont
-    });
-
     submit(true);
 
-    try {
-      //post the request and retrieve the response data
-      var responseObj = await dio.post(url, data: formData);
+    String result = await requestManager.changeFont(this.currentFont);
 
-      //if the refresh token is null, then print the error in the logs and show an error dialog
-      if(responseObj.data['refreshToken'] == null) {
-        print(responseObj.data['response']);
-
-        showErrorDialog();
-      }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
-      else {
-        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
-        await prefs.setString("font", currentFont);
-        Scaffold.of(_context).showSnackBar(new SnackBar(content: Text('Font Updated!!')));
-        submit(false);
-      }
-    }
-    //catch error and display error doalog
-    on DioError catch(e)
-    {
-      print(e);
+    if (result == "error") {
       showErrorDialog();
+    }
+    else {
+      Scaffold.of(_context).showSnackBar(new SnackBar(content: Text('Font Updated!!')));
+      submit(false);
     }
   }
 

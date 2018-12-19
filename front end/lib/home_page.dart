@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:io';
 import 'login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
 import 'file_viewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'timetable_page.dart';
 import 'package:file_picker/file_picker.dart';
 import 'font_settings.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
+import 'filetype_manager.dart';
+import 'recording_manager.dart';
+import 'request_manager.dart';
 
 //Widget that displays the "home" page, this will actually be page for the virtual hardback and journal that displays notes and files, stored by the user
 class HomePage extends StatefulWidget {
@@ -29,20 +28,12 @@ class _HomePageState extends State<HomePage> {
   //list for image urls, will be general files in final version
   List<String> imageFiles = new List<String>();
 
-  //object used to access the devices microphone
-  FlutterSound flutterSound = new FlutterSound();
   bool submitting = false;
 
-  //Dio object, used to make rich HTTP requests
-  Dio dio = new Dio();
-  bool recorderLoading = false;
-  bool recording = false;
+  RequestManager requestManager = RequestManager.singleton;
 
-  //URI for audio file from recording
-  String uri = "";
-
-  //stream subscription is used to keep track of the user recording
-  StreamSubscription<RecordStatus> audioSubscription = null;
+  //Recording Manager Object
+  RecordingManger recorder = RecordingManger.singleton;
 
   //function and day for recording
   String function = "";
@@ -62,44 +53,8 @@ class _HomePageState extends State<HomePage> {
   //get user images
   void getImages() async
   {
-    List<String> reqImages = new List<String>();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    //API URL for getting images
-    String url = "http://mystudentlife-220716.appspot.com/photos";
-
-    //get user images
-    Response response = await dio.get(url, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
-
-    //store images in a string list
-    if (response.data['images']?.values != null) {
-      for (var value in response.data['images'].values) {
-        reqImages.add(value['url']);
-      }
-    }
-
-    //set state for the images list, and tell the state that the images have been loaded
+    List<String> reqImages = await requestManager.getFiles();
     this.setState((){imageFiles = reqImages; imagesLoaded = true;});
-  }
-
-  String getFileTypeFromURL(String url)
-  {
-    List<String> imageTypes = const <String>["jpeg", "jfif", "jpg", "tiff", "gif", "bmp", "png", "ppm", "pgm", "pbm", "pnm"];
-    List<String> videoTypes = const <String>["mp4", "m4a", "m4v", "f4v", "f4a", "m4b", "m4r", "f4b", "mov", "3gp", "3gp2", "3g2", "3gpp", "3gpp2", "wmv", "wma", "webm", "flv"];
-    List<String> audioTypes = const <String>["wav", "mp3", "aif", "mid", "flp", "m4a", "flac", "ogg"];
-
-    if (imageTypes.contains(url.substring(0, url.indexOf("?alt=media")).split('.')[5].toLowerCase())) {
-      return "image";
-    }
-    else if (videoTypes.contains(url.substring(0, url.indexOf("?alt=media")).split('.')[5].toLowerCase())) {
-      return "video";
-    }
-    else if (audioTypes.contains(url.substring(0, url.indexOf("?alt=media")).split('.')[5].toLowerCase())) {
-      return "audio";
-    }
-    else {
-      return "unknown";
-    }
   }
 
   //get current font from shared preferences if present
@@ -179,13 +134,13 @@ class _HomePageState extends State<HomePage> {
                           child: new Hero(
                               tag: "imageView"+index.toString(),
                               //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
-                              child: getFileTypeFromURL(imageFiles[index]) == "image" ? CachedNetworkImage(
+                              child: FileTypeManger.getFileTypeFromURL(imageFiles[index]) == "image" ? CachedNetworkImage(
                                 placeholder: CircularProgressIndicator(),
                                 imageUrl: imageFiles[index],
                                 height: imageSize,
                                 width: imageSize,
                                 fit: BoxFit.cover
-                              ) : getFileTypeFromURL(imageFiles[index]) == "video" ? new Stack(children: <Widget>[
+                              ) : FileTypeManger.getFileTypeFromURL(imageFiles[index]) == "video" ? new Stack(children: <Widget>[
                                 new Chewie(
                                   new VideoPlayerController.network(
                                       imageFiles[index]
@@ -198,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                                   placeholder: new Center(child: new CircularProgressIndicator()),
                                 ),
                                 new Center(child: new Icon(Icons.play_circle_filled, size: 70.0, color: Colors.white,)),
-                              ],) : getFileTypeFromURL(imageFiles[index]) == "audio" ? new Container(child: new Center(child: new Icon(Icons.volume_up, size: 70.0, color: Colors.red,)),) : new Container(),
+                              ],) : FileTypeManger.getFileTypeFromURL(imageFiles[index]) == "audio" ? new Container(child: new Center(child: new Icon(Icons.volume_up, size: 70.0, color: Colors.red,)),) : new Container(),
                           ),
                         ),
                        ),
@@ -218,29 +173,6 @@ class _HomePageState extends State<HomePage> {
       //display a circular progress indicator when the image list is loading
       imageList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0), child: new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0))));
   }
-
-  //card widget that displays when the user presses the record button
-  final Card recordingCard = Card(
-      child: Container(
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Padding(padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 15.0), child: new Text("Recording", textAlign: TextAlign.center, textScaleFactor: 1.5, style: TextStyle(fontFamily: font),)),
-            //if the user has stopped the recorder then display a circular progress indicator, else display a large stop button
-            recorderLoading ?
-            IconButton(
-              iconSize: 80.0,
-              color: Colors.red,
-              icon: Icon(Icons.stop),
-              //if the stop button is pressed then stop the recording
-              onPressed: () => stopRecording(),
-            ) : new Padding(padding: EdgeInsets.all(20.0), child: new SizedBox(width: 45.0, height: 45.0, child: new CircularProgressIndicator(strokeWidth: 5.0))),
-          ],
-        ),
-      )
-  );
 
   //list view for the dummy note data
   final ListView textFileList = ListView.builder(
@@ -304,19 +236,19 @@ class _HomePageState extends State<HomePage> {
       appBar: new AppBar(
         title: new Text(widget.pageTitle, style: TextStyle(fontFamily: font),),
         //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
-        actions: recording ? <Widget>[
+        actions: recorder.recording ? <Widget>[
           // action button
           IconButton(
             icon: Icon(Icons.close),
             iconSize: 30.0,
-            onPressed: () => cancelRecording(),
+            onPressed: () => recorder.cancelRecording(),
           ),
         ] : <Widget>[
           // else display the mic button and settings button
           IconButton(
             icon: Icon(Icons.mic),
             iconSize: 30.0,
-            onPressed: () => recording ? null : recordAudio(),
+            onPressed: () => recorder.recording ? null : recorder.recordAudio(context),
           ),
           Builder(
             builder: (context) => IconButton(
@@ -366,13 +298,13 @@ class _HomePageState extends State<HomePage> {
                   //container for the recording card, show if recording, show blank container if not
                   new Container(
                       alignment: Alignment.center,
-                      child: recording ?
+                      child: recorder.recording ?
                       new Stack(
                         alignment: Alignment.center,
                         children: <Widget>[
                           new Container(
                             margin: MediaQuery.of(context).padding,
-                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recordingCard],) : new Container()
+                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
                   ),
                 //container for the circular progress indicator when submitting an image, show if submitting, show blank container if not
                   new Container(
@@ -431,22 +363,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  //alert dialog thats displayed when the recorder could not understand your command
-  void showCannotUnderstandError()
-  {
-    //cancel the recording
-    cancelRecording();
-
-    AlertDialog cannotUnderstand = new AlertDialog(
-      content: new Text("Sorry, I could not understand you! Please try again", style: TextStyle(fontFamily: font),),
-      actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font),))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
-  }
-
   //alert dialog that notifies the user if an error has occurred
   void showErrorDialog()
   {
@@ -458,137 +374,6 @@ class _HomePageState extends State<HomePage> {
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
-  }
-
-  //method that records audio
-  void recordAudio() async
-  {
-    //set the state of the application that recording has begun
-    this.setState(() {
-      this.recorderLoading = true;
-      this.recording = true;
-    });
-
-    //get the file URI and start recording
-    this.uri =  await flutterSound.startRecorder(null);
-    audioSubscription = flutterSound.onRecorderStateChanged.listen((e) {
-      if (e != null) {
-      }
-    });
-  }
-
-  //method to cancel recording at any time
-  void cancelRecording()
-  {
-    //set the state of the application that recording has been cancelled
-    this.setState(() {
-      this.recording = false;
-    });
-
-    //cancel the audio subscription
-    if (audioSubscription != null) {
-      audioSubscription.cancel();
-      audioSubscription = null;
-    }
-  }
-
-  //method called when the user manually stops the recording for their command to be processed
-  void stopRecording() async
-  {
-    //stop the recorder
-    await flutterSound.stopRecorder();
-
-    //set the state of the application that recording has been stopped
-    this.setState(() {
-      this.recorderLoading = false;
-    });
-
-    //cancel the audio subscription
-    if (audioSubscription != null) {
-      audioSubscription.cancel();
-      audioSubscription = null;
-
-      //API URL for posting the audio command
-      String url = "http://mystudentlife-220716.appspot.com/command";
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      //create file object from audio URI
-      File file = new File.fromUri(new Uri.file(this.uri));
-
-      //post the form data with the audio file
-      FormData formData = new FormData.from({
-        "id": await prefs.getString("id"),
-        "refreshToken": await prefs.getString("refreshToken"),
-        "file": new UploadFileInfo(file, this.uri),
-      });
-
-      var responseObj;
-
-      try
-      {
-        //post the form data and retrieve the response
-        responseObj = await dio.post(url, data: formData);
-
-        //delete the audio file
-        File currentAudio = File.fromUri(new Uri.file(this.uri));
-        currentAudio.deleteSync();
-
-        //if the function is null then set the state of the application that recording has stopped
-        if(responseObj.data['function'] == null) {
-
-          this.setState(() {
-            this.recording = false;
-          });
-
-          //show cannot understand error
-          showCannotUnderstandError();
-        }
-        else {
-          //else check if the function is timetable
-          if (responseObj.data['function'] == "timetable") {
-
-            //set the state of the application that recording has stopped
-            this.setState(() {
-              this.recording = false;
-            });
-
-            //static list of days
-            List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-            //if the day from the response object is not in the list, then display and error saying the user does not have classes for that day
-            if (!weekdays.contains(responseObj.data['day'])) {
-              AlertDialog cannotUnderstand = new AlertDialog(
-                content: new Text("You don't have any classes for this day", style: TextStyle(fontFamily: font),),
-                actions: <Widget>[
-                  new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font)))
-                ],
-              );
-
-              showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
-            }
-            else {
-              //else go to the timetables page and pass in the day
-              Navigator.push(context, MaterialPageRoute(builder: (context) => TimetablePage(initialDay: responseObj.data['day'])));
-            }
-          }
-          else{
-            //else display cannot understand error
-            showCannotUnderstandError();
-          }
-        }
-      }
-      on DioError catch(e)
-      {
-        //set the state of the application that recording has stopped
-        this.setState(() {
-          this.recording = false;
-        });
-
-        //show cannot understand error
-        showCannotUnderstandError();
-      }
-    }
   }
 
   //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
@@ -619,47 +404,16 @@ class _HomePageState extends State<HomePage> {
   //method for uploading user chosen image
   Future<String> uploadPhoto(String filePath) async
   {
-    //API URL for submitting a photo
-    String url = "http://mystudentlife-220716.appspot.com/photo";
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    //create form with relevant data and image as file
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "refreshToken": await prefs.getString("refreshToken"),
-      "file": new UploadFileInfo(new File(filePath), new DateTime.now().millisecondsSinceEpoch.toString()+filePath.split('/').last)
-    });
-
     submit(true);
 
-    try {
-      //post the form data to the url
-      var responseObj = await dio.post(url, data: formData);
+    String url = await requestManager.uploadFile(filePath, context);
 
-      //if the refresh token is null, then display an alert dialog with an error
-      if(responseObj.data['refreshToken'] == null) {
-        AlertDialog errorDialog = new AlertDialog(
-          content: new Text("An Error Occured! Please Try Again", style: TextStyle(fontFamily: font)),
-          actions: <Widget>[
-            new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font)))
-          ],
-        );
-
-        showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
-      }
-      else {
-        //else store the new refresh token in shared preferences and return the image URL
-        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
-        submit(false);
-        return responseObj.data['url'];
-      }
-    }
-    on DioError catch(e)
-    {
-      submit(false);
-      //display error dialog
+    if (url == "error") {
       showErrorDialog();
+    }
+    else {
+      submit(false);
+      return url;
     }
   }
 
