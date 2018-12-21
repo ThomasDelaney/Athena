@@ -18,6 +18,7 @@ class RequestManager
   final String getFilesUrl = "http://mystudentlife-220716.appspot.com/photos";
   final String commandUrl = "http://mystudentlife-220716.appspot.com/command";
   final String putFontUrl = "http://mystudentlife-220716.appspot.com/font";
+  final String loginUrl = "http://mystudentlife-220716.appspot.com/signin";
 
   Dio dio = new Dio();
 
@@ -89,8 +90,6 @@ class RequestManager
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
-        print(responseObj.data['response']);
-
         return "error";
       }
       //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
@@ -140,12 +139,43 @@ class RequestManager
         return "error";
       }
       else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return responseObj;
       }
     }
     on DioError catch(e)
     {
       return "error";
+    }
+  }
+
+  dynamic signInRequest(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "email": jsonMap['email'],
+      "password": jsonMap['password']
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj =  await dio.post(loginUrl, data: formData);
+
+      if (responseObj.data['message'] == null) {
+        return {"error": responseObj.data};
+      }
+      else {
+        return {"Success": responseObj.data};
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return {"error": {"response": "An Error Has Occured, Please Try Again!"}};
     }
   }
 }

@@ -16,6 +16,7 @@ import datetime
 #create flask app
 app = Flask(__name__)
 
+
 #initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -52,8 +53,16 @@ def register_user():
 	#catch exception and handle error
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
-		parsedError = new[new.index("{"):]
-		return jsonify(response=parsedError)
+		parsedError = json.loads(new[new.index("{"):])
+
+		message = parsedError['error']['message']
+
+		if message == "EMAIL_EXISTS":
+			message = "A User with this Email already exists!"
+		elif message == "WEAK_PASSWORD : Password should be at least 6 characters":
+			message = "Password should be at least 6 characters"
+
+		return jsonify(response=message)
 
 #sign in user route
 @app.route('/signin', methods=['POST'])
@@ -62,7 +71,7 @@ def sign_in_user():
 
 	try:
 		#sign user in with posted email and password
-		user = auth.sign_in_with_email_and_password(request.json['email'], request.json['password'])
+		user = auth.sign_in_with_email_and_password(request.form['email'], request.form['password'])
 
 		db = firebase.database()
 
@@ -72,8 +81,17 @@ def sign_in_user():
 		return jsonify(message=results.val(), id=user['localId'], token=user['idToken'], refreshToken=user['refreshToken'])
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
-		parsedError = new[new.index("{"):]
-		return jsonify(response=parsedError)
+
+		parsedError = json.loads(new[new.index("{"):])
+
+		message = parsedError['error']['message']
+
+		if message == "INVALID_EMAIL":
+			message = "This Email is Not Recognized!"
+		elif message == "INVALID_PASSWORD":
+			message = "Incorrect Password"
+
+		return jsonify(response=message)
 
 #route for uploading a photo
 @app.route('/photo', methods=['POST'])

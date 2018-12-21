@@ -208,24 +208,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
     String message = "";
 
-    //if the response ['response']  is not null, then print the error message
-    if (response['response'] != null){
-      message = json.decode(response['response'])['error']['message'];
+    if (response['message'] == null) {
+      message = response['response'];
     }
-    //if null, then the request was a success, retrieve the information
-    else{
+    else {
       message = response['message'];
-    }
-
-    //parse the returned message, this could be error message such as email already exists
-    if (message == "EMAIL_EXISTS"){
-      message = "A User with this Email already exists!";
-    }
-    else if (message == "User Created Successfully" ){
-      message = "SIGNED UP!";
-    }
-    else if (message == "WEAK_PASSWORD : Password should be at least 6 characters" ){
-      message = "Password should be at least 6 characters";
     }
 
     //display alertdialog with the returned message
