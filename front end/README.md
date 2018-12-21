@@ -1,6 +1,6 @@
-# my_school_life_prototype
+# Athena
 
-Prototype for FYP
+Front End
 
 ## Getting Started
 
