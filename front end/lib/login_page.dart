@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import 'request_manager.dart';
@@ -19,6 +18,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   RequestManager requestManager = RequestManager.singleton;
 
@@ -137,6 +138,7 @@ class _LoginPageState extends State<LoginPage> {
 
     //scaffold to encapsulate all the widgets
     return new Scaffold(
+          key: _scaffoldKey,
           appBar: new AppBar(
           title: new Text(widget.pageTitle),
           ),
@@ -186,6 +188,7 @@ class _LoginPageState extends State<LoginPage> {
       updateText("", "");
     }
     else {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Register Complete!')));
       Map<String, dynamic> userJson = json.decode(userInfo);
       updateText(userJson['username'], userJson['password']);
     }
@@ -218,8 +221,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         signingIn = false;
       });
-
-      print(response['error']['response']);
 
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(

@@ -19,6 +19,7 @@ class RequestManager
   final String commandUrl = "http://mystudentlife-220716.appspot.com/command";
   final String putFontUrl = "http://mystudentlife-220716.appspot.com/font";
   final String loginUrl = "http://mystudentlife-220716.appspot.com/signin";
+  final String registerUrl = "http://mystudentlife-220716.appspot.com/register";
 
   Dio dio = new Dio();
 
@@ -164,6 +165,37 @@ class RequestManager
     try {
       //post the request and retrieve the response data
       var responseObj =  await dio.post(loginUrl, data: formData);
+
+      if (responseObj.data['message'] == null) {
+        return {"error": responseObj.data};
+      }
+      else {
+        return {"Success": responseObj.data};
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return {"error": {"response": "An Error Has Occured, Please Try Again!"}};
+    }
+  }
+
+  dynamic register(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "refreshToken": await prefs.getString("refreshToken"),
+      "email": jsonMap['email'],
+      "password": jsonMap['password'],
+      "firstName": jsonMap['firstName'],
+      "secondName": jsonMap['secondName'],
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj =  await dio.post(registerUrl, data: formData);
 
       if (responseObj.data['message'] == null) {
         return {"error": responseObj.data};

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'request_manager.dart';
 
 //class to display and handle the register page
 class RegisterPage extends StatefulWidget {
@@ -15,6 +14,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  RequestManager requestManager = RequestManager.singleton;
 
   //boolean to check if the user is submitting
   bool submitting = false;
@@ -26,13 +26,33 @@ class _RegisterPageState extends State<RegisterPage> {
   final passwordController = new TextEditingController();
   final reEnteredPasswordController = new TextEditingController();
 
+  FocusNode firstNameFocusNode = new FocusNode();
+  FocusNode secondNameFocusNode = new FocusNode();
+  FocusNode emailFocusNode = new FocusNode();
+  FocusNode passwordFocusNode = new FocusNode();
+  FocusNode reEnteredPasswordFocusNode = new FocusNode();
+
+  @override
+  void didChangeDependencies() {
+    FocusScope.of(context).requestFocus(firstNameFocusNode);
+    super.didChangeDependencies();
+  }
+
+
   @override
   Widget build(BuildContext context) {
+
     //text input field for the user's first name
     final firstName = new TextFormField(
+      focusNode: firstNameFocusNode,
       keyboardType: TextInputType.text,
       autofocus: false,
       controller: firstNameController,
+
+      onFieldSubmitted: (String value) {
+        FocusScope.of(context).requestFocus(secondNameFocusNode);
+      },
+
       decoration: InputDecoration(
           hintText: "First Name",
           contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -45,8 +65,14 @@ class _RegisterPageState extends State<RegisterPage> {
     //text input field for the user's second name
     final secondName = new TextFormField(
       keyboardType: TextInputType.text,
+      focusNode: secondNameFocusNode,
       autofocus: false,
       controller: secondNameController,
+
+      onFieldSubmitted: (String value) {
+        FocusScope.of(context).requestFocus(emailFocusNode);
+      },
+
       decoration: InputDecoration(
           hintText: "Second Name",
           contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -58,9 +84,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
     //text input field for the user's email
     final email = new TextFormField(
+      focusNode: emailFocusNode,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       controller: emailController,
+
+      onFieldSubmitted: (String value) {
+        FocusScope.of(context).requestFocus(passwordFocusNode);
+      },
+
       decoration: InputDecoration(
           hintText: "Email",
           contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -73,8 +105,14 @@ class _RegisterPageState extends State<RegisterPage> {
     //text input field for the user's password name
     final password = new TextFormField(
       autofocus: false,
+      focusNode: passwordFocusNode,
       obscureText: true,
       controller: passwordController,
+
+      onFieldSubmitted: (String value) {
+        FocusScope.of(context).requestFocus(reEnteredPasswordFocusNode);
+      },
+
       decoration: InputDecoration(
           hintText: "Password",
           contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -86,9 +124,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
     //text input field for the user to re-enter their password
     final reEnterPassword = new TextFormField(
+      focusNode: reEnteredPasswordFocusNode,
       autofocus: false,
       controller: reEnteredPasswordController,
       obscureText: true,
+
+      onFieldSubmitted: (String value) {
+        FocusScope.of(context).requestFocus(new FocusNode());
+      },
+
       decoration: InputDecoration(
           hintText: "Re-Enter Password",
           contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -100,7 +144,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     //button which when pressed, will submit the user's inputted data
     final registerButton = ButtonTheme(
-        minWidth: 30.0,
+        minWidth: MediaQuery.of(context).size.width * 0.95,
         height: 46.0,
         child: new RaisedButton(
             child: new Text("Register", style: new TextStyle(color: Colors.white, fontSize: 20.0)),
@@ -149,14 +193,10 @@ class _RegisterPageState extends State<RegisterPage> {
     //a stack widget, which has the registerForm container as a child (this will allow for widgets to be put on-top of the stack(
     final pageStack = new Stack(
       children: <Widget>[
+        submitting ? centeredIndicator : new Container(),
         registerForm
       ],
     );
-
-    //if user is submitting data, add the circular progress indicator to the stack, thus displaying it on top of the screen
-    if (submitting) {
-      pageStack.children.add(centeredIndicator);
-    }
 
     //scaffold which includes the appbar, and the stack within a centered container
     final page = Scaffold(
@@ -184,78 +224,45 @@ class _RegisterPageState extends State<RegisterPage> {
   //method to submit user's register data
   void registerUser(String fname, String sname, String email, String pwd, String rPwd) async
   {
-    //API URL for registering
-    String url = "http://mystudentlife-220716.appspot.com/register";
+    submit(true);
 
     //check if passwords match, if not then throw alertdialog error
     if (rPwd != pwd){
       AlertDialog responseDialog = new AlertDialog(
         content: new Text("Passwords do not Match!"),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
         ],
       );
 
       showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
-      return ;
+      return;
     }
 
     //create map of register data
-    Map map = {"firstName": fname, "secondName": sname, "email": email, "password": pwd, "reEnteredPassword": rPwd};
+    Map map = {"firstName": fname, "secondName": sname, "email": email, "password": pwd};
 
-    //submit the request, and decode the response
-    Map<String, dynamic> response = json.decode(await regiserRequest(url, map));
+    var response = await requestManager.register(map);
 
-    String message = "";
+    //if null, then the request was a success, retrieve the information
+    if (response['Success'] != null){
+      Map userMap = {"username": email, "password": pwd};
 
-    if (response['message'] == null) {
-      message = response['response'];
-    }
-    else {
-      message = response['message'];
-    }
-
-    //display alertdialog with the returned message
-    AlertDialog responseDialog = new AlertDialog(
-      content: new Text(message),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleDialog(message, email, pwd), child: new Text("OK"))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
-  }
-
-  //method called when the alert dialog for submitting register information is displayed after the submission request is returned
-  void handleDialog(String message, String username, String password)
-  {
-    //put the user's username and password into a map
-    Map userMap = {"username": username, "password": password};
-    String userData = json.encode(userMap);
-
-    //if the message isnt signed up, then just close the dialog
-    if (message != "SIGNED UP!"){
-      Navigator.pop(context);
-    }
-    //if success, then pop the dialog and pop the register screen (bringing the user back to the log in screen, however, the map of user data is passed back to the log in screen too
-    else{
-      Navigator.pop(context);
+      String userData = json.encode(userMap);
       Navigator.pop(context, userData);
-    }
-  }
 
-  //make the register request using the HttpClient Library, will be changed to adhere to the Dio library standard
-  Future<String> regiserRequest(String url, Map jsonMap) async
-  {
-    submit(true);
-    HttpClient httpClient = new HttpClient();
-    HttpClientRequest request = await httpClient.postUrl(Uri.parse(url));
-    request.headers.set('content-type', 'application/json');
-    request.add(utf8.encode(json.encode(jsonMap)));
-    HttpClientResponse response = await request.close();
-    String reply = await response.transform(utf8.decoder).join();
-    httpClient.close();
-    submit(false);
-    return reply;
+    }
+    //else the response ['response']  is not null, then print the error message
+    else{
+      //display alertdialog with the returned message
+      AlertDialog responseDialog = new AlertDialog(
+        content: new Text(response['error']['response']),
+        actions: <Widget>[
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+        ],
+      );
+
+      showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
+    }
   }
 }

@@ -37,13 +37,13 @@ def register_user():
 
 	try:
 		#use posted email and password to create user account
-		user = auth.create_user_with_email_and_password(request.json['email'], request.json['password'])
+		user = auth.create_user_with_email_and_password(request.form['email'], request.form['password'])
 
 		db = firebase.database()
 
 		data = {
-		    "firstName": request.json['firstName'],
-		    "secondName": request.json['secondName']
+		    "firstName": request.form['firstName'],
+		    "secondName": request.form['secondName']
 		}
 
 		#upload their first name and second name to the database
@@ -167,6 +167,8 @@ def get_command_keywords():
 		#use the audio recorder to convert the new wav file as raw audio
 		with sr.AudioFile(wav_path) as source:
 			audio = r.record(source)
+
+
 
 		day = ""
 		funct = ""
