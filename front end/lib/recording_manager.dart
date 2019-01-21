@@ -73,7 +73,7 @@ class RecordingManger
       audioSubscription.cancel();
       audioSubscription = null;
 
-      var result = requestManager.command(uri, context);
+      var result = await requestManager.command(uri, context);
 
       if (result == "error") {
         showCannotUnderstandError(context);

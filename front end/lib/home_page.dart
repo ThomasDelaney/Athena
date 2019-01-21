@@ -11,6 +11,8 @@ import 'package:video_player/video_player.dart';
 import 'filetype_manager.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
+import 'text_file_editor.dart';
+import 'note.dart';
 
 //Widget that displays the "home" page, this will actually be page for the virtual hardback and journal that displays notes and files, stored by the user
 class HomePage extends StatefulWidget {
@@ -25,26 +27,26 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   //list for image urls, will be general files in final version
   List<String> imageFiles = new List<String>();
 
+  List<Note> notesList = new List<Note>();
+
   bool submitting = false;
+
+  String check = "";
 
   RequestManager requestManager = RequestManager.singleton;
 
   //Recording Manager Object
   RecordingManger recorder = RecordingManger.singleton;
 
-  //function and day for recording
-  String function = "";
-  String day = "";
-
   //container for the image list
   Container imageList;
   bool imagesLoaded = false;
-
-  //dummy data for user notes
-  List<String> textFiles = const <String>["Algebra Notes", "Formulas for Standard Deviation", "Trigonometry Friday Notes", "Hint for Next Weeks test", "Probability cheat sheet", "Formulas for Algebra"];
+  bool notesLoaded = false;
 
   //size of images
   double imageSize = 150.0;
@@ -57,6 +59,13 @@ class _HomePageState extends State<HomePage> {
     this.setState((){imageFiles = reqImages; imagesLoaded = true;});
   }
 
+  //get user images
+  void getNotes() async
+  {
+    List<Note> reqNotes = await requestManager.getNotes();
+    this.setState((){notesList = reqNotes; notesLoaded = true;});
+  }
+
   //get current font from shared preferences if present
   void getFont() async
   {
@@ -66,15 +75,23 @@ class _HomePageState extends State<HomePage> {
 
   //method called before the page is rendered
   void initState() {
-    //clear the image list and repopulate it
+    retrieveData();
+  }
+
+  void retrieveData() {
+    imagesLoaded = false;
+    notesLoaded = false;
     imageFiles.clear();
+    notesList.clear();
     getImages();
+    getNotes();
+    getFont();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    getFont();
+    print("RECORDING? " + recorder.recording.toString());
 
     Container imageList;
 
@@ -176,31 +193,36 @@ class _HomePageState extends State<HomePage> {
 
   //list view for the dummy note data
   final ListView textFileList = ListView.builder(
-      itemCount: textFiles.length,
+      itemCount: notesList.length,
       itemBuilder: (context, position) {
-        return Card(
-          margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-          elevation: 3.0,
-          child: new ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-            leading: Container(
-              padding: EdgeInsets.only(right: 12.0),
-              decoration: new BoxDecoration(
-                  border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
+        return GestureDetector(
+            onLongPress: () => deleteNoteDialog(notesList[position]),
+            child: Card(
+            margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+            elevation: 3.0,
+            child: new ListTile(
+              onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position],))).whenComplete(retrieveData);},
+              contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+              leading: Container(
+                padding: EdgeInsets.only(right: 12.0),
+                decoration: new BoxDecoration(
+                    border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
+                ),
+                child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
               ),
-              child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
+              title: Text(
+                notesList[position].fileName,
+                style: TextStyle(fontSize: 20.0, fontFamily: font),
+              ),
             ),
-            title: Text(
-              textFiles[position],
-              style: TextStyle(fontSize: 20.0, fontFamily: font),
-            ),
-          ),
+          )
         );
       },
     );
 
   //scaffold to encapsulate all the widgets
   final page = Scaffold(
+      key: _scaffoldKey,
       //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
       endDrawer: new Drawer(
         child: ListView(
@@ -241,14 +263,19 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.close),
             iconSize: 30.0,
-            onPressed: () => recorder.cancelRecording(),
+            onPressed: () {setState(() {recorder.cancelRecording();});},
           ),
         ] : <Widget>[
+          IconButton(
+            icon: Icon(Icons.add_circle),
+            iconSize: 30.0,
+            onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor())).whenComplete(retrieveData);},
+          ),
           // else display the mic button and settings button
           IconButton(
             icon: Icon(Icons.mic),
             iconSize: 30.0,
-            onPressed: () => recorder.recording ? null : recorder.recordAudio(context),
+            onPressed: () {setState(() {recorder.recordAudio(context);});},
           ),
           Builder(
             builder: (context) => IconButton(
@@ -266,8 +293,8 @@ class _HomePageState extends State<HomePage> {
                 new Container(
                   //note container, which is 63% the size of the screen
                   height: MediaQuery.of(context).size.height * 0.63,
-                  alignment: Alignment.topCenter,
-                  child: textFileList,
+                  alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
+                  child: notesLoaded ? textFileList : new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                 ),
                 new Container(
                   //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
@@ -349,7 +376,7 @@ class _HomePageState extends State<HomePage> {
   void getCameraImage() async
   {
     //use filepicker to retrieve image from camera
-    String image = await FilePicker.getFilePath(type: FileType.CAPTURE);
+    String image = await FilePicker.getFilePath(type: FileType.CAMERA);
 
     //if image is not null then upload the image and add the url to the image files list
     if (image != null) {
@@ -374,6 +401,43 @@ class _HomePageState extends State<HomePage> {
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
+  }
+
+  void deleteNoteDialog(Note note) {
+    AlertDialog areYouSure = new AlertDialog(
+      content: new Text("Do you want to DELETE this note?", /*style: TextStyle(fontFamily: font),*/),
+      actions: <Widget>[
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {
+            deleteNote(note);
+        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+      ],
+    );
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => areYouSure);
+  }
+
+  void deleteNote(Note note) async {
+    var response = await requestManager.deleteNote(note.id);
+
+    //if null, then the request was a success, retrieve the information
+    if (response ==  "success"){
+      Navigator.pop(context);
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Deleted!')));
+      retrieveData();
+    }
+    //else the response ['response']  is not null, then print the error message
+    else{
+      //display alertdialog with the returned message
+      AlertDialog responseDialog = new AlertDialog(
+        content: new Text(response['error']['response']),
+        actions: <Widget>[
+          new FlatButton(onPressed: () {Navigator.pop(context); /*submit(false);*/}, child: new Text("OK"))
+        ],
+      );
+
+      showDialog(context: context, barrierDismissible: true, builder: (_) => responseDialog);
+    }
   }
 
   //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out

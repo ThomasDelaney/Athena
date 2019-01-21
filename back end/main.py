@@ -12,6 +12,7 @@ import speech_recognition as sr
 import dialogflow_v2 as dialogflow
 from google.protobuf.json_format import MessageToDict
 import datetime
+import binascii
 
 #create flask app
 app = Flask(__name__)
@@ -94,7 +95,7 @@ def sign_in_user():
 		return jsonify(response=message)
 
 #route for uploading a photo
-@app.route('/photo', methods=['POST'])
+@app.route('/putFile', methods=['POST'])
 def upload_photo():
 	auth = firebase.auth()
 
@@ -118,8 +119,12 @@ def upload_photo():
 		fullFilename = results['name'].split('/')
 		name = fullFilename[len(fullFilename) - 1].split('.')[1]
 
+		shuffled = ''.join(random.sample(name, len(name)))
+
+		location = binascii.hexlify(str.encode(shuffled)).decode('utf-8')
+
 		#add the url to the database under the images node for the user, give random int as the node for now, will be changed later
-		addUrl = db.child("users").child(user['userId']).child("images").child(str(random.randint(1,101))).set(data, user['idToken'])
+		addUrl = db.child("users").child(user['userId']).child("files").child(location).set(data, user['idToken'])
 
 		#return the refresh token and the image url
 		return jsonify(refreshToken=user['refreshToken'], url=url)
@@ -129,18 +134,17 @@ def upload_photo():
 		return jsonify(response=parsedError)
 
 #route to get all user photos
-@app.route('/photos', methods=['GET'])
+@app.route('/getFiles', methods=['GET'])
 def get_photos():
 	auth = firebase.auth()
 
 	try:
-		storage = firebase.storage()
 		db = firebase.database()
 
 		user = auth.refresh(request.args['refreshToken'])
 
 		#get all image urls from database for the specific user
-		results = db.child("users").child(user['userId']).child("images").get(user['idToken'])
+		results = db.child("users").child(user['userId']).child("files").get(user['idToken'])
 
 		#return the images as a list
 		return jsonify(images=results.val(), refreshToken=user['refreshToken'])
@@ -167,8 +171,6 @@ def get_command_keywords():
 		#use the audio recorder to convert the new wav file as raw audio
 		with sr.AudioFile(wav_path) as source:
 			audio = r.record(source)
-
-
 
 		day = ""
 		funct = ""
@@ -231,6 +233,71 @@ def put_font():
 		parsedError = new[new.index("{"):]
 		return jsonify(response=parsedError)
 
+#route to put text file
+@app.route('/putNote', methods=['POST'])
+def put_note():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		data = {
+			"fileName": request.form['fileName'],
+			"delta": request.form['delta']
+		}
+
+		if (request.form['nodeID'] == 'null'):
+			result = db.child("users").child(user['userId']).child("notes").push(data, user['idToken'])
+		else:
+			result = db.child("users").child(user['userId']).child("notes").child(request.form['nodeID']).set(data, user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to put text file
+@app.route('/deleteNote', methods=['POST'])
+def delete_note():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		result = db.child("users").child(user['userId']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to get all user notes
+@app.route('/getNotes', methods=['GET'])
+def get_notes():
+	auth = firebase.auth()
+
+	try:
+		db = firebase.database()
+
+		user = auth.refresh(request.args['refreshToken'])
+
+		#get all image urls from database for the specific user
+		results = db.child("users").child(user['userId']).child("notes").get(user['idToken'])
+
+		#return the images as a list
+		return jsonify(notes=results.val(), refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
 #run app
 if __name__ == '__main__':
 	app.run(debug=True)

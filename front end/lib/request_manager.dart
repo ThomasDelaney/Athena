@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
+import 'note.dart';
 
 class RequestManager
 {
 
+  static final url = "https://glassy-acolyte-228916.appspot.com";
   static final RequestManager singleton = new RequestManager._internal();
 
   factory RequestManager() {
@@ -14,12 +16,15 @@ class RequestManager
 
   RequestManager._internal();
 
-  final String uploadFileUrl = "http://mystudentlife-220716.appspot.com/photo";
-  final String getFilesUrl = "http://mystudentlife-220716.appspot.com/photos";
-  final String commandUrl = "http://mystudentlife-220716.appspot.com/command";
-  final String putFontUrl = "http://mystudentlife-220716.appspot.com/font";
-  final String loginUrl = "http://mystudentlife-220716.appspot.com/signin";
-  final String registerUrl = "http://mystudentlife-220716.appspot.com/register";
+  final String uploadFileUrl = url+"/putFile";
+  final String getFilesUrl = url+"/getFiles";
+  final String commandUrl = url+"/command";
+  final String putFontUrl = url+"/font";
+  final String loginUrl = url+"/signin";
+  final String registerUrl = url+"/register";
+  final String uploadNoteURL = url+"/putNote";
+  final String deleteNoteURL = url+"/deleteNote";
+  final String getNotesURL = url+"/getNotes";
 
   Dio dio = new Dio();
 
@@ -105,6 +110,95 @@ class RequestManager
     {
       return "error";
     }
+  }
+
+  dynamic putNote(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "fileName": jsonMap['fileName'],
+      "delta": jsonMap['delta'],
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(uploadNoteURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic deleteNote(String id) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": id,
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteNoteURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<List<Note>> getNotes() async
+  {
+    List<Note> reqNotes = new List<Note>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getNotesURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['notes']?.values != null) {
+
+      response.data['notes'].forEach((key, values) {
+        print(key);
+        print(values);
+
+        Note n = new Note(key, values['fileName'], values['delta']);
+        reqNotes.add(n);
+      });
+    }
+
+    return reqNotes;
   }
 
   dynamic command(String uri, BuildContext context) async
