@@ -190,9 +190,6 @@ class RequestManager
     if (response.data['notes']?.values != null) {
 
       response.data['notes'].forEach((key, values) {
-        print(key);
-        print(values);
-
         Note n = new Note(key, values['fileName'], values['delta']);
         reqNotes.add(n);
       });

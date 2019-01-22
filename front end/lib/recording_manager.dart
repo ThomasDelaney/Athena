@@ -82,7 +82,6 @@ class RecordingManger
       var result = await requestManager.command(uri, context);
 
       if (result == "error") {
-        print("kappa");
         showCannotUnderstandError(context);
       }
       else {

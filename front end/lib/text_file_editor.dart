@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:zefyr/zefyr.dart';
-import 'package:quill_delta/quill_delta.dart';
 import 'request_manager.dart';
 import 'note.dart';
 import 'dart:convert';
@@ -18,6 +17,8 @@ class TextFileEditor extends StatefulWidget {
 class _TextFileEditorState extends State<TextFileEditor> {
 
   RequestManager requestManager = RequestManager.singleton;
+
+  bool submitting = false;
 
   ZefyrController _controller;
   FocusNode _focusNode;
@@ -46,81 +47,115 @@ class _TextFileEditorState extends State<TextFileEditor> {
     _focusNode = new FocusNode();
   }
 
+  bool isFileEdited() {
+    if (widget.note == null) {
+      if (fileNameController.text == "" && _controller.document.toPlainText() == "\n") {
+        return false;
+      }
+      else {
+        return true;
+      }
+    }
+    else {
+      if (fileNameController.text != widget.note.fileName || json.encode(_controller.document.toJson()).toString() != widget.note.delta) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
         onWillPop: exitCheck,
-        child: Scaffold(
-          resizeToAvoidBottomPadding: true,
-          key: _scaffoldKey,
-          appBar: AppBar(
-              title: new Text(title),
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.check),
-                  iconSize: 30.0,
-                  onPressed: showAreYouSureDialog,
-                )
-              ]
-          ),
-          body: new Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                SizedBox(height: 10.0),
-                new TextFormField(
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18.0),
-                  keyboardType: TextInputType.text,
-                  autofocus: false,
-                  controller: fileNameController,
-                  decoration: InputDecoration(
-                    hintText: "File Name",
-                    contentPadding: EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
-                    border: InputBorder.none,
-                  ),
+        child: new Stack(children: <Widget>[
+            Scaffold(
+                resizeToAvoidBottomPadding: true,
+                key: _scaffoldKey,
+                appBar: AppBar(
+                    title: new Text(title),
+                    actions: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.check),
+                        iconSize: 30.0,
+                        onPressed: showAreYouSureDialog,
+                      )
+                    ]
                 ),
-                SizedBox(height: 10.0),
-                new Flexible(
-                    child: Container(
-                        child: Card(
-                            elevation: 18.0,
-                            child: new ZefyrScaffold(
-                                child: new ZefyrTheme(
-                                  data: new ZefyrThemeData(
-                                      toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
-                                          color: Colors.grey.shade800,
-                                          iconColor: Colors.white,
-                                          disabledIconColor: Colors.grey.shade500)),
-                                  child: ZefyrEditor(
-                                    autofocus: true,
-                                    controller: _controller,
-                                    focusNode: _focusNode,
-                                  ),
-                                )
-                            )
-                        )
-                    )
+                body: new Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(height: 10.0),
+                      new TextFormField(
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18.0),
+                        keyboardType: TextInputType.text,
+                        autofocus: false,
+                        controller: fileNameController,
+                        decoration: InputDecoration(
+                          hintText: "Note Name",
+                          contentPadding: EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                      SizedBox(height: 10.0),
+                      new Flexible(
+                          child: Container(
+                              child: Card(
+                                  elevation: 18.0,
+                                  child: new ZefyrScaffold(
+                                      child: new ZefyrTheme(
+                                        data: new ZefyrThemeData(
+                                            toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
+                                                color: Theme.of(context).accentColor,
+                                                iconColor: Theme.of(context).canvasColor,
+                                                disabledIconColor: Theme.of(context).disabledColor)),
+                                        child: ZefyrEditor(
+                                          autofocus: true,
+                                          controller: _controller,
+                                          focusNode: _focusNode,
+                                        ),
+                                      )
+                                  )
+                              )
+                          )
+                      )
+                    ],
+                  ),
                 )
-              ],
             ),
-          )
+            submitting ? new Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                new Container(
+                    margin: MediaQuery.of(context).padding,
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+              ],
+            ): new Container()
+          ],
         )
     );
   }
 
   void showAreYouSureDialog() {
+
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to SAVE this file?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to SAVE this Note?", /*style: TextStyle(fontFamily: font),*/),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
-        new FlatButton(onPressed: () {
+        new FlatButton(onPressed: () async {
             if (fileNameController.text == "") {
               Navigator.pop(context);
               showYouMustHaveFileNameDialog();
             }
             else {
-              uploadNote();
+              submit(true);
+              Navigator.pop(context);
+              await uploadNote();
+              submit(false);
             }
           }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
       ],
@@ -129,30 +164,38 @@ class _TextFileEditorState extends State<TextFileEditor> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
-  Future<bool> exitCheck() {
-    AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to SAVE this file?", /*style: TextStyle(fontFamily: font),*/),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
-        new FlatButton(onPressed: () async {
-          if (fileNameController.text == "") {
-            Navigator.pop(context, false);
-            showYouMustHaveFileNameDialog();
-          }
-          else {
-            await uploadNote();
-            Navigator.pop(context, true);
-          }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
-      ],
-    );
+  Future<bool> exitCheck() async{
+    if (isFileEdited()) {
+      AlertDialog areYouSure = new AlertDialog(
+        content: new Text("Do you want to SAVE this Note?", /*style: TextStyle(fontFamily: font),*/),
+        actions: <Widget>[
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () async {
+            if (fileNameController.text == "") {
+              Navigator.pop(context, false);
+              showYouMustHaveFileNameDialog();
+            }
+            else {
+              submit(true);
+              Navigator.pop(context);
+              await uploadNote();
+              submit(false);
+              Navigator.pop(context, true);
+            }
+          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        ],
+      );
 
-    return showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
+      return showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
+    }
+    else {
+      return true;
+    }
   }
 
   void showYouMustHaveFileNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must have a File Name", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("You must have a Note Name", /*style: TextStyle(fontFamily: font),*/),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
       ],
@@ -162,6 +205,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
   }
 
   void uploadNote() async {
+
     //create map of register data
     Map map = {"id": widget.note == null ? null : widget.note.id, "fileName": fileNameController.text, "delta": json.encode(_controller.document.toJson()).toString()};
 
@@ -169,8 +213,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
-      Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('File Saved!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Saved!')));
 
       setState(() {
         title = "Editing "+fileNameController.text;
@@ -182,11 +225,18 @@ class _TextFileEditorState extends State<TextFileEditor> {
       AlertDialog responseDialog = new AlertDialog(
         content: new Text(response['error']['response']),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); /*submit(false);*/}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
         ],
       );
 
       showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
     }
+  }
+
+  void submit(bool state)
+  {
+    setState(() {
+      submitting = state;
+    });
   }
 }
