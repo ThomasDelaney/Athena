@@ -15,6 +15,8 @@ class RecordingManger
 
   RecordingManger._internal();
 
+  State<dynamic> parent;
+
   bool _recorderLoading = false;
   bool _recording = false;
 
@@ -51,7 +53,7 @@ class RecordingManger
   //method to cancel recording at any time
   void cancelRecording()
   {
-    this._recording = false;
+    parent.setState((){this._recording = false;});
 
     //cancel the audio subscription
     if (audioSubscription != null) {
@@ -60,13 +62,17 @@ class RecordingManger
     }
   }
 
+  void assignParent(State<dynamic> state) {
+    this.parent = state;
+  }
+
   //method called when the user manually stops the recording for their command to be processed
   void stopRecording(BuildContext context) async
   {
     //stop the recorder
     await flutterSound.stopRecorder();
 
-    this._recorderLoading = false;
+    parent.setState((){this._recorderLoading = false;});
 
     //cancel the audio subscription
     if (audioSubscription != null) {
@@ -76,12 +82,13 @@ class RecordingManger
       var result = await requestManager.command(uri, context);
 
       if (result == "error") {
+        print("kappa");
         showCannotUnderstandError(context);
       }
       else {
         if (result.data['function'] == "timetable") {
 
-          this._recording = false;
+          parent.setState((){this._recording = false;});
 
           //static list of days
           List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];

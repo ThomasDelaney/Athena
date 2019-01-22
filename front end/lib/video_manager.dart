@@ -51,7 +51,7 @@ class _VideoManagerState extends State<VideoManager> {
     return new Chewie(
       _controller,
       aspectRatio: _aspectRatio,
-      autoPlay: true,
+      autoPlay: false,
       showControls: true,
       looping: true,
     );

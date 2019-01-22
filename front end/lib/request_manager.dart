@@ -203,9 +203,6 @@ class RequestManager
 
   dynamic command(String uri, BuildContext context) async
   {
-    //API URL for posting the audio command
-    String url = "http://mystudentlife-220716.appspot.com/command";
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //create file object from audio URI
@@ -223,7 +220,7 @@ class RequestManager
     try
     {
       //post the form data and retrieve the response
-      responseObj = await dio.post(url, data: formData);
+      responseObj = await dio.post(commandUrl, data: formData);
 
       //delete the audio file
       File currentAudio = File.fromUri(new Uri.file(uri));

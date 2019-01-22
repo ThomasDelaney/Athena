@@ -75,6 +75,7 @@ class _HomePageState extends State<HomePage> {
 
   //method called before the page is rendered
   void initState() {
+    recorder.assignParent(this);
     retrieveData();
   }
 
@@ -90,9 +91,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-
-    print("RECORDING? " + recorder.recording.toString());
-
     Container imageList;
 
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
@@ -307,7 +305,7 @@ class _HomePageState extends State<HomePage> {
                             children: <Widget>[
                               new IconButton(
                                 color: Colors.red,
-                                icon: Icon(Icons.image, size: 35.0),
+                                icon: Icon(Icons.perm_media, size: 35.0),
                                 onPressed: () => getImage(),
                               ),
                               new IconButton(

@@ -159,7 +159,7 @@ def get_command_keywords():
 	auth = firebase.auth()
 
 	try:
-		user = auth.refresh(request.args['refreshToken'])
+		user = auth.refresh(request.form['refreshToken'])
 
 		#use audio segment to get the raw audio from the posted file (which is in a .mp4 format)
 		raw_audio = AudioSegment.from_file(request.files['file'])
@@ -172,6 +172,8 @@ def get_command_keywords():
 		with sr.AudioFile(wav_path) as source:
 			audio = r.record(source)
 
+
+
 		day = ""
 		funct = ""
 
@@ -180,7 +182,7 @@ def get_command_keywords():
 		    text = r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS)
 
 		    #set up dialogflow session, and create a dialogflow query with the text input
-		    session = session_client.session_path("mystudentlife-220716", "1")
+		    session = session_client.session_path("glassy-acolyte-228916", "1")
 		    text_input = dialogflow.types.TextInput(text=text, language_code="en-US")
 		    query_input = dialogflow.types.QueryInput(text=text_input)
 
