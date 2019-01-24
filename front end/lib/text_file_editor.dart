@@ -3,12 +3,14 @@ import 'package:zefyr/zefyr.dart';
 import 'request_manager.dart';
 import 'note.dart';
 import 'dart:convert';
+import 'subject.dart';
 
 class TextFileEditor extends StatefulWidget {
 
   final Note note;
+  final Subject subject;
 
-  TextFileEditor({Key key, this.note}) : super(key: key);
+  TextFileEditor({Key key, this.note, this.subject}) : super(key: key);
 
   @override
   _TextFileEditorState createState() => _TextFileEditorState();
@@ -19,6 +21,8 @@ class _TextFileEditorState extends State<TextFileEditor> {
   RequestManager requestManager = RequestManager.singleton;
 
   bool submitting = false;
+
+  bool currentlySaved = false;
 
   ZefyrController _controller;
   FocusNode _focusNode;
@@ -48,26 +52,32 @@ class _TextFileEditorState extends State<TextFileEditor> {
   }
 
   bool isFileEdited() {
-    if (widget.note == null) {
-      if (fileNameController.text == "" && _controller.document.toPlainText() == "\n") {
-        return false;
-      }
-      else {
-        return true;
-      }
+    if (currentlySaved == true) {
+      return false;
     }
     else {
-      if (fileNameController.text != widget.note.fileName || json.encode(_controller.document.toJson()).toString() != widget.note.delta) {
-        return true;
+      if (widget.note == null) {
+        if (fileNameController.text == "" && _controller.document.toPlainText() == "\n") {
+          return false;
+        }
+        else {
+          return true;
+        }
       }
       else {
-        return false;
+        if (fileNameController.text != widget.note.fileName || json.encode(_controller.document.toJson()).toString() != widget.note.delta) {
+          return true;
+        }
+        else {
+          return false;
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.subject);
     return WillPopScope(
         onWillPop: exitCheck,
         child: new Stack(children: <Widget>[
@@ -206,14 +216,16 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
   void uploadNote() async {
 
-    //create map of register data
-    Map map = {"id": widget.note == null ? null : widget.note.id, "fileName": fileNameController.text, "delta": json.encode(_controller.document.toJson()).toString()};
+    //create map of note data
+    Map map = {"id": widget.note == null ? null : widget.note.id, "fileName": fileNameController.text, "delta": json.encode(_controller.document.toJson()).toString(), "subjectID": widget.subject.id};
 
     var response = await requestManager.putNote(map);
 
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
       _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Saved!')));
+
+      currentlySaved = true;
 
       setState(() {
         title = "Editing "+fileNameController.text;

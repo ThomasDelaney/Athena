@@ -13,11 +13,12 @@ import 'recording_manager.dart';
 import 'request_manager.dart';
 import 'text_file_editor.dart';
 import 'note.dart';
+import 'subject.dart';
 
 class VirtualHardback extends StatefulWidget {
-  VirtualHardback({Key key, this.pageTitle}) : super(key: key);
+  VirtualHardback({Key key, this.subject}) : super(key: key);
 
-  final String pageTitle;
+  final Subject subject;
 
   @override
   _VirtualHardbackState createState() => _VirtualHardbackState();
@@ -54,14 +55,14 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   //get user images
   void getImages() async
   {
-    List<String> reqImages = await requestManager.getFiles();
+    List<String> reqImages = await requestManager.getFiles(widget.subject.id);
     this.setState((){imageFiles = reqImages; imagesLoaded = true;});
   }
 
   //get user images
   void getNotes() async
   {
-    List<Note> reqNotes = await requestManager.getNotes();
+    List<Note> reqNotes = await requestManager.getNotes(widget.subject.id);
     this.setState((){notesList = reqNotes; notesLoaded = true;});
   }
 
@@ -76,6 +77,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   void initState() {
     recorder.assignParent(this);
     retrieveData();
+    super.initState();
   }
 
   void retrieveData() {
@@ -90,6 +92,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   @override
   Widget build(BuildContext context) {
+
+    print(widget.subject.name);
+
     Container imageList;
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
     if (imageFiles.length == 0 && imagesLoaded) {
@@ -187,34 +192,62 @@ class _VirtualHardbackState extends State<VirtualHardback> {
       imageList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0), child: new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0))));
     }
 
-    //list view for the dummy note data
-    final ListView textFileList = ListView.builder(
-      itemCount: notesList.length,
-      itemBuilder: (context, position) {
-        return GestureDetector(
-            onLongPress: () => deleteNoteDialog(notesList[position]),
-            child: Card(
-              margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-              elevation: 3.0,
-              child: new ListTile(
-                onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position],))).whenComplete(retrieveData);},
-                contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-                leading: Container(
-                  padding: EdgeInsets.only(right: 12.0),
-                  decoration: new BoxDecoration(
-                      border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
+    ListView textFileList;
+
+    if (notesList.length == 0 && notesLoaded) {
+      textFileList = new ListView(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        children: <Widget>[
+          new Container(
+              margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+              child: new SizedBox(
+                width: MediaQuery.of(context).size.width * 0.95,
+                child: new Card(
+                  child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                        new SizedBox(height: 10.0,),
+                        new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
+                      ]
                   ),
-                  child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
                 ),
-                title: Text(
-                  notesList[position].fileName,
-                  style: TextStyle(fontSize: 20.0, fontFamily: font),
+              )
+          ),
+        ],
+      );
+    }
+    else {
+      textFileList = ListView.builder(
+        itemCount: notesList.length,
+        itemBuilder: (context, position) {
+          return GestureDetector(
+              onLongPress: () => deleteNoteDialog(notesList[position]),
+              child: Card(
+                margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                elevation: 3.0,
+                child: new ListTile(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position], subject: widget.subject,))).whenComplete(retrieveData),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                  leading: Container(
+                    padding: EdgeInsets.only(right: 12.0),
+                    decoration: new BoxDecoration(
+                        border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
+                    ),
+                    child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
+                  ),
+                  title: Text(
+                    notesList[position].fileName,
+                    style: TextStyle(fontSize: 20.0, fontFamily: font),
+                  ),
                 ),
-              ),
-            )
-        );
-      },
-    );
+              )
+          );
+        },
+      );
+
+    }
 
     //scaffold to encapsulate all the widgets
     final page = Scaffold(
@@ -252,7 +285,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
           ),
         ),
         appBar: new AppBar(
-          title: new Text(widget.pageTitle, style: TextStyle(fontFamily: font),),
+          title: new Text(widget.subject.name, style: TextStyle(fontFamily: font),),
           //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
           actions: recorder.recording ? <Widget>[
             // action button
@@ -265,7 +298,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             IconButton(
               icon: Icon(Icons.add_circle),
               iconSize: 30.0,
-              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor())).whenComplete(retrieveData);},
+              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject,))).whenComplete(retrieveData);},
             ),
             // else display the mic button and settings button
             IconButton(
@@ -414,7 +447,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   }
 
   void deleteNote(Note note) async {
-    var response = await requestManager.deleteNote(note.id);
+    var response = await requestManager.deleteNote(note.id, widget.subject.id);
 
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
@@ -466,7 +499,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   {
     submit(true);
 
-    String url = await requestManager.uploadFile(filePath, context);
+    String url = await requestManager.uploadFile(filePath, widget.subject.id, context);
 
     if (url == "error") {
       showErrorDialog();

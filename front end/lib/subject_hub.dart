@@ -5,49 +5,71 @@ import 'request_manager.dart';
 import 'font_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
-import 'subject_hub.dart';
-import 'timetable_page.dart';
-import 'dart:core';
+import 'virtual_hardback.dart';
+import 'add_subject.dart';
+import 'subject.dart';
+import 'subject_hub_tile.dart';
 
-//Widget that displays the "home" page, this will actually be page for the virtual hardback and journal that displays notes and files, stored by the user
-class HomePage extends StatefulWidget {
-  HomePage({Key key, this.pageTitle}) : super(key: key);
-
-  static const String routeName = "/HomePage";
-  final String pageTitle;
-
+class SubjectHub extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _SubjectHubState createState() => _SubjectHubState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _SubjectHubState extends State<SubjectHub> {
 
   RequestManager requestManager = RequestManager.singleton;
 
   //Recording Manager Object
   RecordingManger recorder = RecordingManger.singleton;
 
-  //list of the days of the week for timetable
-  List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  bool subjectsLoaded = false;
+
+  List<Subject> subjectList = new List<Subject>();
 
   String font = "";
 
   @override
   void initState() {
     recorder.assignParent(this);
+    retrieveData();
     super.initState();
   }
 
   @override
-  void didUpdateWidget(HomePage oldWidget) {
+  void didUpdateWidget(SubjectHub oldWidget) {
     recorder.assignParent(this);
     super.didUpdateWidget(oldWidget);
   }
 
+  void retrieveData() {
+    subjectsLoaded = false;
+    subjectList.clear();
+    getSubjects();
+  }
+
   @override
   Widget build(BuildContext context) {
+    //list view for the subject data
+    final ListView sList = ListView.builder(
+      itemCount: subjectList.length,
+      itemBuilder: (context, position) {
+        return GestureDetector(
+            onLongPress: () => {},
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                SizedBox(height: 10.0),
+                SubjectHubTile(subject: subjectList.elementAt(position),)
+              ],
+            )
+        );
+      },
+    );
+
+
     return Scaffold(
-        //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
+      //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
         endDrawer: new Drawer(
           child: ListView(
             //Remove any padding from the ListView.
@@ -80,7 +102,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         appBar: new AppBar(
-          title: new Text("Home", style: TextStyle(fontFamily: font),),
+          title: new Text("Subject Hub", style: TextStyle(fontFamily: font),),
           //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
           actions: recorder.recording ? <Widget>[
             // action button
@@ -90,6 +112,11 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {setState(() {recorder.cancelRecording();});},
             ),
           ] : <Widget>[
+            IconButton(
+              icon: Icon(Icons.add_circle),
+              iconSize: 30.0,
+              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject())); },
+            ),
             // else display the mic button and settings button
             IconButton(
               icon: Icon(Icons.mic),
@@ -104,15 +131,9 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-      body: new Center(
-        child:new Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
-            new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub()),
-          ],
-        ),
-      )
+        body: new Center(
+          child: subjectsLoaded ? sList : new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+        )
     );
   }
 
@@ -139,5 +160,10 @@ class _HomePageState extends State<HomePage> {
 
     //clear the widget stack and route user to the login page
     Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
+  }
+
+  void getSubjects() async {
+    List<Subject> reqSubjects = await requestManager.getSubjects();
+    this.setState((){subjectList = reqSubjects; subjectsLoaded = true;});
   }
 }

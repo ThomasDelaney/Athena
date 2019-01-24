@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'note.dart';
+import 'subject.dart';
 
 class RequestManager
 {
@@ -25,16 +26,19 @@ class RequestManager
   final String uploadNoteURL = url+"/putNote";
   final String deleteNoteURL = url+"/deleteNote";
   final String getNotesURL = url+"/getNotes";
+  final String addSubjectURL = url+"/putSubject";
+  final String deleteSubjectURL = url+"/deleteSubject";
+  final String getSubjectsURL = url+"/getSubjects";
 
   Dio dio = new Dio();
 
-  Future<List<String>> getFiles() async
+  Future<List<String>> getFiles(String subjectID) async
   {
     List<String> reqImages = new List<String>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getFilesUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getFilesUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store images in a string list
     if (response.data['images']?.values != null) {
@@ -47,13 +51,14 @@ class RequestManager
   }
 
   //method for uploading user chosen image
-  Future<String> uploadFile(String filePath, BuildContext context) async
+  Future<String> uploadFile(String filePath, String subjectID, BuildContext context) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //create form with relevant data and image as file
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
+      "subjectID": subjectID,
       "refreshToken": await prefs.getString("refreshToken"),
       "file": new UploadFileInfo(new File(filePath), new DateTime.now().millisecondsSinceEpoch.toString()+filePath.split('/').last)
     });
@@ -112,6 +117,60 @@ class RequestManager
     }
   }
 
+  dynamic putSubject(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "name": jsonMap['name'],
+      "colour": jsonMap['colour'],
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(addSubjectURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<List<Subject>> getSubjects() async
+  {
+    List<Subject> reqSubjects = new List<Subject>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getSubjectsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['subjects']?.values != null) {
+
+      response.data['subjects'].forEach((key, values) {
+        Subject s = new Subject(key, values['name'], values['colour']);
+        reqSubjects.add(s);
+      });
+    }
+
+    return reqSubjects;
+  }
+
   dynamic putNote(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -120,6 +179,7 @@ class RequestManager
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
+      "subjectID": jsonMap['subjectID'],
       "refreshToken": await prefs.getString("refreshToken"),
       "fileName": jsonMap['fileName'],
       "delta": jsonMap['delta'],
@@ -146,7 +206,7 @@ class RequestManager
     }
   }
 
-  dynamic deleteNote(String id) async
+  dynamic deleteNote(String id, String subjectID) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -154,6 +214,7 @@ class RequestManager
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
+      "subjectID": subjectID,
       "refreshToken": await prefs.getString("refreshToken"),
     });
 
@@ -178,13 +239,13 @@ class RequestManager
     }
   }
 
-  Future<List<Note>> getNotes() async
+  Future<List<Note>> getNotes(String subjectID) async
   {
     List<Note> reqNotes = new List<Note>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
-    Response response = await dio.get(getNotesURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    //get user notes
+    Response response = await dio.get(getNotesURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store images in a string list
     if (response.data['notes']?.values != null) {

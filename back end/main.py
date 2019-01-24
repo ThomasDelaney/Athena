@@ -17,7 +17,6 @@ import binascii
 #create flask app
 app = Flask(__name__)
 
-
 #initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -107,7 +106,7 @@ def upload_photo():
 		user = auth.refresh(request.form['refreshToken'])
 
 		#stiore posted image under posted filename
-		results = storage.child("users").child(user['userId']).child(request.files['file'].filename).put(request.files['file'], user['idToken'])
+		results = storage.child("users").child(user['userId']).child(request.form['subjectID']).child(request.files['file'].filename).put(request.files['file'], user['idToken'])
 		#get url from posted image
 		url = storage.child(results['name']).get_url(results['downloadTokens'])
 
@@ -115,16 +114,8 @@ def upload_photo():
 		    "url": str(url)
 		}
 
-		#split file name from the posted file
-		fullFilename = results['name'].split('/')
-		name = fullFilename[len(fullFilename) - 1].split('.')[1]
-
-		shuffled = ''.join(random.sample(name, len(name)))
-
-		location = binascii.hexlify(str.encode(shuffled)).decode('utf-8')
-
 		#add the url to the database under the images node for the user, give random int as the node for now, will be changed later
-		addUrl = db.child("users").child(user['userId']).child("files").child(location).set(data, user['idToken'])
+		addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").push(data, user['idToken'])
 
 		#return the refresh token and the image url
 		return jsonify(refreshToken=user['refreshToken'], url=url)
@@ -144,7 +135,7 @@ def get_photos():
 		user = auth.refresh(request.args['refreshToken'])
 
 		#get all image urls from database for the specific user
-		results = db.child("users").child(user['userId']).child("files").get(user['idToken'])
+		results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("files").get(user['idToken'])
 
 		#return the images as a list
 		return jsonify(images=results.val(), refreshToken=user['refreshToken'])
@@ -171,7 +162,6 @@ def get_command_keywords():
 		#use the audio recorder to convert the new wav file as raw audio
 		with sr.AudioFile(wav_path) as source:
 			audio = r.record(source)
-
 
 
 		day = ""
@@ -251,9 +241,9 @@ def put_note():
 		}
 
 		if (request.form['nodeID'] == 'null'):
-			result = db.child("users").child(user['userId']).child("notes").push(data, user['idToken'])
+			result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").push(data, user['idToken'])
 		else:
-			result = db.child("users").child(user['userId']).child("notes").child(request.form['nodeID']).set(data, user['idToken'])
+			result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).set(data, user['idToken'])
 
 		#return refresh token if successfull
 		return jsonify(refreshToken=user['refreshToken'])
@@ -272,7 +262,7 @@ def delete_note():
 
 		db = firebase.database()
 
-		result = db.child("users").child(user['userId']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
+		result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
 
 		#return refresh token if successfull
 		return jsonify(refreshToken=user['refreshToken'])
@@ -292,10 +282,57 @@ def get_notes():
 		user = auth.refresh(request.args['refreshToken'])
 
 		#get all image urls from database for the specific user
-		results = db.child("users").child(user['userId']).child("notes").get(user['idToken'])
+		results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("notes").get(user['idToken'])
 
 		#return the images as a list
 		return jsonify(notes=results.val(), refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to put text file
+@app.route('/putSubject', methods=['POST'])
+def put_subject():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		data = {
+			"name": request.form['name'],
+			"colour": request.form['colour']
+		}
+
+		if (request.form['nodeID'] == 'null'):
+			result = db.child("users").child(user['userId']).child("subjects").push(data, user['idToken'])
+		else:
+			result = db.child("users").child(user['userId']).child("subjects").child(request.form['nodeID']).set(data, user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to get all user notes
+@app.route('/getSubjects', methods=['GET'])
+def get_subjects():
+	auth = firebase.auth()
+
+	try:
+		db = firebase.database()
+
+		user = auth.refresh(request.args['refreshToken'])
+
+		#get all image urls from database for the specific user
+		results = db.child("users").child(user['userId']).child("subjects").get(user['idToken'])
+
+		#return the images as a list
+		return jsonify(subjects=results.val(), refreshToken=user['refreshToken'])
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
 		parsedError = new[new.index("{"):]
