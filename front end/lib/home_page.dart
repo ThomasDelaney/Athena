@@ -104,14 +104,26 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-      body: new Center(
-        child:new Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
-            new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub()),
-          ],
-        ),
+      body: new Stack(
+        children: <Widget>[
+          new Center(
+            child: new Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
+                new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub()),
+              ],
+            ),
+          ),
+          new Container(
+              child: recorder.recording ?
+              new Stack(
+                alignment: Alignment.center,
+                children: <Widget>[
+                  new Container(
+                      child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
+          ),
+        ],
       )
     );
   }

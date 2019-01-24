@@ -7,6 +7,7 @@ import 'video_manager.dart';
 import 'audio_manager.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'filetype_manager.dart';
+import 'subject_file.dart';
 
 //Widget that displays an interactive file list
 class FileViewer extends StatefulWidget
@@ -14,7 +15,7 @@ class FileViewer extends StatefulWidget
   FileViewer({Key key, this.list, this.i}) : super(key: key);
 
   //list of file URLS
-  final List<String> list;
+  final List<SubjectFile> list;
 
   //current selected index (passed in from page in which it was invoked)
   final int i;
@@ -35,14 +36,14 @@ class _FileViewerState extends State<FileViewer>
           child: new Swiper(
             itemBuilder: (BuildContext context, int index){
               //photo view allows for zooming in and out of images
-              return FileTypeManger.getFileTypeFromURL(widget.list[index]) == "image" ? new PhotoView(
+              return FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "image" ? new PhotoView(
                   maxScale: PhotoViewComputedScale.contained * 2.0,
                   minScale: (PhotoViewComputedScale.contained) * 0.5,
                   //get a cached network image from the current URL in the list, this will ensure the image URL does not need to be loaded every time
-                  imageProvider: new CachedNetworkImageProvider(widget.list[index]))
+                  imageProvider: new CachedNetworkImageProvider(widget.list[index].url))
 
-                  : FileTypeManger.getFileTypeFromURL(widget.list[index]) == "video" ? new VideoManager(controller: new VideoPlayerController.network(widget.list[index]))
-                  : FileTypeManger.getFileTypeFromURL(widget.list[index]) == "audio" ? new AudioManager(url: widget.list[index], audioPlayer: new AudioPlayer(),) : new Container();
+                  : FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "video" ? new VideoManager(controller: new VideoPlayerController.network(widget.list[index].url))
+                  : FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "audio" ? new AudioManager(url: widget.list[index].url, audioPlayer: new AudioPlayer(),) : new Container();
             },
             itemCount: widget.list.length,
             pagination: new SwiperPagination(),

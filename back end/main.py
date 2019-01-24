@@ -17,6 +17,7 @@ import binascii
 #create flask app
 app = Flask(__name__)
 
+
 #initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -95,7 +96,7 @@ def sign_in_user():
 
 #route for uploading a photo
 @app.route('/putFile', methods=['POST'])
-def upload_photo():
+def upload_file():
 	auth = firebase.auth()
 
 	try:
@@ -111,6 +112,7 @@ def upload_photo():
 		url = storage.child(results['name']).get_url(results['downloadTokens'])
 
 		data = {
+			"fileName": request.files['file'].filename,
 		    "url": str(url)
 		}
 
@@ -118,7 +120,7 @@ def upload_photo():
 		addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").push(data, user['idToken'])
 
 		#return the refresh token and the image url
-		return jsonify(refreshToken=user['refreshToken'], url=url)
+		return jsonify(refreshToken=user['refreshToken'], url=url, fileName=request.files['file'].filename)
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
 		parsedError = new[new.index("{"):]
@@ -126,7 +128,7 @@ def upload_photo():
 
 #route to get all user photos
 @app.route('/getFiles', methods=['GET'])
-def get_photos():
+def get_files():
 	auth = firebase.auth()
 
 	try:
@@ -138,7 +140,7 @@ def get_photos():
 		results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("files").get(user['idToken'])
 
 		#return the images as a list
-		return jsonify(images=results.val(), refreshToken=user['refreshToken'])
+		return jsonify(files=results.val(), refreshToken=user['refreshToken'])
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
 		parsedError = new[new.index("{"):]

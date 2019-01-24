@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'note.dart';
 import 'subject.dart';
+import 'subject_file.dart';
 
 class RequestManager
 {
@@ -32,26 +33,27 @@ class RequestManager
 
   Dio dio = new Dio();
 
-  Future<List<String>> getFiles(String subjectID) async
+  Future<List<SubjectFile>> getFiles(String subjectID) async
   {
-    List<String> reqImages = new List<String>();
+    List<SubjectFile> reqFiles = new List<SubjectFile>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
     Response response = await dio.get(getFilesUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store images in a string list
-    if (response.data['images']?.values != null) {
-      for (var value in response.data['images'].values) {
-        reqImages.add(value['url']);
+    if (response.data['files']?.values != null) {
+      for (var value in response.data['files'].values) {
+        SubjectFile s = new SubjectFile(value['url'], value['fileName']);
+        reqFiles.add(s);
       }
     }
 
-    return reqImages;
+    return reqFiles;
   }
 
   //method for uploading user chosen image
-  Future<String> uploadFile(String filePath, String subjectID, BuildContext context) async
+  Future<SubjectFile> uploadFile(String filePath, String subjectID, BuildContext context) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -69,17 +71,17 @@ class RequestManager
 
       //if the refresh token is null, then display an alert dialog with an error
       if(responseObj.data['refreshToken'] == null) {
-        return "error";
+        return new SubjectFile("error", "error");
       }
       else {
         //else store the new refresh token in shared preferences and return the image URL
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
-        return responseObj.data['url'];
+        return new SubjectFile(responseObj.data['url'], responseObj.data['fileName']);
       }
     }
     on DioError catch(e)
     {
-      return "error";
+      return new SubjectFile("error", "error");
     }
   }
 

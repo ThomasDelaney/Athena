@@ -77,7 +77,6 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.subject);
     return WillPopScope(
         onWillPop: exitCheck,
         child: new Stack(children: <Widget>[

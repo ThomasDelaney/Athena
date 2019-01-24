@@ -1,8 +1,14 @@
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
+import 'subject.dart';
 
 class AddSubject extends StatefulWidget {
+
+  AddSubject({Key key, this.subject}) : super(key: key);
+
+  final Subject subject;
+
   @override
   _AddSubjectState createState() => _AddSubjectState();
 }
@@ -15,6 +21,8 @@ class _AddSubjectState extends State<AddSubject> {
   FocusNode subjectFocusNode;
   Color currentColor;
 
+  bool currentlySaved = false;
+
   bool submitting = false;
 
   @override
@@ -25,7 +33,15 @@ class _AddSubjectState extends State<AddSubject> {
 
   @override
   void didChangeDependencies() {
-    currentColor = Theme.of(context).accentColor;
+
+    if (widget.subject == null) {
+      currentColor = Theme.of(context).accentColor;
+    }
+    else {
+      currentColor = Color(int.tryParse(widget.subject.colour));
+      subjectController.text = widget.subject.name;
+    }
+
     FocusScope.of(context).requestFocus(subjectFocusNode);
     super.didChangeDependencies();
   }
@@ -41,97 +57,124 @@ class _AddSubjectState extends State<AddSubject> {
     return 1.05 / (color.computeLuminance() + 0.05) > 2.5;
   }
 
+  bool isFileEdited() {
+    if (currentlySaved == true) {
+      return false;
+    }
+    else {
+      if (widget.subject == null) {
+        if (subjectController.text == "") {
+          return false;
+        }
+        else {
+          return true;
+        }
+      }
+      else {
+        if (subjectController.text != widget.subject.name || currentColor != Color(int.tryParse(widget.subject.colour))) {
+          return true;
+        }
+        else {
+          return false;
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return new Stack(
-      children: <Widget>[
-        Scaffold(
-          appBar: new AppBar(
-            title: new Text("Add a New Subject"),
-          ),
-          body: new Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              SizedBox(height: 20.0),
-              new Card(
-                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                  elevation: 3.0,
-                  child: new Column(
-                    children: <Widget>[
-                      new Container(
-                        margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                        child: TextFormField(
-                          focusNode: subjectFocusNode,
-                          keyboardType: TextInputType.text,
-                          autofocus: false,
-                          controller: subjectController,
-                          style: TextStyle(fontSize: 24.0),
-                          decoration: InputDecoration(
-                              hintText: "Subject Name",
-                              labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
-                              border: UnderlineInputBorder()
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 20.0),
-                      new Container(
-                          margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                          child: ButtonTheme(
-                            height: 50.0,
-                            child: RaisedButton(
-                              elevation: 3.0,
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text('Select a Colour for the Subject'),
-                                      content: SingleChildScrollView(
-                                        child: BlockPicker(
-                                          pickerColor: currentColor,
-                                          onColorChanged: changeColorAndPopout,
-                                        ),
-                                      ),
-                                    );},
-                                );},
-                              child: Align(alignment: Alignment.centerLeft, child: Text('Select Subject Colour', style: TextStyle(fontSize: 24.0))),
-                              color: currentColor,
-
-                              textColor: colorCheck(currentColor) ? Colors.white : Colors.black,
-                            ),
-                          )
-                      ),
-                      SizedBox(height: 20.0),
-                    ],
-                  )
-              ),
-              SizedBox(height: 10.0),
-              new Container(
-                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                  child: ButtonTheme(
-                    height: 50.0,
-                    child: RaisedButton(
-                      elevation: 3.0,
-                      onPressed: showAreYouSureDialog,
-                      child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
-                      color: Theme.of(context).errorColor,
-
-                      textColor: colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
-                    ),
-                  )
-              )
-            ],
-          ),
-        ),
-        submitting ? new Stack(
-          alignment: Alignment.center,
+    return WillPopScope(
+        onWillPop: exitCheck,
+        child: Stack(
           children: <Widget>[
-            new Container(
-                margin: MediaQuery.of(context).padding,
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+            Scaffold(
+              appBar: new AppBar(
+                title: widget.subject == null ? new Text("Add a New Subject") : new Text(widget.subject.name),
+              ),
+              body: new Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  SizedBox(height: 20.0),
+                  new Card(
+                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                      elevation: 3.0,
+                      child: new Column(
+                        children: <Widget>[
+                          new Container(
+                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                            child: TextFormField(
+                              focusNode: subjectFocusNode,
+                              keyboardType: TextInputType.text,
+                              autofocus: false,
+                              controller: subjectController,
+                              style: TextStyle(fontSize: 24.0),
+                              decoration: InputDecoration(
+                                  hintText: "Subject Name",
+                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
+                                  border: UnderlineInputBorder()
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 20.0),
+                          new Container(
+                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                              child: ButtonTheme(
+                                height: 50.0,
+                                child: RaisedButton(
+                                  elevation: 3.0,
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Select a Colour for the Subject'),
+                                          content: SingleChildScrollView(
+                                            child: BlockPicker(
+                                              pickerColor: currentColor,
+                                              onColorChanged: changeColorAndPopout,
+                                            ),
+                                          ),
+                                        );},
+                                    );},
+                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Subject Colour', style: TextStyle(fontSize: 24.0))),
+                                  color: currentColor,
+
+                                  textColor: colorCheck(currentColor) ? Colors.white : Colors.black,
+                                ),
+                              )
+                          ),
+                          SizedBox(height: 20.0),
+                        ],
+                      )
+                  ),
+                  SizedBox(height: 10.0),
+                  new Container(
+                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                      child: ButtonTheme(
+                        height: 50.0,
+                        child: RaisedButton(
+                          elevation: 3.0,
+                          onPressed: showAreYouSureDialog,
+                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
+                          color: Theme.of(context).errorColor,
+
+                          textColor: colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                        ),
+                      )
+                  )
+                ],
+              ),
+            ),
+            submitting ? new Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                new Container(
+                    margin: MediaQuery.of(context).padding,
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+              ],
+            ): new Container()
           ],
-        ): new Container()
-      ],
+        )
     );
   }
 
@@ -160,11 +203,10 @@ class _AddSubjectState extends State<AddSubject> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
-  /*
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Note?", /*style: TextStyle(fontFamily: font),*/),
+        content: new Text("Do you want to SAVE this Subject?", /*style: TextStyle(fontFamily: font),*/),
         actions: <Widget>[
           new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
           new FlatButton(onPressed: () async {
@@ -188,7 +230,7 @@ class _AddSubjectState extends State<AddSubject> {
     else {
       return true;
     }
-  }*/
+  }
 
   void showYouMustHaveFileNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
@@ -203,13 +245,13 @@ class _AddSubjectState extends State<AddSubject> {
 
   void addSubject() async {
     //create map of subject data
-    Map map = {"id": null, "name": subjectController.text, "colour": currentColor.value.toString()};
+    Map map = {"id": widget.subject == null ? null : widget.subject.id, "name": subjectController.text, "colour": currentColor.value.toString()};
 
     var response = await requestManager.putSubject(map);
 
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
-      print("nice");
+      currentlySaved = true;
     }
     //else the response ['response']  is not null, then print the error message
     else{

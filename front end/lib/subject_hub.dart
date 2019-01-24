@@ -5,17 +5,16 @@ import 'request_manager.dart';
 import 'font_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
-import 'virtual_hardback.dart';
 import 'add_subject.dart';
 import 'subject.dart';
 import 'subject_hub_tile.dart';
 
 class SubjectHub extends StatefulWidget {
   @override
-  _SubjectHubState createState() => _SubjectHubState();
+  SubjectHubState createState() => SubjectHubState();
 }
 
-class _SubjectHubState extends State<SubjectHub> {
+class SubjectHubState extends State<SubjectHub> {
 
   RequestManager requestManager = RequestManager.singleton;
 
@@ -60,7 +59,7 @@ class _SubjectHubState extends State<SubjectHub> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 SizedBox(height: 10.0),
-                SubjectHubTile(subject: subjectList.elementAt(position),)
+                SubjectHubTile(subject: subjectList.elementAt(position), state: this,)
               ],
             )
         );
@@ -115,7 +114,7 @@ class _SubjectHubState extends State<SubjectHub> {
             IconButton(
               icon: Icon(Icons.add_circle),
               iconSize: 30.0,
-              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject())); },
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject())).whenComplete(retrieveData),
             ),
             // else display the mic button and settings button
             IconButton(
@@ -131,9 +130,22 @@ class _SubjectHubState extends State<SubjectHub> {
             ),
           ],
         ),
-        body: new Center(
-          child: subjectsLoaded ? sList : new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+        body: new Stack(
+          children: <Widget>[
+            new Center(
+              child: subjectsLoaded ? sList : new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+            ),
+            new Container(
+                child: recorder.recording ?
+                new Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    new Container(
+                        child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
+            ),
+          ],
         )
+
     );
   }
 

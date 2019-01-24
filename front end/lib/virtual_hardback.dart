@@ -14,6 +14,8 @@ import 'request_manager.dart';
 import 'text_file_editor.dart';
 import 'note.dart';
 import 'subject.dart';
+import 'subject_file.dart';
+import 'package:marquee/marquee.dart';
 
 class VirtualHardback extends StatefulWidget {
   VirtualHardback({Key key, this.subject}) : super(key: key);
@@ -30,7 +32,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   //list for image urls, will be general files in final version
-  List<String> imageFiles = new List<String>();
+  List<SubjectFile> subjectFiles = new List<SubjectFile>();
 
   List<Note> notesList = new List<Note>();
 
@@ -44,19 +46,20 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   RecordingManger recorder = RecordingManger.singleton;
 
   //container for the image list
-  Container imageList;
-  bool imagesLoaded = false;
+  Container fileList;
+  bool filesLoaded = false;
+
   bool notesLoaded = false;
 
-  //size of images
-  double imageSize = 150.0;
+  //size of file card
+  double fileCardSize = 150.0;
   String font = "";
 
   //get user images
   void getImages() async
   {
-    List<String> reqImages = await requestManager.getFiles(widget.subject.id);
-    this.setState((){imageFiles = reqImages; imagesLoaded = true;});
+    List<SubjectFile> reqFiles = await requestManager.getFiles(widget.subject.id);
+    this.setState((){subjectFiles = reqFiles; filesLoaded = true;});
   }
 
   //get user images
@@ -81,9 +84,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   }
 
   void retrieveData() {
-    imagesLoaded = false;
+    filesLoaded = false;
     notesLoaded = false;
-    imageFiles.clear();
+    subjectFiles.clear();
     notesList.clear();
     getImages();
     getNotes();
@@ -92,14 +95,12 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   @override
   Widget build(BuildContext context) {
+    Container subjectList;
 
-    print(widget.subject.name);
-
-    Container imageList;
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
-    if (imageFiles.length == 0 && imagesLoaded) {
-      imageList = new Container(
-        height: imageSize,
+    if (subjectFiles.length == 0 && filesLoaded) {
+      subjectList = new Container(
+        height: fileCardSize,
         child: new ListView(
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
@@ -107,8 +108,8 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             new Container(
                 margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                 child: new SizedBox(
-                  width: imageSize,
-                  height: imageSize,
+                  width: fileCardSize,
+                  height: fileCardSize,
                   child: new Card(
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -125,13 +126,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
       );
     }
     //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the images cover the card
-    else if (imagesLoaded){
-      imageList =  new Container(
-          height: imageSize,
+    else if (filesLoaded){
+      subjectList =  new Container(
+          height: fileCardSize,
           child: new ListView.builder (
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
-              itemCount: imageFiles.length,
+              itemCount: subjectFiles.length,
               itemBuilder: (BuildContext ctxt, int index)
               {
                 return new Container(
@@ -145,23 +146,23 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                               child: GestureDetector(
                                 onTap:() {
                                   //go to the file viewer page and pass in the image list, and the index of the image tapped
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: imageFiles, i: index)));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: subjectFiles, i: index)));
                                 },
                                 //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
                                 //the tag allows both pages to know where to return to when the user presses the back button
                                 child: new Hero(
                                   tag: "imageView"+index.toString(),
                                   //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
-                                  child: FileTypeManger.getFileTypeFromURL(imageFiles[index]) == "image" ? CachedNetworkImage(
+                                  child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(),
-                                      imageUrl: imageFiles[index],
-                                      height: imageSize,
-                                      width: imageSize,
+                                      imageUrl: subjectFiles[index].url,
+                                      height: fileCardSize,
+                                      width: fileCardSize,
                                       fit: BoxFit.cover
-                                  ) : FileTypeManger.getFileTypeFromURL(imageFiles[index]) == "video" ? new Stack(children: <Widget>[
+                                  ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "video" ? new Stack(children: <Widget>[
                                     new Chewie(
                                       new VideoPlayerController.network(
-                                          imageFiles[index]
+                                          subjectFiles[index].url
                                       ),
                                       aspectRatio: 1.15,
                                       autoPlay: false,
@@ -171,7 +172,24 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                       placeholder: new Center(child: new CircularProgressIndicator()),
                                     ),
                                     new Center(child: new Icon(Icons.play_circle_filled, size: 70.0, color: Colors.white,)),
-                                  ],) : FileTypeManger.getFileTypeFromURL(imageFiles[index]) == "audio" ? new Container(child: new Center(child: new Icon(Icons.volume_up, size: 70.0, color: Colors.red,)),) : new Container(),
+                                  ],) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
+                                  new Container(
+                                    child: new Column(
+                                      children: <Widget>[
+                                        new SizedBox(height: 27.5,),
+                                        new Icon(Icons.volume_up, size: 70.0, color: Colors.red),
+                                        new Flexible(
+                                            child: Marquee(
+                                              text: subjectFiles[index].fileName,
+                                              scrollAxis: Axis.horizontal,
+                                              velocity: 50.0,
+                                              pauseAfterRound: Duration(seconds: 2),
+                                              blankSpace: 20.0,
+                                            )
+                                        )
+                                      ],
+                                    ),
+                                  ) : new Container(),
                                 ),
                               ),
                             ),
@@ -179,8 +197,8 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                         )
                     ),
                     //Keeps the card the same size when the image is loading
-                    width: imageSize,
-                    height: imageSize,
+                    width: fileCardSize,
+                    height: fileCardSize,
                   ),
                 );
               }
@@ -189,7 +207,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     }
     else{
       //display a circular progress indicator when the image list is loading
-      imageList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0), child: new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0))));
+      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0), child: new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0))));
     }
 
     ListView textFileList;
@@ -222,27 +240,28 @@ class _VirtualHardbackState extends State<VirtualHardback> {
       textFileList = ListView.builder(
         itemCount: notesList.length,
         itemBuilder: (context, position) {
-          return GestureDetector(
-              onLongPress: () => deleteNoteDialog(notesList[position]),
-              child: Card(
-                margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                elevation: 3.0,
-                child: new ListTile(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position], subject: widget.subject,))).whenComplete(retrieveData),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-                  leading: Container(
-                    padding: EdgeInsets.only(right: 12.0),
-                    decoration: new BoxDecoration(
-                        border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
-                    ),
-                    child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
+          return Card(
+              margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+              elevation: 3.0,
+              child: new ListTile(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position], subject: widget.subject,))).whenComplete(retrieveData),
+                contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                leading: Container(
+                  padding: EdgeInsets.only(right: 12.0),
+                  decoration: new BoxDecoration(
+                      border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
                   ),
-                  title: Text(
-                    notesList[position].fileName,
-                    style: TextStyle(fontSize: 20.0, fontFamily: font),
-                  ),
+                  child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
                 ),
-              )
+                title: Text(
+                  notesList[position].fileName,
+                  style: TextStyle(fontSize: 20.0, fontFamily: font),
+                ),
+                trailing: GestureDetector(
+                  child: Icon(Icons.delete, size: 32.0, color: Color.fromRGBO(70, 68, 71, 1)),
+                  onTap: () => deleteNoteDialog(notesList[position])
+                ),
+              ),
           );
         },
       );
@@ -347,7 +366,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                           ]
                       ),
                       //display the image list
-                      imageList,
+                      subjectList,
                     ],
                   ),
                 ),
@@ -391,11 +410,11 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
     //if image is not null then upload the image and add the url to the image files list
     if (image != null) {
-      String url = await uploadPhoto(image);
+      SubjectFile responseFile = await uploadFile(image);
 
       setState(() {
-        if (image != null) {
-          imageFiles.add(url);
+        if (image != null || responseFile.url != "error") {
+          subjectFiles.add(responseFile);
         }
       });
     }
@@ -409,11 +428,11 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
     //if image is not null then upload the image and add the url to the image files list
     if (image != null) {
-      String url = await uploadPhoto(image);
+      SubjectFile responseFile = await uploadFile(image);
 
       setState(() {
-        if (image != null) {
-          imageFiles.add(url);
+        if (image != null || responseFile.url != "error") {
+          subjectFiles.add(responseFile);
         }
       });
     }
@@ -495,18 +514,19 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   }
 
   //method for uploading user chosen image
-  Future<String> uploadPhoto(String filePath) async
+  Future<SubjectFile> uploadFile(String filePath) async
   {
     submit(true);
 
-    String url = await requestManager.uploadFile(filePath, widget.subject.id, context);
+    SubjectFile responseFile = await requestManager.uploadFile(filePath, widget.subject.id, context);
 
-    if (url == "error") {
+    if (responseFile.url == "error") {
       showErrorDialog();
+      return responseFile;
     }
     else {
       submit(false);
-      return url;
+      return responseFile;
     }
   }
 
