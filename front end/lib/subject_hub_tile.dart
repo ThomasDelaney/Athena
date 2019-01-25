@@ -3,6 +3,7 @@ import 'subject.dart';
 import 'add_subject.dart';
 import 'virtual_hardback.dart';
 import 'subject_hub.dart';
+import 'request_manager.dart';
 
 class SubjectHubTile extends StatelessWidget {
 
@@ -11,6 +12,8 @@ class SubjectHubTile extends StatelessWidget {
   final SubjectHubState state;
 
   final Subject subject;
+
+  final RequestManager requestManager = RequestManager.singleton;
 
   final tileSize = 190.0;
 
@@ -40,13 +43,13 @@ class SubjectHubTile extends StatelessWidget {
                         Row (
                           children: <Widget>[
                             GestureDetector(
-                              child: Icon(Icons.edit, size: 28.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
+                              child: Icon(Icons.edit, size: 30.0*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject,))).whenComplete(state.retrieveData),
                             ),
                             SizedBox(width: 10.0*scaleFactor,),
                             GestureDetector(
-                              child: Icon(Icons.delete, size: 28.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                              onTap: () { },
+                              child: Icon(Icons.delete, size: 30.0*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
+                              onTap: () => state.deleteSubjectDialog(subject.id),
                             ),
                           ],
                         )
@@ -155,7 +158,8 @@ class SubjectHubTile extends StatelessWidget {
               ),
               //Icon(icon, size: tileSize/2.69, color: Color.fromRGBO(70, 68, 71, 1),)
             ],
-          ),)
+          ),
+        )
     );
   }
 }

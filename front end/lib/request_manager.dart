@@ -153,6 +153,38 @@ class RequestManager
     }
   }
 
+  dynamic deleteSubject(String id) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": id,
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteSubjectURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
   Future<List<Subject>> getSubjects() async
   {
     List<Subject> reqSubjects = new List<Subject>();

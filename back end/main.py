@@ -17,7 +17,6 @@ import binascii
 #create flask app
 app = Flask(__name__)
 
-
 #initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -165,7 +164,6 @@ def get_command_keywords():
 		with sr.AudioFile(wav_path) as source:
 			audio = r.record(source)
 
-
 		day = ""
 		funct = ""
 
@@ -254,7 +252,7 @@ def put_note():
 		parsedError = new[new.index("{"):]
 		return jsonify(response=parsedError)
 
-#route to put text file
+#route to delete text file
 @app.route('/deleteNote', methods=['POST'])
 def delete_note():
 	auth = firebase.auth()
@@ -312,6 +310,25 @@ def put_subject():
 			result = db.child("users").child(user['userId']).child("subjects").push(data, user['idToken'])
 		else:
 			result = db.child("users").child(user['userId']).child("subjects").child(request.form['nodeID']).set(data, user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to delete subject
+@app.route('/deleteSubject', methods=['POST'])
+def delete_subject():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		result = db.child("users").child(user['userId']).child("subjects").child(request.form['nodeID']).remove(user['idToken'])
 
 		#return refresh token if successfull
 		return jsonify(refreshToken=user['refreshToken'])
