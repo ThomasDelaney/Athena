@@ -18,7 +18,6 @@ import binascii
 app = Flask(__name__)
 
 
-
 #initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -355,6 +354,67 @@ def get_subjects():
 
 		#return the images as a list
 		return jsonify(subjects=results.val(), refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to put text file
+@app.route('/putTag', methods=['POST'])
+def put_tag():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		if (request.form['nodeID'] == 'null'):
+			result = db.child("users").child(user['userId']).child("tags").push(request.form['tag'], user['idToken'])
+		else:
+			result = db.child("users").child(user['userId']).child("tags").child(request.form['nodeID']).set(request.form['tag'], user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to delete subject
+@app.route('/deleteTag', methods=['POST'])
+def delete_tag():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		result = db.child("users").child(user['userId']).child("tags").child(request.form['nodeID']).remove(user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to get all user notes
+@app.route('/getTags', methods=['GET'])
+def get_tags():
+	auth = firebase.auth()
+
+	try:
+		db = firebase.database()
+
+		user = auth.refresh(request.args['refreshToken'])
+
+		#get all image urls from database for the specific user
+		results = db.child("users").child(user['userId']).child("tags").get(user['idToken'])
+
+		#return the images as a list
+		return jsonify(tags=results.val(), refreshToken=user['refreshToken'])
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
 		parsedError = new[new.index("{"):]
