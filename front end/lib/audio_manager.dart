@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'subject_file.dart';
 
 class AudioManager extends StatefulWidget {
-  AudioManager({Key key, this.url, this.audioPlayer}) : super(key: key);
+  AudioManager({Key key, this.subjectFile, this.audioPlayer}) : super(key: key);
 
-  final String url;
+  final SubjectFile subjectFile;
   final AudioPlayer audioPlayer;
 
   @override
@@ -43,7 +44,7 @@ class _AudioManagerState extends State<AudioManager> {
 
   void onComplete() async {
     if (playing) {
-      await _audioPlayer.play(widget.url);
+      await _audioPlayer.play(widget.subjectFile.url);
     }
   }
 
@@ -95,7 +96,7 @@ class _AudioManagerState extends State<AudioManager> {
       });
     };
 
-    _audioPlayer.play(widget.url);
+    _audioPlayer.play(widget.subjectFile.url);
 
     init = true;
 
@@ -138,6 +139,8 @@ class _AudioManagerState extends State<AudioManager> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
+                      new Text(widget.subjectFile.fileName, textAlign: TextAlign.left, style: TextStyle(fontSize: 24.0), ),
+                      new SizedBox(height: 50.0,),
                       playing ? stopButton : playButton,
                       new Container(
                         padding: EdgeInsets.fromLTRB(0.0, MediaQuery.of(context).size.width * 0.11, 0.0, 0.0),

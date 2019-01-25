@@ -43,7 +43,7 @@ class _FileViewerState extends State<FileViewer>
                   imageProvider: new CachedNetworkImageProvider(widget.list[index].url))
 
                   : FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "video" ? new VideoManager(controller: new VideoPlayerController.network(widget.list[index].url))
-                  : FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "audio" ? new AudioManager(url: widget.list[index].url, audioPlayer: new AudioPlayer(),) : new Container();
+                  : FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "audio" ? new AudioManager(subjectFile: widget.list[index], audioPlayer: new AudioPlayer(),) : new Container();
             },
             itemCount: widget.list.length,
             pagination: new SwiperPagination(),

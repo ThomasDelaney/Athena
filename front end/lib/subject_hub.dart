@@ -52,25 +52,52 @@ class SubjectHubState extends State<SubjectHub> {
 
   @override
   Widget build(BuildContext context) {
-    //list view for the subject data
-    final ListView sList = ListView.builder(
-      itemCount: subjectList.length,
-      itemBuilder: (context, position) {
-        return GestureDetector(
-            onLongPress: () => {},
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                SizedBox(height: 10.0),
-                SubjectHubTile(
-                  subject: subjectList.elementAt(position), state: this,)
-              ],
-            )
-        );
-      },
-    );
 
+    ListView sList;
+
+    if (subjectList.length == 0 && subjectsLoaded) {
+      sList = new ListView(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        children: <Widget>[
+          new Container(
+              margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+              child: new SizedBox(
+                width: MediaQuery.of(context).size.width * 0.95,
+                child: new Card(
+                  child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        new Text("Add Subjcets By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                        new SizedBox(height: 10.0,),
+                        new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
+                      ]
+                  ),
+                ),
+              )
+          ),
+        ],
+      );
+    }
+    else {
+      sList = ListView.builder(
+        itemCount: subjectList.length,
+        itemBuilder: (context, position) {
+          return GestureDetector(
+              onLongPress: () => {},
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  SizedBox(height: 10.0),
+                  SubjectHubTile(
+                    subject: subjectList.elementAt(position), state: this,)
+                ],
+              )
+          );
+        },
+      );
+    }
 
     return Stack(
       children: <Widget>[

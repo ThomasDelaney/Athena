@@ -15,7 +15,7 @@ class SubjectHubTile extends StatelessWidget {
 
   final RequestManager requestManager = RequestManager.singleton;
 
-  final tileSize = 190.0;
+  final tileSize = 200.0;
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +42,17 @@ class SubjectHubTile extends StatelessWidget {
                         Text(subject.name, style: TextStyle(fontSize: 29.6*scaleFactor, color: Color(int.tryParse(subject.colour)), fontWeight: FontWeight.bold), ),
                         Row (
                           children: <Widget>[
-                            GestureDetector(
-                              child: Icon(Icons.edit, size: 30.0*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject,))).whenComplete(state.retrieveData),
+                            IconButton(
+                                icon: Icon(Icons.edit),
+                                iconSize: 30.0*scaleFactor,
+                                color: Color.fromRGBO(70, 68, 71, 1),
+                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject,))).whenComplete(state.retrieveData)
                             ),
-                            SizedBox(width: 10.0*scaleFactor,),
-                            GestureDetector(
-                              child: Icon(Icons.delete, size: 30.0*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                              onTap: () => state.deleteSubjectDialog(subject.id),
+                            IconButton(
+                                icon: Icon(Icons.delete),
+                                iconSize: 30.0*scaleFactor,
+                                color: Color.fromRGBO(70, 68, 71, 1),
+                                onPressed: () => state.deleteSubjectDialog(subject.id)
                             ),
                           ],
                         )
