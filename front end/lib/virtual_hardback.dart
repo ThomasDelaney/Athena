@@ -59,21 +59,30 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   void getImages() async
   {
     List<SubjectFile> reqFiles = await requestManager.getFiles(widget.subject.id);
-    this.setState((){subjectFiles = reqFiles; filesLoaded = true;});
+
+    if (this.mounted) {
+      this.setState((){subjectFiles = reqFiles; filesLoaded = true;});
+    }
   }
 
   //get user images
   void getNotes() async
   {
     List<Note> reqNotes = await requestManager.getNotes(widget.subject.id);
-    this.setState((){notesList = reqNotes; notesLoaded = true;});
+
+    if (this.mounted) {
+      this.setState((){notesList = reqNotes; notesLoaded = true;});
+    }
   }
 
   //get current font from shared preferences if present
   void getFont() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    this.setState((){font = prefs.getString("font");});
+
+    if (this.mounted) {
+      this.setState((){font = prefs.getString("font");});
+    }
   }
 
   //method called before the page is rendered
@@ -146,7 +155,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                               child: GestureDetector(
                                 onTap:() {
                                   //go to the file viewer page and pass in the image list, and the index of the image tapped
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: subjectFiles, i: index)));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: subjectFiles, i: index, subject: widget.subject,))).whenComplete(retrieveData);
                                 },
                                 //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
                                 //the tag allows both pages to know where to return to when the user presses the back button
@@ -161,15 +170,17 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                       fit: BoxFit.cover
                                   ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "video" ? new Stack(children: <Widget>[
                                     new Chewie(
-                                      new VideoPlayerController.network(
-                                          subjectFiles[index].url
+                                      controller: new ChewieController(
+                                        videoPlayerController: new VideoPlayerController.network(
+                                            subjectFiles[index].url
+                                        ),
+                                        aspectRatio: 1.15,
+                                        autoPlay: false,
+                                        autoInitialize: true,
+                                        showControls: false,
+                                        looping: false,
+                                        placeholder: new Center(child: new CircularProgressIndicator()),
                                       ),
-                                      aspectRatio: 1.15,
-                                      autoPlay: false,
-                                      autoInitialize: true,
-                                      showControls: false,
-                                      looping: false,
-                                      placeholder: new Center(child: new CircularProgressIndicator()),
                                     ),
                                     new Center(child: new Icon(Icons.play_circle_filled, size: 70.0, color: Colors.white,)),
                                   ],) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
@@ -311,7 +322,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             IconButton(
               icon: Icon(Icons.close),
               iconSize: 30.0,
-              onPressed: () {setState(() {recorder.cancelRecording();});},
+              onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
             ),
           ] : <Widget>[
             IconButton(
@@ -323,7 +334,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             IconButton(
               icon: Icon(Icons.mic),
               iconSize: 30.0,
-              onPressed: () {setState(() {recorder.recordAudio(context);});},
+              onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
             ),
             Builder(
               builder: (context) => IconButton(
@@ -412,11 +423,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     if (image != null) {
       SubjectFile responseFile = await uploadFile(image);
 
-      setState(() {
-        if (image != null || responseFile.url != "error") {
-          subjectFiles.add(responseFile);
-        }
-      });
+      if (this.mounted) {
+        setState(() {
+          if (image != null || responseFile.url != "error") {
+            subjectFiles.add(responseFile);
+          }
+        });
+      }
     }
   }
 
@@ -430,11 +443,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     if (image != null) {
       SubjectFile responseFile = await uploadFile(image);
 
-      setState(() {
-        if (image != null || responseFile.url != "error") {
-          subjectFiles.add(responseFile);
-        }
-      });
+      if (this.mounted) {
+        setState(() {
+          if (image != null || responseFile.url != "error") {
+            subjectFiles.add(responseFile);
+          }
+        });
+      }
     }
   }
 
@@ -532,8 +547,10 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   void submit(bool state)
   {
-    setState(() {
-      submitting = state;
-    });
+    if (this.mounted) {
+      setState(() {
+        submitting = state;
+      });
+    }
   }
 }

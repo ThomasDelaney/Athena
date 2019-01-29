@@ -1,62 +1,52 @@
-import 'package:flutter/material.dart';
-import 'home_tile.dart';
-import 'recording_manager.dart';
 import 'request_manager.dart';
+import 'package:flutter/material.dart';
+import 'recording_manager.dart';
+import 'add_tag.dart';
 import 'font_settings.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
-import 'add_subject.dart';
-import 'subject.dart';
-import 'subject_hub_tile.dart';
+import 'tag.dart';
 
-class SubjectHub extends StatefulWidget {
+class TagManager extends StatefulWidget {
+
+  TagManager({Key key}) : super(key: key);
+
   @override
-  SubjectHubState createState() => SubjectHubState();
+  _TagManagerState createState() => _TagManagerState();
 }
 
-class SubjectHubState extends State<SubjectHub> {
+class _TagManagerState extends State<TagManager> {
 
   RequestManager requestManager = RequestManager.singleton;
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   //Recording Manager Object
   RecordingManger recorder = RecordingManger.singleton;
 
-  bool subjectsLoaded = false;
+  List<Tag> tagList = new List<Tag>();
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  bool tagsLoaded = false;
   bool submitting = false;
-
-  List<Subject> subjectList = new List<Subject>();
-
   String font = "";
 
   @override
   void initState() {
-    recorder.assignParent(this);
     retrieveData();
     super.initState();
   }
 
-  @override
-  void didUpdateWidget(SubjectHub oldWidget) {
-    recorder.assignParent(this);
-    super.didUpdateWidget(oldWidget);
-  }
-
   void retrieveData() {
-    subjectsLoaded = false;
-    subjectList.clear();
-    getSubjects();
+    tagsLoaded = false;
+    tagList.clear();
+    getTags();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    ListView sList;
+    ListView tList;
 
-    if (subjectList.length == 0 && subjectsLoaded) {
-      sList = new ListView(
+    if (tagList.length == 0 && tagsLoaded) {
+      tList = new ListView(
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         children: <Widget>[
@@ -68,7 +58,7 @@ class SubjectHubState extends State<SubjectHub> {
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        new Text("Add Subjects By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                        new Text("Add Tags By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
                         new SizedBox(height: 10.0,),
                         new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
                       ]
@@ -80,8 +70,8 @@ class SubjectHubState extends State<SubjectHub> {
       );
     }
     else {
-      sList = ListView.builder(
-        itemCount: subjectList.length,
+      tList = ListView.builder(
+        itemCount: tagList.length,
         itemBuilder: (context, position) {
           return GestureDetector(
               onLongPress: () => {},
@@ -90,8 +80,29 @@ class SubjectHubState extends State<SubjectHub> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   SizedBox(height: 10.0),
-                  SubjectHubTile(
-                    subject: subjectList.elementAt(position), state: this,)
+                  Card(
+                    margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                    elevation: 3.0,
+                    child: new ListTile(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTag(tag: tagList[position],))).whenComplete(retrieveData),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                        leading: Container(
+                          padding: EdgeInsets.only(right: 12.0),
+                          decoration: new BoxDecoration(
+                              border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
+                          ),
+                          child: Icon(Icons.local_offer, color: Colors.redAccent, size: 32.0,),
+                        ),
+                        title: Text(
+                          tagList[position].tag,
+                          style: TextStyle(fontSize: 24.0, fontFamily: font),
+                        ),
+                        trailing: GestureDetector(
+                            child: Icon(Icons.delete, size: 32.0, color: Color.fromRGBO(70, 68, 71, 1)),
+                            onTap: () => deleteTagDialog(tagList[position])
+                        ),
+                      )
+                  )
                 ],
               )
           );
@@ -133,14 +144,14 @@ class SubjectHubState extends State<SubjectHub> {
                     title: Text('Sign Out',
                         style: TextStyle(fontSize: 20.0, fontFamily: font)),
                     onTap: () {
-                      signOut();
+                      //signOut();
                     },
                   ),
                 ],
               ),
             ),
             appBar: new AppBar(
-              title: new Text("Subject Hub", style: TextStyle(fontFamily: font),),
+              title: new Text("Tags", style: TextStyle(fontFamily: font),),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[
                 // action button
@@ -158,7 +169,7 @@ class SubjectHubState extends State<SubjectHub> {
                   icon: Icon(Icons.add_circle),
                   iconSize: 30.0,
                   onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => AddSubject()))
+                      MaterialPageRoute(builder: (context) => AddTag()))
                       .whenComplete(retrieveData),
                 ),
                 // else display the mic button and settings button
@@ -183,7 +194,7 @@ class SubjectHubState extends State<SubjectHub> {
             body: new Stack(
               children: <Widget>[
                 new Center(
-                  child: subjectsLoaded ? sList : new SizedBox(width: 50.0,
+                  child: tagsLoaded ? tList : new SizedBox(width: 50.0,
                       height: 50.0,
                       child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                 ),
@@ -214,57 +225,27 @@ class SubjectHubState extends State<SubjectHub> {
     );
   }
 
-  //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
-  void signOut() {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text(
-          "You are about to be Signed Out", style: TextStyle(fontFamily: font)),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(),
-            child: new Text("OK", style: TextStyle(fontFamily: font)))
-      ],
-    );
-
-    showDialog(context: context,
-        barrierDismissible: false,
-        builder: (_) => signOutDialog);
-  }
-
-  //clear relevant shared preference data
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-    //clear the widget stack and route user to the login page
-    Navigator.pushNamedAndRemoveUntil(
-        context, LoginPage.routeName, (Route<dynamic> route) => false);
-  }
-
-  void getSubjects() async {
-    List<Subject> reqSubjects = await requestManager.getSubjects();
+  void getTags() async {
+    List<Tag> reqTags = await requestManager.getTags();
     this.setState(() {
-      subjectList = reqSubjects;
-      subjectsLoaded = true;
+      tagList = reqTags;
+      tagsLoaded = true;
     });
   }
 
-  void deleteSubject(String id) async {
-    var response = await requestManager.deleteSubject(id);
+  void deleteTag(Tag tag) async {
+    var response = await requestManager.deleteTag(tag);
 
     //if null, then the request was a success, retrieve the information
     if (response == "success") {
-      _scaffoldKey.currentState.showSnackBar(
-          new SnackBar(content: Text('Subject Deleted!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Deleted!')));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
     else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        content: new Text("An error has occured please try again"),
         actions: <Widget>[
           new FlatButton(onPressed: () {
             Navigator.pop(context); /*submit(false);*/
@@ -278,10 +259,10 @@ class SubjectHubState extends State<SubjectHub> {
     }
   }
 
-  void deleteSubjectDialog(String id) {
+  void deleteTagDialog(Tag tag) {
     AlertDialog areYouSure = new AlertDialog(
       content: new Text(
-        "Do you want to DELETE this SUBJECT and all its DATA?", /*style: TextStyle(fontFamily: font),*/),
+        "Do you want to DELETE this TAG? All files with this Tag will have no Tag", /*style: TextStyle(fontFamily: font),*/),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
@@ -290,7 +271,7 @@ class SubjectHubState extends State<SubjectHub> {
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
-          await deleteSubject(id);
+          await deleteTag(tag);
           submit(false);
         },
             child: new Text("YES",

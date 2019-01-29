@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zefyr/zefyr.dart';
 import 'request_manager.dart';
 import 'note.dart';
 import 'dart:convert';
 import 'subject.dart';
+import 'tag.dart';
 
 class TextFileEditor extends StatefulWidget {
 
@@ -24,6 +26,9 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
   bool currentlySaved = false;
 
+  String currentTag;
+  String previousTag;
+
   ZefyrController _controller;
   FocusNode _focusNode;
   final fileNameController = new TextEditingController();
@@ -43,6 +48,8 @@ class _TextFileEditorState extends State<TextFileEditor> {
       title = "Editing "+widget.note.fileName;
     }
     else {
+      currentTag = "";
+      previousTag = "";
       document = new NotusDocument();
       title = "Editing New Note";
     }
@@ -86,6 +93,11 @@ class _TextFileEditorState extends State<TextFileEditor> {
                 appBar: AppBar(
                     title: new Text(title),
                     actions: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.local_offer),
+                        iconSize: 30.0,
+                        onPressed: () => showTagDialog(false, null),
+                      ),
                       IconButton(
                         icon: Icon(Icons.check),
                         iconSize: 30.0,
@@ -212,11 +224,101 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
+  
+  void getCurrentTag() async {
 
-  void uploadNote() async {
+    if (widget.note == null) {
+      setState(() {
+        previousTag = "No Tag";
+        currentTag = "No Tag";
+      });
+    }
+    else {
+      String tag = await requestManager.getTagForNote({"id": widget.note.id, "subjectID": widget.subject.id});
+      setState(() {
+        previousTag = tag;
+        currentTag = previousTag;
+      });
+    }
+  }
+
+  void showTagDialog(bool fromWithin, List<String> currentTags) async {
+
+    List<String> tagValues;
+
+    if(!fromWithin) {
+      submit(true);
+
+      List<Tag> tags = await requestManager.getTags();
+      await getCurrentTag();
+
+      submit(false);
+
+      tagValues = tags.map((tag) => tag.tag).toList();
+    }
+    else {
+      tagValues = currentTags;
+    }
+
+    tagValues.add("No Tag");
+
+    AlertDialog tagDialog = new AlertDialog(
+      content: new Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new Row(
+            children: <Widget>[
+              new Text("Current Tag is: ", style: TextStyle(fontSize: 20.0)),
+              new Text(previousTag, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          new SizedBox(height: 20.0,),
+          new DropdownButton<String>(
+            //initial value
+            value: currentTag,
+            hint: new Text("Choose a Tag", style: TextStyle(fontSize: 20.0)),
+            items: tagValues.map((String tag) {
+              return new DropdownMenuItem<String>(
+                value: tag,
+                child: new Text(tag,  style: TextStyle(fontSize: 20.0)),
+              );
+            }).toList(),
+            //when the font is changed in the dropdown, change the current font state
+            onChanged: (String val){
+              setState(() {
+                currentTag = val;
+                Navigator.pop(context);
+                showTagDialog(true, tagValues);
+              });
+            },
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("Close", style: TextStyle(fontSize: 18.0),)),
+        new FlatButton(onPressed: () async {
+          submit(true);
+          Navigator.pop(context);
+          await addTagToNote();
+          submit(false);
+        }, child: new Text("Add Tag", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+      ],
+    );
+
+    showDialog(context: context, barrierDismissible: true, builder: (_) => tagDialog);
+  }
+
+
+  Future<void> uploadNote() async {
 
     //create map of note data
-    Map map = {"id": widget.note == null ? null : widget.note.id, "fileName": fileNameController.text, "delta": json.encode(_controller.document.toJson()).toString(), "subjectID": widget.subject.id};
+    Map map = {
+      "id": widget.note == null ? null : widget.note.id,
+      "fileName": fileNameController.text,
+      "delta": json.encode(_controller.document.toJson()).toString(),
+      "subjectID": widget.subject.id,
+      "tag": currentTag
+    };
 
     var response = await requestManager.putNote(map);
 
@@ -234,13 +336,41 @@ class _TextFileEditorState extends State<TextFileEditor> {
     else{
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        content: new Text("An error has occured please try again"),
         actions: <Widget>[
           new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
         ],
       );
 
       showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
+    }
+  }
+
+  void addTagToNote() async {
+    if (widget.note == null) {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!')));
+    }
+    else {
+      Map map = {"id": widget.note.id, "tag": currentTag, "subjectID": widget.subject.id};
+
+      var response = await requestManager.putTagOnNote(map);
+
+      //if null, then the request was a success, retrieve the information
+      if (response ==  "success"){
+        _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!')));
+      }
+      //else the response ['response']  is not null, then print the error message
+      else{
+        //display alertdialog with the returned message
+        AlertDialog responseDialog = new AlertDialog(
+          content: new Text("An error occured please try again"),
+          actions: <Widget>[
+            new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+          ],
+        );
+
+        showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
+      }
     }
   }
 

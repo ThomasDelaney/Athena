@@ -1,77 +1,67 @@
-import 'package:my_school_life_prototype/theme_check.dart';
-
-import 'request_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/block_picker.dart';
-import 'subject.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
+import 'tag.dart';
+import 'request_manager.dart';
 
-class AddSubject extends StatefulWidget {
+class AddTag extends StatefulWidget {
 
-  AddSubject({Key key, this.subject}) : super(key: key);
+  AddTag({Key key, this.tag}) : super(key: key);
 
-  final Subject subject;
+  final Tag tag;
 
   @override
-  _AddSubjectState createState() => _AddSubjectState();
+  _AddTagState createState() => _AddTagState();
 }
 
-class _AddSubjectState extends State<AddSubject> {
+class _AddTagState extends State<AddTag> {
 
   RequestManager requestManager = RequestManager.singleton;
 
-  final subjectController = new TextEditingController();
-  FocusNode subjectFocusNode;
-  Color currentColor;
+  final tagController = new TextEditingController();
+  FocusNode tagFocusNode;
 
   bool submitting = false;
+  String font = "";
 
   @override
   void initState() {
-    subjectFocusNode = new FocusNode();
+    tagFocusNode = new FocusNode();
     super.initState();
   }
 
   @override
   void didChangeDependencies() {
 
-    if (widget.subject == null) {
-      currentColor = Theme.of(context).accentColor;
+    if (widget.tag == null) {
+      tagController.text = "";
     }
     else {
-      currentColor = Color(int.tryParse(widget.subject.colour));
-      subjectController.text = widget.subject.name;
+
+      tagController.text = widget.tag.tag;
     }
 
-    FocusScope.of(context).requestFocus(subjectFocusNode);
+    FocusScope.of(context).requestFocus(tagFocusNode);
     super.didChangeDependencies();
   }
 
-  ValueChanged<Color> onColorChanged;
-
-  changeColorAndPopout(Color color) => setState(() {
-    currentColor = color;
-    Navigator.of(context).pop();
-  });
-
   bool isFileEdited() {
-      if (widget.subject == null) {
-        if (subjectController.text == "") {
-          return false;
-        }
-        else {
-          return true;
-        }
+    if (widget.tag == null) {
+      if (tagController.text == "") {
+        return false;
       }
       else {
-        if (subjectController.text != widget.subject.name || currentColor != Color(int.tryParse(widget.subject.colour))) {
-          return true;
-        }
-        else {
-          return false;
-        }
+        return true;
       }
+    }
+    else {
+      if (tagController.text != widget.tag.tag) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
   }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -80,7 +70,7 @@ class _AddSubjectState extends State<AddSubject> {
           children: <Widget>[
             Scaffold(
               appBar: new AppBar(
-                title: widget.subject == null ? new Text("Add a New Subject") : new Text(widget.subject.name),
+                title: widget.tag == null ? new Text("Add a New Tag") : new Text(widget.tag.tag),
               ),
               body: new Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -94,45 +84,17 @@ class _AddSubjectState extends State<AddSubject> {
                           new Container(
                             margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                             child: TextFormField(
-                              focusNode: subjectFocusNode,
+                              focusNode: tagFocusNode,
                               keyboardType: TextInputType.text,
                               autofocus: false,
-                              controller: subjectController,
+                              controller: tagController,
                               style: TextStyle(fontSize: 24.0),
                               decoration: InputDecoration(
-                                  hintText: "Subject Name",
+                                  hintText: "Tag",
                                   labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
                                   border: UnderlineInputBorder()
                               ),
                             ),
-                          ),
-                          SizedBox(height: 20.0),
-                          new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: ButtonTheme(
-                                height: 50.0,
-                                child: RaisedButton(
-                                  elevation: 3.0,
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text('Select a Colour for the Subject'),
-                                          content: SingleChildScrollView(
-                                            child: BlockPicker(
-                                              pickerColor: currentColor,
-                                              onColorChanged: changeColorAndPopout,
-                                            ),
-                                          ),
-                                        );},
-                                    );},
-                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Subject Colour', style: TextStyle(fontSize: 24.0))),
-                                  color: currentColor,
-
-                                  textColor: ThemeCheck.colorCheck(currentColor) ? Colors.white : Colors.black,
-                                ),
-                              )
                           ),
                           SizedBox(height: 20.0),
                         ],
@@ -172,20 +134,22 @@ class _AddSubjectState extends State<AddSubject> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to ADD this Subject to your Subject Hub?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to ADD this Tag to your Tags?", /*style: TextStyle(fontFamily: font),*/),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
         new FlatButton(onPressed: () async {
-          if (subjectController.text == "") {
+          if (tagController.text == "") {
             Navigator.pop(context);
-            showYouMustHaveFileNameDialog();
+            showYouMustHaveTagDialog();
           }
           else {
             submit(true);
             Navigator.pop(context);
-            await addSubject();
+            String result = await addTag();
             submit(false);
-            Navigator.pop(context);
+            if (result != "error") {
+              Navigator.pop(context);
+            }
           }
         }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
       ],
@@ -197,18 +161,18 @@ class _AddSubjectState extends State<AddSubject> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Subject?", /*style: TextStyle(fontFamily: font),*/),
+        content: new Text("Do you want to SAVE this Tag?", /*style: TextStyle(fontFamily: font),*/),
         actions: <Widget>[
           new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
           new FlatButton(onPressed: () async {
-            if (subjectController.text == "") {
+            if (tagController.text == "") {
               Navigator.pop(context, false);
-              showYouMustHaveFileNameDialog();
+              showYouMustHaveTagDialog();
             }
             else {
               submit(true);
               Navigator.pop(context);
-              await addSubject();
+              await addTag();
               submit(false);
               Navigator.pop(context, true);
             }
@@ -223,9 +187,9 @@ class _AddSubjectState extends State<AddSubject> {
     }
   }
 
-  void showYouMustHaveFileNameDialog() {
+  void showYouMustHaveTagDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must have a Subject Name", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("You must have a Tag", /*style: TextStyle(fontFamily: font),*/),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
       ],
@@ -234,23 +198,25 @@ class _AddSubjectState extends State<AddSubject> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
-  void addSubject() async {
-    //create map of subject data
-    Map map = {"id": widget.subject == null ? null : widget.subject.id, "name": subjectController.text, "colour": currentColor.value.toString()};
+  Future<String> addTag() async {
+    //create map of tag data
+    Map map = {"id": widget.tag == null ? null : widget.tag.id, "tag": tagController.text};
 
-    var response = await requestManager.putSubject(map);
+    var response = await requestManager.putTag(map);
 
     //if null, then the request was a success, retrieve the information
     if (response !=  "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        content: new Text("An error has occurred. Please try again"),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),))
         ],
       );
 
       showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
+
+      return "error";
     }
   }
 

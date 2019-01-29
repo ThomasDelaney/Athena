@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'note.dart';
 import 'subject.dart';
 import 'subject_file.dart';
+import 'tag.dart';
 
 class RequestManager
 {
@@ -30,6 +31,12 @@ class RequestManager
   final String addSubjectURL = url+"/putSubject";
   final String deleteSubjectURL = url+"/deleteSubject";
   final String getSubjectsURL = url+"/getSubjects";
+  final String addTagURL = url+"/putTag";
+  final String deleteTagURL = url+"/deleteTag";
+  final String getTagsURL = url+"/getTags";
+  final String putTagOnNoteURL = url+"/putTagOnNote";
+  final String getTagForNoteURL = url+"/getTagForNote";
+  final String putTagOnFileURL = url+"/putTagOnFile";
 
   Dio dio = new Dio();
 
@@ -41,12 +48,13 @@ class RequestManager
     //get user images
     Response response = await dio.get(getFilesUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
-    //store images in a string list
+    //store files in a SubjectFile list
     if (response.data['files']?.values != null) {
-      for (var value in response.data['files'].values) {
-        SubjectFile s = new SubjectFile(value['url'], value['fileName']);
+
+      response.data['files'].forEach((key, values) {
+        SubjectFile s = new SubjectFile(key, values['url'], values['fileName'], values['tag']);
         reqFiles.add(s);
-      }
+      });
     }
 
     return reqFiles;
@@ -71,17 +79,17 @@ class RequestManager
 
       //if the refresh token is null, then display an alert dialog with an error
       if(responseObj.data['refreshToken'] == null) {
-        return new SubjectFile("error", "error");
+        return new SubjectFile("error", "error", "error", "error");
       }
       else {
         //else store the new refresh token in shared preferences and return the image URL
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
-        return new SubjectFile(responseObj.data['url'], responseObj.data['fileName']);
+        return new SubjectFile(responseObj.data['key'], responseObj.data['url'], responseObj.data['fileName'], "No Tag");
       }
     }
     on DioError catch(e)
     {
-      return new SubjectFile("error", "error");
+      return new SubjectFile("error", "error", "error", "error");
     }
   }
 
@@ -205,6 +213,92 @@ class RequestManager
     return reqSubjects;
   }
 
+  dynamic putTag(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "tag": jsonMap['tag'],
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(addTagURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic deleteTag(Tag tag) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": tag.id,
+      "tag": tag.tag,
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteTagURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<List<Tag>> getTags() async
+  {
+    List<Tag> reqTags = new List<Tag>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getTagsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['tags']?.values != null) {
+
+      response.data['tags'].forEach((key, values) {
+        Tag t = new Tag(key, values);
+        reqTags.add(t);
+      });
+    }
+
+    return reqTags;
+  }
+
   dynamic putNote(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -217,6 +311,7 @@ class RequestManager
       "refreshToken": await prefs.getString("refreshToken"),
       "fileName": jsonMap['fileName'],
       "delta": jsonMap['delta'],
+      "tag": jsonMap['tag'],
     });
 
     try {
@@ -236,6 +331,110 @@ class RequestManager
     //catch error and display error doalog
     on DioError catch(e)
     {
+      return "error";
+    }
+  }
+
+  dynamic putTagOnNote(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "subjectID": jsonMap['subjectID'],
+      "tag": jsonMap['tag'],
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putTagOnNoteURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic putTagOnFile(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "subjectID": jsonMap['subjectID'],
+      "tag": jsonMap['tag'],
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    print(formData);
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putTagOnFileURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<String> getTagForNote(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try {
+      //post the request and retrieve the response data
+      Response response = await dio.get(getTagForNoteURL, data: {
+        "id": await prefs.getString("id"),
+        "nodeID": jsonMap['id'],
+        "subjectID": jsonMap['subjectID'],
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(response.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", response.data['refreshToken']);
+
+        if (response.data['tag'] != null) {
+          return response.data['tag'];
+        }
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      print(e.message);
       return "error";
     }
   }

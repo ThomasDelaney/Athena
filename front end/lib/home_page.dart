@@ -8,6 +8,7 @@ import 'login_page.dart';
 import 'subject_hub.dart';
 import 'timetable_page.dart';
 import 'dart:core';
+import 'tag_manager.dart';
 
 //Widget that displays the "home" page, this will actually be page for the virtual hardback and journal that displays notes and files, stored by the user
 class HomePage extends StatefulWidget {
@@ -66,6 +67,13 @@ class _HomePageState extends State<HomePage> {
                 title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: font)),
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.local_offer),
+                title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
                 },
               ),
               //sign out option

@@ -18,6 +18,7 @@ import binascii
 app = Flask(__name__)
 
 
+
 #initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -113,14 +114,34 @@ def upload_file():
 
 		data = {
 			"fileName": request.files['file'].filename,
-		    "url": str(url)
+		    "url": str(url),
+		    "tag": "No Tag"
 		}
 
 		#add the url to the database under the images node for the user, give random int as the node for now, will be changed later
 		addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").push(data, user['idToken'])
 
 		#return the refresh token and the image url
-		return jsonify(refreshToken=user['refreshToken'], url=url, fileName=request.files['file'].filename)
+		return jsonify(refreshToken=user['refreshToken'], url=url, fileName=request.files['file'].filename, key=addUrl['name'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to put tag on file
+@app.route('/putTagOnFile', methods=['POST'])
+def put_tag_on_file():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
 		parsedError = new[new.index("{"):]
@@ -164,6 +185,7 @@ def get_command_keywords():
 		#use the audio recorder to convert the new wav file as raw audio
 		with sr.AudioFile(wav_path) as source:
 			audio = r.record(source)
+
 
 
 		day = ""
@@ -239,7 +261,8 @@ def put_note():
 
 		data = {
 			"fileName": request.form['fileName'],
-			"delta": request.form['delta']
+			"delta": request.form['delta'],
+			"tag": request.form['tag']
 		}
 
 		if (request.form['nodeID'] == 'null'):
@@ -249,6 +272,44 @@ def put_note():
 
 		#return refresh token if successfull
 		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to put text file
+@app.route('/putTagOnNote', methods=['POST'])
+def put_tag_on_note():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.form['refreshToken'])
+
+		db = firebase.database()
+
+		result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(refreshToken=user['refreshToken'])
+	except requests.exceptions.HTTPError as e:
+		new = str(e).replace("\n", '')
+		parsedError = new[new.index("{"):]
+		return jsonify(response=parsedError)
+
+#route to put text file
+@app.route('/getTagForNote', methods=['GET'])
+def get_tag_for_note():
+	auth = firebase.auth()
+
+	try:
+		user = auth.refresh(request.args['refreshToken'])
+
+		db = firebase.database()
+
+		result = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("notes").child(request.args['nodeID']).child("tag").get(user['idToken'])
+
+		#return refresh token if successfull
+		return jsonify(tag=result.val(), refreshToken=user['refreshToken'])
 	except requests.exceptions.HTTPError as e:
 		new = str(e).replace("\n", '')
 		parsedError = new[new.index("{"):]
@@ -391,6 +452,24 @@ def delete_tag():
 
 		db = firebase.database()
 
+		#get all subjects
+		subjects = db.child("users").child(user['userId']).child("subjects").get(user['idToken'])
+
+		#for each subject
+		for i, (key, value) in enumerate(subjects.val().items()):
+			notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+
+			#if the subject has notes			
+			if (notes.val() != None):
+				#for each note for that subject
+				for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+					withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+
+					#if that note has the tag to be deleted, replace the tag with No Tag
+					if (withTag.val()['tag'] == request.form['tag']):
+						db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).child("tag").set("No Tag", user['idToken'])
+
+		#delete the tag
 		result = db.child("users").child(user['userId']).child("tags").child(request.form['nodeID']).remove(user['idToken'])
 
 		#return refresh token if successfull

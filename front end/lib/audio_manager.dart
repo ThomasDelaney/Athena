@@ -134,7 +134,7 @@ class _AudioManagerState extends State<AudioManager> {
         child: Center(
             child: SizedBox(
                 width: MediaQuery.of(context).size.width ,
-                height: MediaQuery.of(context).size.height * 0.85,
+                height: MediaQuery.of(context).size.height * 0.70,
                 child: Card (
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
