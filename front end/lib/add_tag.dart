@@ -143,9 +143,19 @@ class _AddTagState extends State<AddTag> {
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
         new FlatButton(onPressed: () async {
+
+          submit(true);
+          Navigator.pop(context);
+          List<Tag> currentTags = await requestManager.getTags();
+          submit(false);
+
+          List<String> tagsAsStrings = currentTags.map((tag) => tag.tag.toLowerCase()).toList();
+
           if (tagController.text == "") {
-            Navigator.pop(context);
             showYouMustHaveTagDialog();
+          }
+          else if (tagsAsStrings.contains(tagController.text.toLowerCase())){
+            showDuplicateTagDialog();
           }
           else {
             submit(true);
@@ -170,9 +180,19 @@ class _AddTagState extends State<AddTag> {
         actions: <Widget>[
           new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
           new FlatButton(onPressed: () async {
+
+            submit(true);
+            Navigator.pop(context);
+            List<Tag> currentTags = await requestManager.getTags();
+            submit(false);
+
+            List<String> tagsAsStrings = currentTags.map((tag) => tag.tag.toLowerCase()).toList();
+
             if (tagController.text == "") {
-              Navigator.pop(context, false);
               showYouMustHaveTagDialog();
+            }
+            else if (tagsAsStrings.contains(tagController.text.toLowerCase())){
+              showDuplicateTagDialog();
             }
             else {
               submit(true);
@@ -202,6 +222,18 @@ class _AddTagState extends State<AddTag> {
 
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
+
+  void showDuplicateTagDialog() {
+    AlertDialog areYouSure = new AlertDialog(
+      content: new Text("You Already Have a Tag with this Name", /*style: TextStyle(fontFamily: font),*/),
+      actions: <Widget>[
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+      ],
+    );
+
+    showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
+  }
+
 
   Future<String> addTag() async {
     //create map of tag data

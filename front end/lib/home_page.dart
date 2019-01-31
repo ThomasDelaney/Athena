@@ -19,10 +19,10 @@ class HomePage extends StatefulWidget {
   final String pageTitle;
 
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
 
   RequestManager requestManager = RequestManager.singleton;
 
@@ -41,9 +41,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void didUpdateWidget(HomePage oldWidget) {
+  void didChangeDependencies() {
     recorder.assignParent(this);
-    super.didUpdateWidget(oldWidget);
+    super.didChangeDependencies();
   }
 
   @override
@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
-                new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub()),
+                new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub(),),
               ],
             ),
           ),

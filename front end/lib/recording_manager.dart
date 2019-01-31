@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:dio/dio.dart';
+import 'package:my_school_life_prototype/by_tag.dart';
 import 'package:my_school_life_prototype/timetable_page.dart';
 import 'request_manager.dart';
 import 'tag.dart';
@@ -52,8 +53,13 @@ class RecordingManger
   }
 
   //method to cancel recording at any time
-  void cancelRecording()
+  void cancelRecording() async
   {
+    if(_recording){
+      //stop the recorder
+      await flutterSound.stopRecorder();
+    }
+
     parent.setState((){this._recording = false;});
 
     //cancel the audio subscription
@@ -83,7 +89,6 @@ class RecordingManger
       var result = await requestManager.command(uri, context);
 
       if (result == "error") {
-        print("cannot understand");
         showCannotUnderstandError(context);
       }
       else {
@@ -129,13 +134,10 @@ class RecordingManger
             showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
           }
           else {
-            print("GO TO THE PAGE");
-            //else go to the timetables page and pass in the day
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => TimetablePage(initialDay: result.data['day'])));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ByTagViewer(tag: result.data['option'])));
           }
         }
         else{
-          print(result.data);
           //else display cannot understand error
           showCannotUnderstandError(context);
         }
@@ -146,6 +148,7 @@ class RecordingManger
   //alert dialog thats displayed when the recorder could not understand your command
   void showCannotUnderstandError(BuildContext context)
   {
+    parent.setState((){this._recording = false;});
     //cancel the recording
     cancelRecording();
 

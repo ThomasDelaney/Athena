@@ -200,7 +200,6 @@ def get_command_keywords():
             audio = r.record(source)
 
 
-
         option = ""
         funct = ""
 
@@ -232,12 +231,9 @@ def get_command_keywords():
                 # get date from payload, and convert it to a datetime object
                 dayInfo = payload['option'].split('-')
 
-                print(payload['option'])
-
-                #date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
+                date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
                 # get the day of the week from the datetime object
-                #option = date.strftime("%A")
-                option = dayInfo[0]
+                option = date.strftime("%A")
 
             elif (payload['function'] == 'notes'):
                 option = payload['option']
@@ -502,7 +498,7 @@ def put_tag():
                         # with No Tag
                         if (withTag.val()['tag'] == request.form['oldTag']):
                             db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set(request.form['tag'], user['idToken'])
-
+                            
             result = db.child("users").child(user['userId']).child("tags").child(request.form['nodeID']).set(request.form['tag'], user['idToken'])
 
         # return refresh token if successfull
@@ -513,8 +509,6 @@ def put_tag():
         return jsonify(response=parsedError)
 
 # route to delete subject
-
-
 @app.route('/deleteTag', methods=['POST'])
 def delete_tag():
     auth = firebase.auth()
@@ -586,6 +580,53 @@ def get_tags():
         new = str(e).replace("\n", '')
         parsedError = new[new.index("{"):]
         return jsonify(response=parsedError)
+
+@app.route('/getNotesAndFilesWithTag', methods=['GET'])
+def get_notes_and_files_with_tag():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        db = firebase.database()
+
+        notesWithTag = []
+        filesWithTag = []
+
+        # get all subjects
+        subjects = db.child("users").child(user['userId']).child("subjects").get(user['idToken'])
+
+        # for each subject
+        for i, (key, value) in enumerate(subjects.val().items()):
+            notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+
+            # if the subject has notes
+            if (notes.val() != None):
+                    # for each note for that subject
+                for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+
+                    if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
+                    	notesWithTag.append({"note": {"key": noteKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});
+
+            files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
+
+            # if the subject has files
+            if (files.val() != None):
+                    # for each file for that subject
+                for j, (fileKey, fileValue) in enumerate(files.val().items()):
+                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
+
+                    if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
+                    	filesWithTag.append({"file": {"key": fileKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});    
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'], files=filesWithTag, notes=notesWithTag)
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
 # run app
 if __name__ == '__main__':
     app.run(debug=True)

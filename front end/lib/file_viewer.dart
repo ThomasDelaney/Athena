@@ -16,10 +16,12 @@ import 'subject.dart';
 //Widget that displays an interactive file list
 class FileViewer extends StatefulWidget
 {
-  FileViewer({Key key, this.list, this.i, this.subject}) : super(key: key);
+  FileViewer({Key key, this.list, this.i, this.subject, this.fromTagMap}) : super(key: key);
 
   //list of file URLS
   final List<SubjectFile> list;
+
+  final Map<Subject, SubjectFile> fromTagMap;
 
   final Subject subject;
 
@@ -51,10 +53,19 @@ class _FileViewerState extends State<FileViewer>
 
   @override
   void initState() {
+
+    if(widget.fromTagMap == null){
+      previousTag = widget.list[widget.i].tag;
+      currentID = widget.list[widget.i].id;
+    }
+    else {
+      previousTag = widget.fromTagMap.values.elementAt(widget.i).tag;
+      currentID = widget.fromTagMap.values.elementAt(widget.i).id;
+    }
+
     currentIndex = widget.i;
-    previousTag = widget.list[widget.i].tag;
     currentTag = previousTag;
-    currentID = widget.list[widget.i].id;
+
     super.initState();
   }
 
@@ -85,20 +96,32 @@ class _FileViewerState extends State<FileViewer>
                   itemBuilder: (BuildContext context, int index){
 
                     //photo view allows for zooming in and out of images
-                    return FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "image" ? new PhotoView(
-                      maxScale: PhotoViewComputedScale.contained * 2.0,
-                      minScale: (PhotoViewComputedScale.contained) * 0.5,
-                      //get a cached network image from the current URL in the list, this will ensure the image URL does not need to be loaded every time
-                      imageProvider: new CachedNetworkImageProvider(widget.list[index].url))
-                      : FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "video" ? new VideoManager(controller: new VideoPlayerController.network(widget.list[index].url))
-                      : FileTypeManger.getFileTypeFromURL(widget.list[index].url) == "audio" ? new AudioManager(subjectFile: widget.list[index], audioPlayer: new AudioPlayer(),) : new Container();
+                    return FileTypeManger.getFileTypeFromURL(
+                        widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "image" ?
+                        new PhotoView(
+                          maxScale: PhotoViewComputedScale.contained * 2.0,
+                          minScale: (PhotoViewComputedScale.contained) * 0.5,
+                          //get a cached network image from the current URL in the list, this will ensure the image URL does not need to be loaded every time
+                          imageProvider: new CachedNetworkImageProvider(widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url)
+                        )
+                      : FileTypeManger.getFileTypeFromURL(
+                        widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "video" ?
+                        new VideoManager(
+                            controller: new VideoPlayerController.network(widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url)
+                        )
+                      : FileTypeManger.getFileTypeFromURL(
+                        widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "audio" ?
+                        new AudioManager(
+                          subjectFile: widget.fromTagMap.values.elementAt(index),
+                          audioPlayer: new AudioPlayer(),
+                        ) : new Container();
                   },
-                  itemCount: widget.list.length,
+                  itemCount: widget.fromTagMap == null ? widget.list.length : widget.fromTagMap.length,
                   pagination: new SwiperPagination(),
                   control: new SwiperControl(color: Colors.white70),
                   //start the wiper on the index of the image selected
                   index: currentIndex,
-                  onIndexChanged: (int index) => updateInfo(widget.list[index].id, index, widget.list[index].tag),
+                  onIndexChanged: (int index) => updateInfo(widget.fromTagMap.values.elementAt(index).id, index, widget.fromTagMap.values.elementAt(index).tag),
                 ),
               ),
             )
@@ -200,14 +223,14 @@ class _FileViewerState extends State<FileViewer>
 
   void addTagToFile() async {
 
-    Map map = {"id": currentID, "tag": currentTag, "subjectID": widget.subject.id};
+    Map map = {"id": currentID, "tag": currentTag, "subjectID": widget.fromTagMap == null ? widget.subject.id : widget.fromTagMap.keys.elementAt(currentIndex).id};
 
     var response = await requestManager.putTagOnFile(map);
 
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
       setState(() {
-        widget.list[currentIndex].tag = currentTag;
+        widget.fromTagMap == null ? widget.list[currentIndex].tag = currentTag : widget.fromTagMap.values.elementAt(currentIndex).tag = currentTag;
         tagChanged = false;
         previousTag = currentTag;
       });

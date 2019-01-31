@@ -37,6 +37,7 @@ class RequestManager
   final String putTagOnNoteURL = url+"/putTagOnNote";
   final String getTagForNoteURL = url+"/getTagForNote";
   final String putTagOnFileURL = url+"/putTagOnFile";
+  final String getNotesAndFilesWithTagURL = url+"/getNotesAndFilesWithTag";
 
   Dio dio = new Dio();
 
@@ -298,6 +299,45 @@ class RequestManager
     }
 
     return reqTags;
+  }
+
+  Future<List> getNotesAndFilesByTag(String tag) async
+  {
+    Map<Subject, Note> notes = new Map<Subject, Note>();
+    Map<Subject, SubjectFile> files = new Map<Subject, SubjectFile>();
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getNotesAndFilesWithTagURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "tag": tag});
+
+    //print(response.data['notes']);
+
+    //store notes in a note map
+    if (response.data['notes'] != null) {
+
+      //for each note
+      response.data['notes'].forEach((note) {
+        Note n = new Note(note['note']['key'], note['note']['values']['fileName'], note['note']['values']['delta'], note['note']['values']['tag']);
+        Subject s = new Subject(note['subject']['key'], note['subject']['value']['name'], note['subject']['value']['colour']);
+
+        notes.putIfAbsent(s, () => n);
+      });
+    }
+
+    //store files in a file map
+    if (response.data['files'] != null) {
+
+      //for each file
+      response.data['files'].forEach((file) {
+        SubjectFile sf = new SubjectFile(file['file']['key'], file['file']['values']['url'], file['file']['values']['fileName'], file['file']['values']['tag']);
+        Subject s = new Subject(file['subject']['key'], file['subject']['value']['name'], file['subject']['value']['colour']);
+
+        files.putIfAbsent(s, () => sf);
+      });
+    }
+
+    return [notes, files];
   }
 
   dynamic putNote(Map jsonMap) async

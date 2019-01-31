@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/recording_manager.dart';
 
 class HomeTile extends StatelessWidget {
 
@@ -9,6 +11,9 @@ class HomeTile extends StatelessWidget {
   final Widget route;
 
   final tileSize = 170.0;
+
+  //Recording Manager Object
+  RecordingManger recorder = RecordingManger.singleton;
 
   @override
   Widget build(BuildContext context) {
