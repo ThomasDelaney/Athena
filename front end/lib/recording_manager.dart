@@ -4,6 +4,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:dio/dio.dart';
 import 'package:my_school_life_prototype/timetable_page.dart';
 import 'request_manager.dart';
+import 'tag.dart';
 
 class RecordingManger
 {
@@ -82,6 +83,7 @@ class RecordingManger
       var result = await requestManager.command(uri, context);
 
       if (result == "error") {
+        print("cannot understand");
         showCannotUnderstandError(context);
       }
       else {
@@ -93,7 +95,7 @@ class RecordingManger
           List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
           //if the day from the response object is not in the list, then display and error saying the user does not have classes for that day
-          if (!weekdays.contains(result.data['day'])) {
+          if (!weekdays.contains(result.data['option'])) {
             AlertDialog cannotUnderstand = new AlertDialog(
               content: new Text("You don't have any classes for this day", style: TextStyle(fontFamily: font),),
               actions: <Widget>[
@@ -108,7 +110,32 @@ class RecordingManger
             Navigator.push(context, MaterialPageRoute(builder: (context) => TimetablePage(initialDay: result.data['day'])));
           }
         }
+        else if (result.data['function'] == "notes") {
+          parent.setState((){this._recording = false;});
+
+          List<Tag> reqTags = await requestManager.getTags();
+          List<String> tagValues = reqTags.map((tag) => tag.tag.toLowerCase()).toList();
+
+          //if the day from the response object is not in the list, then display and error saying the user does not have classes for that day
+          if (!tagValues.contains(result.data['option'].toString().toLowerCase())) {
+
+            AlertDialog cannotUnderstand = new AlertDialog(
+              content: new Text("You don't have any notes or files with this tag or this tag does not exist", style: TextStyle(fontFamily: font),),
+              actions: <Widget>[
+                new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font)))
+              ],
+            );
+
+            showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
+          }
+          else {
+            print("GO TO THE PAGE");
+            //else go to the timetables page and pass in the day
+            //Navigator.push(context, MaterialPageRoute(builder: (context) => TimetablePage(initialDay: result.data['day'])));
+          }
+        }
         else{
+          print(result.data);
           //else display cannot understand error
           showCannotUnderstandError(context);
         }

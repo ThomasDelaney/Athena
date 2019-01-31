@@ -22,9 +22,14 @@ class _AddTagState extends State<AddTag> {
 
   bool submitting = false;
   String font = "";
+  String oldTag = "";
 
   @override
   void initState() {
+    if (widget.tag != null){
+      oldTag = widget.tag.tag;
+    }
+
     tagFocusNode = new FocusNode();
     super.initState();
   }
@@ -200,7 +205,7 @@ class _AddTagState extends State<AddTag> {
 
   Future<String> addTag() async {
     //create map of tag data
-    Map map = {"id": widget.tag == null ? null : widget.tag.id, "tag": tagController.text};
+    Map map = {"id": widget.tag == null ? null : widget.tag.id, "tag": tagController.text, "oldTag": oldTag};
 
     var response = await requestManager.putTag(map);
 

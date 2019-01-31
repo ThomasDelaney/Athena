@@ -27,7 +27,7 @@ class SubjectHubTile extends StatelessWidget {
         child: new Card(
         margin: EdgeInsets.fromLTRB(20.0*scaleFactor, 10.0*scaleFactor, 20.0*scaleFactor, 10.0*scaleFactor),
         elevation: 3.0,
-        color: Theme.of(context).backgroundColor,
+        color: Color(int.tryParse(subject.colour)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
@@ -39,19 +39,19 @@ class SubjectHubTile extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Text(subject.name, style: TextStyle(fontSize: 29.6*scaleFactor, color: Color(int.tryParse(subject.colour)), fontWeight: FontWeight.bold), ),
+                        Text(subject.name, style: TextStyle(fontSize: 29.6*scaleFactor, color: Colors.white, fontWeight: FontWeight.bold), ),
                         Row (
                           children: <Widget>[
                             IconButton(
                                 icon: Icon(Icons.edit),
                                 iconSize: 30.0*scaleFactor,
-                                color: Color.fromRGBO(70, 68, 71, 1),
+                                color: Colors.white,
                                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject,))).whenComplete(state.retrieveData)
                             ),
                             IconButton(
                                 icon: Icon(Icons.delete),
                                 iconSize: 30.0*scaleFactor,
-                                color: Color.fromRGBO(70, 68, 71, 1),
+                                color: Colors.white,
                                 onPressed: () => state.deleteSubjectDialog(subject.id)
                             ),
                           ],

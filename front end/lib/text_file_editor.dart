@@ -46,10 +46,12 @@ class _TextFileEditorState extends State<TextFileEditor> {
       document = NotusDocument.fromJson(json.decode(widget.note.delta));
       fileNameController.text = widget.note.fileName;
       title = "Editing "+widget.note.fileName;
+      currentTag = widget.note.tag;
+      previousTag = widget.note.tag;
     }
     else {
-      currentTag = "";
-      previousTag = "";
+      currentTag = "No Tag";
+      previousTag = "No Tag";
       document = new NotusDocument();
       title = "Editing New Note";
     }
@@ -224,23 +226,6 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
-  
-  void getCurrentTag() async {
-
-    if (widget.note == null) {
-      setState(() {
-        previousTag = "No Tag";
-        currentTag = "No Tag";
-      });
-    }
-    else {
-      String tag = await requestManager.getTagForNote({"id": widget.note.id, "subjectID": widget.subject.id});
-      setState(() {
-        previousTag = tag;
-        currentTag = previousTag;
-      });
-    }
-  }
 
   void showTagDialog(bool fromWithin, List<String> currentTags) async {
 
@@ -250,7 +235,6 @@ class _TextFileEditorState extends State<TextFileEditor> {
       submit(true);
 
       List<Tag> tags = await requestManager.getTags();
-      await getCurrentTag();
 
       submit(false);
 
@@ -357,6 +341,9 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
       //if null, then the request was a success, retrieve the information
       if (response ==  "success"){
+        setState(() {
+          previousTag = currentTag;
+        });
         _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!')));
       }
       //else the response ['response']  is not null, then print the error message

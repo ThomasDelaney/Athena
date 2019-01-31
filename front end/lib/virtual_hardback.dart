@@ -179,10 +179,10 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                         autoInitialize: true,
                                         showControls: false,
                                         looping: false,
-                                        placeholder: new Center(child: new CircularProgressIndicator()),
+                                        placeholder: new Center(child: new CircularProgressIndicator(backgroundColor: Theme.of(context).accentColor,)),
                                       ),
                                     ),
-                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0, color: Colors.white,)),
+                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0, color: Color.fromRGBO(255, 255, 255, 0.85),)),
                                   ],) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
                                   new Container(
                                     child: new Column(
@@ -238,7 +238,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                       children: <Widget>[
                         new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
                         new SizedBox(height: 10.0,),
-                        new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
+                        new Icon(Icons.note_add, size: 40.0, color: Colors.grey,),
                       ]
                   ),
                 ),
@@ -326,7 +326,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             ),
           ] : <Widget>[
             IconButton(
-              icon: Icon(Icons.add_circle),
+              icon: Icon(Icons.note_add),
               iconSize: 30.0,
               onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject,))).whenComplete(retrieveData);},
             ),
@@ -366,7 +366,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                           children: <Widget>[
                             new IconButton(
                               color: Colors.red,
-                              icon: Icon(Icons.perm_media, size: 35.0),
+                              icon: Icon(Icons.add_to_photos, size: 35.0),
                               onPressed: () => getImage(),
                             ),
                             new IconButton(

@@ -4,6 +4,7 @@ import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'subject.dart';
+import 'package:flutter_swiper/flutter_swiper.dart';
 
 class AddSubject extends StatefulWidget {
 
@@ -118,11 +119,47 @@ class _AddSubjectState extends State<AddSubject> {
                                       context: context,
                                       builder: (BuildContext context) {
                                         return AlertDialog(
-                                          title: Text('Select a Colour for the Subject'),
-                                          content: SingleChildScrollView(
-                                            child: BlockPicker(
-                                              pickerColor: currentColor,
-                                              onColorChanged: changeColorAndPopout,
+                                          title: Text('Select a Colour for the Subject', style: TextStyle( fontWeight: FontWeight.bold)),
+                                          content: Container(
+                                            width: MediaQuery.of(context).size.width,
+                                            height: MediaQuery.of(context).size.height * 0.60,
+                                            child: Swiper(
+                                              pagination: new SwiperPagination(
+                                                  margin: new EdgeInsets.all(5.0)
+                                              ),
+                                              scrollDirection: Axis.horizontal,
+                                              itemCount: 2,
+                                              itemBuilder: (BuildContext context, int index){
+                                                if (index == 0) {
+                                                  return Column(
+                                                    children: <Widget>[
+                                                      Text("Regular Colours", style: TextStyle(fontSize: 20.0)),
+                                                      new SizedBox(height: 20.0,),
+                                                      SingleChildScrollView(
+                                                        child: BlockPicker(
+                                                          pickerColor: currentColor,
+                                                          onColorChanged: changeColorAndPopout,
+                                                        ),
+                                                      )
+                                                    ],
+                                                  );
+                                                }
+                                                else {
+                                                  return Column(
+                                                    children: <Widget>[
+                                                      Text("Colourblind Friendly Colours", style: TextStyle(fontSize: 20.0)),
+                                                      new SizedBox(height: 20.0,),
+                                                      SingleChildScrollView(
+                                                        child: BlockPicker(
+                                                          availableColors: ThemeCheck.colorBlindFriendlyColours(),
+                                                          pickerColor: currentColor,
+                                                          onColorChanged: changeColorAndPopout,
+                                                        ),
+                                                      )
+                                                    ],
+                                                  );
+                                                }
+                                              },
                                             ),
                                           ),
                                         );},

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'home_tile.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
@@ -56,7 +57,7 @@ class _HomePageState extends State<HomePage> {
             children: <Widget>[
               //drawer header
               DrawerHeader(
-                child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font)),
+                child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font, color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black)),
                 decoration: BoxDecoration(
                   color: Colors.red,
                 ),

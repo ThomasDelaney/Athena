@@ -223,6 +223,7 @@ class RequestManager
       "nodeID": jsonMap['id'],
       "refreshToken": await prefs.getString("refreshToken"),
       "tag": jsonMap['tag'],
+      "oldTag": jsonMap['oldTag']
     });
 
     try {
@@ -484,7 +485,7 @@ class RequestManager
     if (response.data['notes']?.values != null) {
 
       response.data['notes'].forEach((key, values) {
-        Note n = new Note(key, values['fileName'], values['delta']);
+        Note n = new Note(key, values['fileName'], values['delta'], values['tag']);
         reqNotes.add(n);
       });
     }
