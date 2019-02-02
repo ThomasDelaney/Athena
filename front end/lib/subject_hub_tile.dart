@@ -23,7 +23,7 @@ class SubjectHubTile extends StatelessWidget {
     double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
 
     return SizedBox(
-        height: tileSize*scaleFactor,
+        //height: tileSize*scaleFactor,
         child: new Card(
         margin: EdgeInsets.fromLTRB(20.0*scaleFactor, 10.0*scaleFactor, 20.0*scaleFactor, 10.0*scaleFactor),
         elevation: 3.0,
@@ -39,7 +39,7 @@ class SubjectHubTile extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Text(subject.name, style: TextStyle(fontSize: 29.6*scaleFactor, color: Colors.white, fontWeight: FontWeight.bold), ),
+                        Flexible(child: Text(subject.name, style: TextStyle(fontSize: 29.6*scaleFactor, color: Colors.white, fontWeight: FontWeight.bold))),
                         Row (
                           children: <Widget>[
                             IconButton(

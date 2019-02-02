@@ -48,14 +48,6 @@ class _VideoManagerState extends State<VideoManager> {
 
     _controller = widget.controller;
 
-    _chewieController = new ChewieController(
-      videoPlayerController: _controller,
-      aspectRatio: _aspectRatio,
-      autoPlay: false,
-      showControls: true,
-      looping: true,
-    );
-
     init = true;
   }
 
@@ -90,9 +82,19 @@ class _VideoManagerState extends State<VideoManager> {
   @override
   Widget build(BuildContext context) {
 
+     double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+
+    _chewieController = new ChewieController(
+      videoPlayerController: _controller,
+      aspectRatio: _aspectRatio,
+      autoPlay: false,
+      showControls: true,
+      looping: true,
+    );
+
     if (!_controller.value.initialized) {
       _controller.initialize().then((_) {
-        setState(() {_aspectRatio = _controller.value.size.width / (_controller.value.size.height / 1.15);});
+        setState(() {_aspectRatio = (_controller.value.size.height / _controller.value.size.width) / 2.5 ;});
       });
 
       return new Container(

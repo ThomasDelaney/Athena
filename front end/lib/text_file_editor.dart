@@ -239,12 +239,11 @@ class _TextFileEditorState extends State<TextFileEditor> {
       submit(false);
 
       tagValues = tags.map((tag) => tag.tag).toList();
+      tagValues.add("No Tag");
     }
     else {
       tagValues = currentTags;
     }
-
-    tagValues.add("No Tag");
 
     AlertDialog tagDialog = new AlertDialog(
       content: new Column(

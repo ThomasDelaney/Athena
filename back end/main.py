@@ -18,7 +18,6 @@ import binascii
 app = Flask(__name__)
 
 
-
 # initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -133,9 +132,30 @@ def upload_file():
         parsedError = new[new.index("{"):]
         return jsonify(response=parsedError)
 
+# route to delete file
+@app.route('/deleteFile', methods=['POST'])
+def delete_file():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        storage = firebase.storage()
+        db = firebase.database()
+
+        # delete file from storage
+        storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/"+request.form['fileName'])
+        
+        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").child(request.form['nodeID']).remove(user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)        
+
 # route to put tag on file
-
-
 @app.route('/putTagOnFile', methods=['POST'])
 def put_tag_on_file():
     auth = firebase.auth()
@@ -200,6 +220,7 @@ def get_command_keywords():
             audio = r.record(source)
 
 
+
         option = ""
         funct = ""
 
@@ -229,11 +250,12 @@ def get_command_keywords():
 
             if (payload['function'] == 'timetable'):
                 # get date from payload, and convert it to a datetime object
-                dayInfo = payload['option'].split('-')
+                #dayInfo = payload['option'].split('-')
 
-                date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
+                #date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
                 # get the day of the week from the datetime object
-                option = date.strftime("%A")
+                #option = date.strftime("%A")
+                option = payload['option']
 
             elif (payload['function'] == 'notes'):
                 option = payload['option']
@@ -320,8 +342,6 @@ def put_tag_on_note():
         return jsonify(response=parsedError)
 
 # route to put text file
-
-
 @app.route('/getTagForNote', methods=['GET'])
 def get_tag_for_note():
     auth = firebase.auth()
@@ -360,8 +380,6 @@ def delete_note():
         return jsonify(response=parsedError)
 
 # route to get all user notes
-
-
 @app.route('/getNotes', methods=['GET'])
 def get_notes():
     auth = firebase.auth()
@@ -382,8 +400,6 @@ def get_notes():
         return jsonify(response=parsedError)
 
 # route to put text file
-
-
 @app.route('/putSubject', methods=['POST'])
 def put_subject():
     auth = firebase.auth()
@@ -411,8 +427,6 @@ def put_subject():
         return jsonify(response=parsedError)
 
 # route to delete subject
-
-
 @app.route('/deleteSubject', methods=['POST'])
 def delete_subject():
     auth = firebase.auth()
@@ -432,8 +446,6 @@ def delete_subject():
         return jsonify(response=parsedError)
 
 # route to get all user notes
-
-
 @app.route('/getSubjects', methods=['GET'])
 def get_subjects():
     auth = firebase.auth()
@@ -454,8 +466,6 @@ def get_subjects():
         return jsonify(response=parsedError)
 
 # route to put text file
-
-
 @app.route('/putTag', methods=['POST'])
 def put_tag():
     auth = firebase.auth()
@@ -560,8 +570,6 @@ def delete_tag():
         return jsonify(response=parsedError)
 
 # route to get all user notes
-
-
 @app.route('/getTags', methods=['GET'])
 def get_tags():
     auth = firebase.auth()
@@ -607,7 +615,7 @@ def get_notes_and_files_with_tag():
                     withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
 
                     if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
-                    	notesWithTag.append({"note": {"key": noteKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});
+                        notesWithTag.append({"note": {"key": noteKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});
 
             files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
 
@@ -618,7 +626,7 @@ def get_notes_and_files_with_tag():
                     withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
 
                     if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
-                    	filesWithTag.append({"file": {"key": fileKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});    
+                        filesWithTag.append({"file": {"key": fileKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});    
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'], files=filesWithTag, notes=notesWithTag)

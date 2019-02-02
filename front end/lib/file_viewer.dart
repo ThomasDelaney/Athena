@@ -84,13 +84,19 @@ class _FileViewerState extends State<FileViewer>
                     color: ThemeCheck.colorCheck(Theme.of(context).backgroundColor) ? Theme.of(context).accentColor : Colors.white,
                     onPressed: () => showTagDialog(false, null),
                   ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    iconSize: 30.0,
+                    color: ThemeCheck.colorCheck(Theme.of(context).backgroundColor) ? Theme.of(context).accentColor : Colors.white,
+                    onPressed: deleteFileDialog,
+                  ),
                 ]
             ),
             backgroundColor: Colors.black,
             //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
             //the tag allows both pages to know where to return to when the user presses the back button
             body: new Center(
-              child: Hero(tag: "imageView"+widget.i.toString(),
+              child: Hero(tag: "fileAt"+widget.i.toString(),
                 //swiper widget allows to swipe between a list
                 child: new Swiper(
                   itemBuilder: (BuildContext context, int index){
@@ -112,7 +118,7 @@ class _FileViewerState extends State<FileViewer>
                       : FileTypeManger.getFileTypeFromURL(
                         widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "audio" ?
                         new AudioManager(
-                          subjectFile: widget.fromTagMap.values.elementAt(index),
+                          subjectFile: widget.fromTagMap == null ? widget.list[index] : widget.fromTagMap.values.elementAt(index),
                           audioPlayer: new AudioPlayer(),
                         ) : new Container();
                   },
@@ -121,7 +127,10 @@ class _FileViewerState extends State<FileViewer>
                   control: new SwiperControl(color: Colors.white70),
                   //start the wiper on the index of the image selected
                   index: currentIndex,
-                  onIndexChanged: (int index) => updateInfo(widget.fromTagMap.values.elementAt(index).id, index, widget.fromTagMap.values.elementAt(index).tag),
+                  onIndexChanged: (int index) => updateInfo(
+                      widget.fromTagMap == null ? widget.list[index].id : widget.fromTagMap.values.elementAt(index).id,
+                      index,
+                      widget.fromTagMap == null ? widget.list[index].tag : widget.fromTagMap.values.elementAt(index).tag),
                 ),
               ),
             )
@@ -247,6 +256,48 @@ class _FileViewerState extends State<FileViewer>
       );
 
       showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
+    }
+  }
+
+  void deleteFileDialog() {
+    AlertDialog areYouSure = new AlertDialog(
+      content: new Text("Do you want to DELETE this File?", /*style: TextStyle(fontFamily: font),*/),
+      actions: <Widget>[
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () async {
+          submit(true);
+          Navigator.pop(context);
+          await deleteFile();
+        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+      ],
+    );
+
+    showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
+  }
+
+  void deleteFile() async {
+    var response = await requestManager.deleteFile(
+        widget.fromTagMap == null ? widget.list[currentIndex].id : widget.fromTagMap.values.elementAt(currentIndex).id,
+        widget.fromTagMap == null ? widget.subject.id : widget.fromTagMap.keys.elementAt(currentIndex).id,
+        widget.fromTagMap == null ? widget.list[currentIndex].fileName : widget.fromTagMap.values.elementAt(currentIndex).fileName,
+    );
+
+    //if null, then the request was a success, retrieve the information
+    if (response ==  "success"){
+      super.dispose();
+      Navigator.pop(context, true);
+    }
+    //else the response ['response']  is not null, then print the error message
+    else{
+      //display alertdialog with the returned message
+      AlertDialog responseDialog = new AlertDialog(
+        content: new Text("An error has occured, please try again"),
+        actions: <Widget>[
+          new FlatButton(onPressed: () {Navigator.pop(context); /*submit(false);*/}, child: new Text("OK"))
+        ],
+      );
+
+      showDialog(context: context, barrierDismissible: true, builder: (_) => responseDialog);
     }
   }
 

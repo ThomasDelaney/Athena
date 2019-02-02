@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/tag.dart';
 import 'dart:async';
 import 'login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,10 +33,16 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   //list for image urls, will be general files in final version
   List<SubjectFile> subjectFiles = new List<SubjectFile>();
-
   List<Note> notesList = new List<Note>();
 
+  List<SubjectFile> oldSubjectFiles = new List<SubjectFile>();
+  List<Note> oldNotesList = new List<Note>();
+
   bool submitting = false;
+
+  bool filtered = false;
+
+  String filterTag = "";
 
   String check = "";
 
@@ -54,13 +61,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   double fileCardSize = 150.0;
   String font = "";
 
-  //get user images
-  void getImages() async
+  //get user files
+  void getFiles() async
   {
     List<SubjectFile> reqFiles = await requestManager.getFiles(widget.subject.id);
 
     if (this.mounted) {
-      this.setState((){subjectFiles = reqFiles; filesLoaded = true;});
+      this.setState((){subjectFiles = reqFiles; oldSubjectFiles = reqFiles; filesLoaded = true;});
     }
   }
 
@@ -70,7 +77,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     List<Note> reqNotes = await requestManager.getNotes(widget.subject.id);
 
     if (this.mounted) {
-      this.setState((){notesList = reqNotes; notesLoaded = true;});
+      this.setState((){notesList = reqNotes; oldNotesList = reqNotes; notesLoaded = true;});
     }
   }
 
@@ -102,7 +109,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     notesLoaded = false;
     subjectFiles.clear();
     notesList.clear();
-    getImages();
+    oldSubjectFiles.clear();
+    oldNotesList.clear();
+    getFiles();
     getNotes();
     getFont();
   }
@@ -128,7 +137,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new Text("Add Photos and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
+                          new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
                           new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
                         ]
                     ),
@@ -158,14 +167,18 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                             Center(
                               //widget that detects gestures made by a user
                               child: GestureDetector(
-                                onTap:() {
+                                onTap:() async {
                                   //go to the file viewer page and pass in the image list, and the index of the image tapped
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: subjectFiles, i: index, subject: widget.subject,))).whenComplete(retrieveData);
+                                  final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: subjectFiles, i: index, subject: widget.subject,))).whenComplete(retrieveData);
+
+                                  if (result){
+                                    _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('File Deleted!')));
+                                  }
                                 },
                                 //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
                                 //the tag allows both pages to know where to return to when the user presses the back button
                                 child: new Hero(
-                                  tag: "imageView"+index.toString(),
+                                  tag: "fileAt"+index.toString(),
                                   //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(),
@@ -320,7 +333,20 @@ class _VirtualHardbackState extends State<VirtualHardback> {
           ),
         ),
         appBar: new AppBar(
-          title: new Text(widget.subject.name, style: TextStyle(fontFamily: font),),
+          title: new Row(children: <Widget>[
+            Flexible(child: Text(widget.subject.name, style: TextStyle(fontFamily: font))),
+            filterTag != "" ? IconButton(
+              icon: Icon(Icons.close),
+              iconSize: 30.0,
+              onPressed: () {
+                setState(() {
+                  filterTag = "";
+                  notesList = oldNotesList;
+                  subjectFiles = oldSubjectFiles;
+                });
+              },
+            ) : new Container(),
+          ],),
           //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
           actions: recorder.recording ? <Widget>[
             // action button
@@ -334,6 +360,11 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               icon: Icon(Icons.note_add),
               iconSize: 30.0,
               onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject,))).whenComplete(retrieveData);},
+            ),
+            IconButton(
+              icon: Icon(Icons.filter_list),
+              iconSize: 30.0,
+              onPressed: () => showTagDialog(false, null),
             ),
             // else display the mic button and settings button
             IconButton(
@@ -397,25 +428,25 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                             margin: MediaQuery.of(context).padding,
                             child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
                 ),
-                //container for the circular progress indicator when submitting an image, show if submitting, show blank container if not
-                new Container(
-                    alignment: Alignment.center,
-                    child: submitting ? new Stack(
-                      alignment: Alignment.center,
-                      children: <Widget>[
-                        new Container(
-                            margin: MediaQuery.of(context).padding,
-                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
-                      ],
-                    )
-                        : new Container()
-                ),
               ]
           ),
         )
     );
 
-    return page;
+    return Stack(
+      children: <Widget>[
+        page,
+        //container for the circular progress indicator when submitting an image, show if submitting, show blank container if not
+        submitting ? new Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            new Container(
+                margin: MediaQuery.of(context).padding,
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+          ],
+        ): new Container()
+      ],
+    );
   }
 
   //method for getting an image from the gallery
@@ -547,6 +578,96 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     else {
       submit(false);
       return responseFile;
+    }
+  }
+
+  void showTagDialog(bool fromWithin, List<String> currentTags) async {
+
+    List<String> tagValues;
+
+    if(!fromWithin) {
+      submit(true);
+
+      List<Tag> tags = await requestManager.getTags();
+
+      submit(false);
+
+      tagValues = tags.map((tag) => tag.tag).toList();
+
+      tagValues.add("No Tag");
+    }
+    else {
+      tagValues = currentTags;
+    }
+
+    AlertDialog tagDialog = new AlertDialog(
+      content: new Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new Text("Select a Tag to filter Files and Notes", style: TextStyle(fontSize: 20.0)),
+          new SizedBox(height: 20.0,),
+          new DropdownButton<String>(
+            value: filterTag == "" ? null : filterTag,
+            hint: new Text("Choose a Tag", style: TextStyle(fontSize: 20.0)),
+            items: tagValues.map((String tag) {
+              return new DropdownMenuItem<String>(
+                value: tag,
+                child: new Text(tag,  style: TextStyle(fontSize: 20.0)),
+              );
+            }).toList(),
+            //when the font is changed in the dropdown, change the current font state
+            onChanged: (String val){
+              setState(() {
+                filterTag = val;
+                Navigator.pop(context);
+                showTagDialog(true, tagValues);
+              });
+            },
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        new FlatButton(onPressed: () {
+          Navigator.pop(context); setState(() {
+          filterTag = "";
+        });}, child: new Text("Close", style: TextStyle(fontSize: 18.0),)),
+        new FlatButton(onPressed: () async {
+          submit(true);
+          Navigator.pop(context);
+          await filterByTag();
+          submit(false);
+        }, child: new Text("Filter By Tag", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+      ],
+    );
+
+    showDialog(context: context, barrierDismissible: true, builder: (_) => tagDialog);
+  }
+
+  void filterByTag() async {
+    if (filterTag == ""){
+      return;
+    }
+    else {
+
+      List<SubjectFile> taggedSubjectFiles = new List<SubjectFile>();
+      List<Note> taggedNotes = new List<Note>();
+
+      oldSubjectFiles.forEach((file){
+        if(file.tag == filterTag){
+          taggedSubjectFiles.add(file);
+        }
+      });
+
+      oldNotesList.forEach((note){
+        if(note.tag == filterTag){
+          taggedNotes.add(note);
+        }
+      });
+
+      setState(() {
+        notesList = taggedNotes;
+        subjectFiles = taggedSubjectFiles;
+      });
     }
   }
 
