@@ -197,8 +197,6 @@ def get_files():
         return jsonify(response=parsedError)
 
 # route to deal with voice command, currently only works with timetable
-
-
 @app.route('/command', methods=['POST'])
 def get_command_keywords():
     auth = firebase.auth()
@@ -218,7 +216,6 @@ def get_command_keywords():
         # use the audio recorder to convert the new wav file as raw audio
         with sr.AudioFile(wav_path) as source:
             audio = r.record(source)
-
 
 
         option = ""
@@ -417,9 +414,29 @@ def put_subject():
         if (request.form['nodeID'] == 'null'):
             result = db.child("users").child(user['userId']).child("subjects").push(data, user['idToken'])
         else:
-            result = db.child("users").child(user['userId']).child("subjects").child(request.form['nodeID']).update(data, user['idToken'])
+             # update timeslot information
+            timeslots = db.child("users").child(user['userId']).child("timeslots").get(user['idToken'])
 
-        # return refresh token if successfull
+            # for each timeslot
+            for i, (key, value) in enumerate(timeslots.val().items()):
+                forDay = db.child("users").child(user['userId']).child("timeslots").child(key).get(user['idToken'])
+
+                # if the day has timeslots
+                if (forDay.val() != None):
+                    # for each timeslot for that day
+                    for j, (slotKey, slotValue) in enumerate(forDay.val().items()):
+
+                        if (slotValue['subjectTitle'] == request.form['oldTitle']):
+
+                            newData = {
+                                "subjectTitle": request.form['name'],
+                                "colour": request.form['colour']
+                            }
+
+                            db.child("users").child(user['userId']).child("timeslots").child(key).child(slotKey).update(newData, user['idToken'])
+
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['nodeID']).update(data, user['idToken'])
+        # return refreshtoken if successfull
         return jsonify(refreshToken=user['refreshToken'])
     except requests.exceptions.HTTPError as e:
         new = str(e).replace("\n", '')
@@ -435,6 +452,20 @@ def delete_subject():
         user = auth.refresh(request.form['refreshToken'])
 
         db = firebase.database()
+
+        timeslots = db.child("users").child(user['userId']).child("timeslots").get(user['idToken'])
+
+        # for each timeslot
+        for i, (key, value) in enumerate(timeslots.val().items()):
+            forDay = db.child("users").child(user['userId']).child("timeslots").child(key).get(user['idToken'])
+
+            # if the day has timeslots
+            if (forDay.val() != None):
+                # for each timeslot for that day
+                for j, (slotKey, slotValue) in enumerate(forDay.val().items()):
+
+                    if (slotValue['subjectTitle'] == request.form['title']):
+                        db.child("users").child(user['userId']).child("timeslots").child(key).child(slotKey).remove(user['idToken'])
 
         result = db.child("users").child(user['userId']).child( "subjects").child(request.form['nodeID']).remove(user['idToken'])
 
@@ -630,6 +661,75 @@ def get_notes_and_files_with_tag():
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'], files=filesWithTag, notes=notesWithTag)
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+#get timetslots
+@app.route('/getTimeslots', methods=['GET'])
+def get_timeslots():
+    auth = firebase.auth()
+
+    try:
+        db = firebase.database()
+
+        user = auth.refresh(request.args['refreshToken'])
+
+        # get all image urls from database for the specific user
+        results = db.child("users").child(user['userId']).child("timeslots").get(user['idToken'])
+
+        # return the images as a list
+        return jsonify(timeslots=results.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to put timeslot
+@app.route('/putTimeslot', methods=['POST'])
+def put_timeslot():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        data = {
+            "subjectTitle": request.form['subjectTitle'],
+            "colour": request.form['colour'],
+            "room": request.form['room'],
+            "time": request.form['time'],
+            "teacher": request.form['teacher']
+        }
+
+        if (request.form['nodeID'] == 'null'):
+            result = db.child("users").child(user['userId']).child("timeslots").child(request.form['day']).push(data, user['idToken'])
+        else:
+            result = db.child("users").child(user['userId']).child("timeslots").child(request.form['day']).child(request.form['nodeID']).update(data, user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to delete subject
+@app.route('/deleteTimeslot', methods=['POST'])
+def delete_timeslot():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("timeslots").child(request.form['day']).child(request.form['nodeID']).remove(user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
     except requests.exceptions.HTTPError as e:
         new = str(e).replace("\n", '')
         parsedError = new[new.index("{"):]

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/timetable_slot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'note.dart';
@@ -39,6 +40,9 @@ class RequestManager
   final String getTagForNoteURL = url+"/getTagForNote";
   final String putTagOnFileURL = url+"/putTagOnFile";
   final String getNotesAndFilesWithTagURL = url+"/getNotesAndFilesWithTag";
+  final String getTimeslotsURL = url+"/getTimeslots";
+  final String putTimeslotURL = url+"/putTimeslot";
+  final String deleteTimeslotURL = url+"/deleteTimeslot";
 
   Dio dio = new Dio();
 
@@ -175,6 +179,7 @@ class RequestManager
       "refreshToken": await prefs.getString("refreshToken"),
       "name": jsonMap['name'],
       "colour": jsonMap['colour'],
+      "oldTitle": jsonMap['oldTitle'],
     });
 
     try {
@@ -198,7 +203,7 @@ class RequestManager
     }
   }
 
-  dynamic deleteSubject(String id) async
+  dynamic deleteSubject(String id, String title) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -206,6 +211,7 @@ class RequestManager
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
+      "title": title,
       "refreshToken": await prefs.getString("refreshToken"),
     });
 
@@ -667,6 +673,106 @@ class RequestManager
     on DioError catch(e)
     {
       return {"error": {"response": "An Error Has Occured, Please Try Again!"}};
+    }
+  }
+
+  Future<Map<String, List<TimetableSlot>>> getTimeslots() async
+  {
+    Map<String, List<TimetableSlot>> reqTimeslots = new Map<String, List<TimetableSlot>>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getTimeslotsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['timeslots']?.values != null) {
+
+      response.data['timeslots'].forEach((key, values) {
+
+        List<TimetableSlot> timeslots = new List<TimetableSlot>();
+
+        values.forEach((slotKey, slotValues) {
+
+          timeslots.add(new TimetableSlot(slotKey, slotValues['subjectTitle'], slotValues['colour'], slotValues['time'], slotValues['teacher'], slotValues['room']));
+
+        });
+
+        reqTimeslots.putIfAbsent(key, () => timeslots);
+
+      });
+    }
+
+    return reqTimeslots;
+  }
+
+  dynamic putTimeslot(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "day": jsonMap['day'],
+      "subjectTitle": jsonMap['subjectTitle'],
+      "room": jsonMap['room'],
+      "time": jsonMap['time'],
+      "teacher": jsonMap['teacher'],
+      "colour": jsonMap['colour'],
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putTimeslotURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic deleteTimeslot(String id, String day) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": id,
+      "day": day,
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteTimeslotURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
     }
   }
 }

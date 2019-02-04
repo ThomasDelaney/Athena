@@ -1,5 +1,4 @@
 import 'package:my_school_life_prototype/theme_check.dart';
-
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
@@ -133,7 +132,7 @@ class _AddSubjectState extends State<AddSubject> {
                                                 if (index == 0) {
                                                   return Column(
                                                     children: <Widget>[
-                                                      Text("Regular Colours", style: TextStyle(fontSize: 20.0)),
+                                                      Text("Basic Colours", style: TextStyle(fontSize: 20.0)),
                                                       new SizedBox(height: 20.0,),
                                                       SingleChildScrollView(
                                                         child: BlockPicker(
@@ -273,7 +272,12 @@ class _AddSubjectState extends State<AddSubject> {
 
   void addSubject() async {
     //create map of subject data
-    Map map = {"id": widget.subject == null ? null : widget.subject.id, "name": subjectController.text, "colour": currentColor.value.toString()};
+    Map map = {
+      "id": widget.subject == null ? null : widget.subject.id,
+      "name": subjectController.text,
+      "colour": currentColor.value.toString(),
+      "oldTitle": widget.subject == null ? null : widget.subject.name,
+    };
 
     var response = await requestManager.putSubject(map);
 
@@ -281,7 +285,7 @@ class _AddSubjectState extends State<AddSubject> {
     if (response !=  "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        content: new Text("An error has occured please try again"),
         actions: <Widget>[
           new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
         ],

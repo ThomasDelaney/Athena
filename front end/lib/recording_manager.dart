@@ -112,7 +112,7 @@ class RecordingManger
           }
           else {
             //else go to the timetables page and pass in the day
-            Navigator.push(context, MaterialPageRoute(builder: (context) => TimetablePage(initialDay: result.data['day'])));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => TimetablePage(initialDay: result.data['option'])));
           }
         }
         else if (result.data['function'] == "notes") {

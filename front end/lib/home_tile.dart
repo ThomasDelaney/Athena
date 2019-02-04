@@ -30,7 +30,7 @@ class HomeTile extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                new Text(title, style: TextStyle(fontSize: 24*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1), fontWeight: FontWeight.bold),),
+                new Text(title, style: TextStyle(fontSize: 24*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1), fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
                 SizedBox(height: 10.0),
                 Icon(icon, size: 55.7*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1),)
               ],

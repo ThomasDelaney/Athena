@@ -52,7 +52,7 @@ class SubjectHubTile extends StatelessWidget {
                                 icon: Icon(Icons.delete),
                                 iconSize: 30.0*scaleFactor,
                                 color: Colors.white,
-                                onPressed: () => state.deleteSubjectDialog(subject.id)
+                                onPressed: () => state.deleteSubjectDialog(subject.id, subject.name)
                             ),
                           ],
                         )

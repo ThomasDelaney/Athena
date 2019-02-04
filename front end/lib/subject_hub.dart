@@ -251,8 +251,8 @@ class SubjectHubState extends State<SubjectHub> {
     });
   }
 
-  void deleteSubject(String id) async {
-    var response = await requestManager.deleteSubject(id);
+  void deleteSubject(String id, String title) async {
+    var response = await requestManager.deleteSubject(id, title);
 
     //if null, then the request was a success, retrieve the information
     if (response == "success") {
@@ -264,7 +264,7 @@ class SubjectHubState extends State<SubjectHub> {
     else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        content: new Text("An error has occured please try again"),
         actions: <Widget>[
           new FlatButton(onPressed: () {
             Navigator.pop(context); /*submit(false);*/
@@ -278,7 +278,7 @@ class SubjectHubState extends State<SubjectHub> {
     }
   }
 
-  void deleteSubjectDialog(String id) {
+  void deleteSubjectDialog(String id, String title) {
     AlertDialog areYouSure = new AlertDialog(
       content: new Text(
         "Do you want to DELETE this SUBJECT and all its DATA?", /*style: TextStyle(fontFamily: font),*/),
@@ -290,7 +290,7 @@ class SubjectHubState extends State<SubjectHub> {
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
-          await deleteSubject(id);
+          await deleteSubject(id, title);
           submit(false);
         },
             child: new Text("YES",
