@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/test_results.dart';
 import 'subject.dart';
 import 'add_subject.dart';
 import 'virtual_hardback.dart';
@@ -100,21 +101,24 @@ class SubjectHubTile extends StatelessWidget {
                         ),
                         Column(
                           children: <Widget>[
-                            Card(
-                                elevation: 3.0,
-                                color: Theme.of(context).cardColor,
-                                child: SizedBox(
-                                  width: 120.5*scaleFactor,
-                                  height: 43.5*scaleFactor,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.school, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                      SizedBox(width: 10.0*scaleFactor),
-                                      Text("Test Results", style: TextStyle(fontSize: 13.45*scaleFactor, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
-                                    ],
-                                  ),
-                                )
+                            GestureDetector(
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: subject,))),
+                              child: Card(
+                                  elevation: 3.0,
+                                  color: Theme.of(context).cardColor,
+                                  child: SizedBox(
+                                    width: 120.5*scaleFactor,
+                                    height: 43.5*scaleFactor,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Icon(Icons.school, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
+                                        SizedBox(width: 10.0*scaleFactor),
+                                        Text("Test Results", style: TextStyle(fontSize: 13.45*scaleFactor, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                      ],
+                                    ),
+                                  )
+                              ),
                             ),
                             SizedBox(height: 5.0*scaleFactor),
                             Card(

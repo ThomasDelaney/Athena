@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/test_result.dart';
 import 'package:my_school_life_prototype/timetable_slot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
@@ -43,6 +44,9 @@ class RequestManager
   final String getTimeslotsURL = url+"/getTimeslots";
   final String putTimeslotURL = url+"/putTimeslot";
   final String deleteTimeslotURL = url+"/deleteTimeslot";
+  final String putTestResultURL = url+"/putTestResult";
+  final String getTestResultsURL = url+"/getTestResults";
+  final String deleteTestResultURL = url+"/deleteTestResult";
 
   Dio dio = new Dio();
 
@@ -758,6 +762,94 @@ class RequestManager
     try {
       //post the request and retrieve the response data
       var responseObj = await dio.post(deleteTimeslotURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic putTestResult(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "subjectID": jsonMap['subjectID'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "title": jsonMap['title'],
+      "score": jsonMap['score'],
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putTestResultURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<List<TestResult>> getTestResults(String subjectID) async
+  {
+    List<TestResult> reqResults = new List<TestResult>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user notes
+    Response response = await dio.get(getTestResultsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+
+    //store images in a string list
+    if (response.data['results']?.values != null) {
+
+      response.data['results'].forEach((key, values) {
+        TestResult r = TestResult(key, values['title'], double.tryParse(values['score']));
+        reqResults.add(r);
+      });
+    }
+
+    return reqResults;
+  }
+
+  dynamic deleteTestResult(String id, String subjectID) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": id,
+      "subjectID": subjectID,
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteTestResultURL, data: formData);
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {

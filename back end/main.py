@@ -735,6 +735,71 @@ def delete_timeslot():
         parsedError = new[new.index("{"):]
         return jsonify(response=parsedError)
 
+
+@app.route('/putTestResult', methods=['POST'])
+def put_test_result():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        data = {
+            "title": request.form['title'],
+            "score": request.form['score'],
+        }
+
+        if (request.form['nodeID'] == 'null'):
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("results").push(data, user['idToken'])
+        else:
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("results").child(request.form['nodeID']).set(data, user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+@app.route('/getTestResults', methods=['GET'])
+def get_test_results():
+    auth = firebase.auth()
+
+    try:
+        db = firebase.database()
+
+        user = auth.refresh(request.args['refreshToken'])
+
+        # get all image urls from database for the specific user
+        results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("results").get(user['idToken'])
+
+        # return the images as a list
+        return jsonify(results=results.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+ # route to delete test result file
+@app.route('/deleteTestResult', methods=['POST'])
+def delete_test_result():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("results").child(request.form['nodeID']).remove(user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
 # run app
 if __name__ == '__main__':
     app.run(debug=True)

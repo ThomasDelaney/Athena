@@ -366,8 +366,6 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   void addTimeslot() async {
 
-    print(currentTime);
-
     //create map of subject data
     Map map = {
       "id": widget.currentTimeslot == null ? null : widget.currentTimeslot.id,
