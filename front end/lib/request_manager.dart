@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/homework.dart';
 import 'package:my_school_life_prototype/test_result.dart';
 import 'package:my_school_life_prototype/timetable_slot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -47,6 +48,9 @@ class RequestManager
   final String putTestResultURL = url+"/putTestResult";
   final String getTestResultsURL = url+"/getTestResults";
   final String deleteTestResultURL = url+"/deleteTestResult";
+  final String putHomeworkURL = url+"/putHomework";
+  final String getHomeworkURL = url+"/getHomework";
+  final String deleteHomeworkURL = url+"/deleteHomework";
 
   Dio dio = new Dio();
 
@@ -850,6 +854,94 @@ class RequestManager
     try {
       //post the request and retrieve the response data
       var responseObj = await dio.post(deleteTestResultURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic putHomework(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "subjectID": jsonMap['subjectID'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "description": jsonMap['description'],
+      "isCompleted": jsonMap['isCompleted'],
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putHomeworkURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<List<Homework>> getHomework(String subjectID) async
+  {
+    List<Homework> reqHomework = new List<Homework>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user notes
+    Response response = await dio.get(getHomeworkURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+
+    //store images in a string list
+    if (response.data['homework']?.values != null) {
+
+      response.data['homework'].forEach((key, values) {
+        Homework h = Homework(key, values['description'], values['isCompleted'].toLowerCase() == 'true');
+        reqHomework.add(h);
+      });
+    }
+
+    return reqHomework;
+  }
+
+  dynamic deleteHomework(String id, String subjectID) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": id,
+      "subjectID": subjectID,
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteHomeworkURL, data: formData);
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {

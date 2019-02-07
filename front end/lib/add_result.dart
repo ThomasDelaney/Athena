@@ -70,7 +70,7 @@ class _AddResultState extends State<AddResult> {
           children: <Widget>[
             Scaffold(
               appBar: new AppBar(
-                title: widget.subject == null ? new Text("Add a New Subject") : new Text(widget.subject.name),
+                title: widget.subject == null ? new Text("Add a New Test Result") : new Text(widget.subject.name),
               ),
               body: new Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
