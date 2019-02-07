@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/homework_page.dart';
+import 'package:my_school_life_prototype/progress.dart';
 import 'package:my_school_life_prototype/test_results.dart';
 import 'subject.dart';
 import 'add_subject.dart';
@@ -82,7 +83,9 @@ class SubjectHubTile extends StatelessWidget {
                                 )
                             ),
                             SizedBox(height: 5.0*scaleFactor),
-                            Card(
+                            GestureDetector(
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: subject,))),
+                              child: Card(
                                 elevation: 3.0,
                                 color: Theme.of(context).cardColor,
                                 child: SizedBox(
@@ -97,7 +100,8 @@ class SubjectHubTile extends StatelessWidget {
                                     ],
                                   ),
                                 )
-                            ),
+                              ),
+                            )
                           ],
                         ),
                         Column(

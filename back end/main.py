@@ -218,7 +218,6 @@ def get_command_keywords():
             audio = r.record(source)
 
 
-
         option = ""
         funct = ""
 
