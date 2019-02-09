@@ -17,7 +17,6 @@ import binascii
 # create flask app
 app = Flask(__name__)
 
-
 # initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -216,7 +215,6 @@ def get_command_keywords():
         # use the audio recorder to convert the new wav file as raw audio
         with sr.AudioFile(wav_path) as source:
             audio = r.record(source)
-
 
         option = ""
         funct = ""

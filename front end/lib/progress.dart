@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:my_school_life_prototype/add_result.dart';
 import 'package:my_school_life_prototype/font_settings.dart';
 import 'package:my_school_life_prototype/login_page.dart';
@@ -25,10 +26,16 @@ class _ProgressState extends State<Progress> {
 
   bool submitting = false;
 
+  bool swiperLoaded = false;
+
   static const grades = ['H1/O1', 'H2/O2', 'H3/O3', 'H4/O4', 'H5/O5', 'H6/O6', 'H7/O7', 'H8/O8', 'NG'];
   static const thresholds = [[90.0, 100.0], [80.0, 89.9], [70.0, 79.9], [60.0, 69.9], [50.0, 59.9], [40.0, 49.9], [30.0, 39.9], [10.0, 29.9], [0.0, 9.9]];
 
   RequestManager requestManager = RequestManager.singleton;
+
+  SwiperController controller = new SwiperController();
+
+  int currentDesc = 0;
 
   //Recording Manager Object
   RecordingManger recorder = RecordingManger.singleton;
@@ -37,21 +44,33 @@ class _ProgressState extends State<Progress> {
 
   String font = "";
 
-  int chartOption = 0;
+  List<String> statsDescription = ["Test Results", "Homework"];
 
+  //Test Result variables
   List<TestResult> resultsList = new List<TestResult>();
-  bool resultsLoaded = false;
+  bool dataLoaded = false;
 
-  List<Map> gradeResultFrequencyList = new List<Map>();
-  List<Map> gradeResultsList = new List<Map>();
   List<charts.Series<Map, String>> resultsForChart = new List<charts.Series<Map, String>>();
-
   List<charts.Series<Map, num>> resultsForLineChart = new List<charts.Series<Map, num>>();
 
+  //Homework variables
+  List<Homework> homeworkList = new List<Homework>();
+
+  List<charts.Series<Map, String>> homeworkForChart = new List<charts.Series<Map, String>>();
+  List<charts.Series<Map, num>> homeworkForLineChart = new List<charts.Series<Map, num>>();
+
   void retrieveData() async {
+    resultsForChart.clear();
+    resultsForLineChart.clear();
     resultsList.clear();
-    resultsLoaded = false;
-    await getTestResults();
+
+    homeworkList.clear();
+    homeworkForChart.clear();
+    homeworkForLineChart.clear();
+
+    dataLoaded = false;
+
+    await getStatsData();
   }
 
   @override
@@ -65,41 +84,34 @@ class _ProgressState extends State<Progress> {
 
     double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
 
-    Widget chart;
-
-    switch (chartOption){
-      case 0:
-        chart = new charts.PieChart(
-            resultsForChart,
-            animate: true,
-            defaultRenderer: new charts.ArcRendererConfig(
-                arcWidth: 60,
-                arcRendererDecorators: [new charts.ArcLabelDecorator(
-                  insideLabelStyleSpec: new charts.TextStyleSpec(
-                      fontSize: 16,
-                      color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? charts.Color.white : charts.Color.black
-                  ),
-                  outsideLabelStyleSpec: new charts.TextStyleSpec(
-                    fontSize: 16,
-                  ),
-                )]
-            )
-        );
-        break;
-      case 1:
-        chart = new charts.BarChart(
-          resultsForChart,
+    List<Widget> chartList = [
+      charts.PieChart(
+          currentDesc == 0 ? resultsForChart : homeworkForChart,
           animate: true,
-        );
-        break;
-      case 2:
-        chart = new charts.LineChart(
-            resultsForLineChart,
-            animate: true,
-            defaultRenderer: new charts.LineRendererConfig(includePoints: true)
-        );
-        break;
-    }
+          defaultRenderer: new charts.ArcRendererConfig(
+              arcWidth: (90*scaleFactor).round(),
+              arcRendererDecorators: [new charts.ArcLabelDecorator(
+                labelPosition: charts.ArcLabelPosition.inside,
+                insideLabelStyleSpec: new charts.TextStyleSpec(
+                    fontSize: ((scaleFactor*450)/30).round(),
+                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? charts.Color.white : charts.Color.black,
+                ),
+                outsideLabelStyleSpec: new charts.TextStyleSpec(
+                  fontSize: ((scaleFactor*450)/30).round(),
+                ),
+              )]
+          )
+      ),
+      charts.BarChart(
+        currentDesc == 0 ? resultsForChart : homeworkForChart,
+        animate: true,
+      ),
+      charts.LineChart(
+          currentDesc == 0 ? resultsForLineChart : homeworkForLineChart,
+          animate: true,
+          defaultRenderer: new charts.LineRendererConfig(includePoints: true)
+      ),
+    ];
 
     return Stack(
       children: <Widget>[
@@ -115,7 +127,7 @@ class _ProgressState extends State<Progress> {
                 DrawerHeader(
                   child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font)),
                   decoration: BoxDecoration(
-                    color: Colors.red,
+                    color: Theme.of(context).accentColor,
                   ),
                 ),
                 //fonts option
@@ -138,6 +150,7 @@ class _ProgressState extends State<Progress> {
             ),
           ),
           appBar: new AppBar(
+            backgroundColor: Color(int.tryParse(widget.subject.colour)),
             title: Text("Progress", style: TextStyle(fontFamily: font)),
             //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
             actions: recorder.recording ? <Widget>[
@@ -148,11 +161,6 @@ class _ProgressState extends State<Progress> {
                 onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
               ),
             ] : <Widget>[
-              IconButton(
-                icon: Icon(Icons.add_circle),
-                iconSize: 30.0,
-                onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddResult(subject: widget.subject,))).whenComplete(retrieveData);},
-              ),
               // else display the mic button and settings button
               IconButton(
                 icon: Icon(Icons.mic),
@@ -168,40 +176,76 @@ class _ProgressState extends State<Progress> {
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
+            fixedColor: Color(int.tryParse(widget.subject.colour)),
             onTap: (newIndex) {
               setState(() {
-                chartOption = newIndex;
+                currentDesc = newIndex;
               });
             },
-            currentIndex: chartOption, // this will be set when a new tab is tapped
+            currentIndex: currentDesc, // this will be set when a new tab is tapped
             items: [
               BottomNavigationBarItem(
-                icon: new Icon(Icons.pie_chart),
-                title: new Text('Pie Chart'),
+                icon: new Icon(Icons.school),
+                title: new Text(statsDescription[0]),
               ),
               BottomNavigationBarItem(
-                icon: new Icon(Icons.insert_chart),
-                title: new Text('Bar Chart'),
+                icon: new Icon(Icons.library_books),
+                title: new Text(statsDescription[1]),
               ),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.show_chart),
-                  title: Text('Line Graph')
-              )
             ],
           ),
+
           body: Stack(
               children: <Widget>[
                 new Center(
-                  child: resultsLoaded ? new Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      new Text("Test Results", style: TextStyle(fontSize: 32.0),),
-                      new SizedBox(
-                        width: 450*scaleFactor,
-                        height: 450*scaleFactor,
-                        child: chart,
-                      )
-                    ],
+                  child: dataLoaded ? new Card(
+                     child: new Column(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: <Widget>[
+                         new Text(statsDescription[currentDesc], style: TextStyle(fontSize: 32.0*scaleFactor),),
+                         new SizedBox(height: 25.0*scaleFactor,),
+                         new ConstrainedBox(
+                           constraints: new BoxConstraints.loose(new Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height*0.70)),
+                           child: Swiper(
+                             controller: controller,
+                             viewportFraction: 0.99999,
+                             pagination: SwiperPagination(builder: new SwiperCustomPagination(builder: (BuildContext context, SwiperPluginConfig config) {
+                               return new Row(
+                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                 children: <Widget>[
+                                   IconButton(
+                                       icon: Icon(Icons.pie_chart, size: 32*scaleFactor, color: config.activeIndex == 0 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                       onPressed: () => controller.move(0)
+                                   ),
+                                   IconButton(
+                                       icon: Icon(Icons.insert_chart, size: 32*scaleFactor, color: config.activeIndex == 1 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                       onPressed: () => controller.move(1)
+                                   ),
+                                   IconButton(
+                                       icon: Icon(Icons.show_chart, size: 32*scaleFactor, color: config.activeIndex == 2 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                       onPressed: () => controller.move(2)
+                                   ),
+                                 ],
+                               );
+                             }), alignment: Alignment.bottomCenter),
+                             scrollDirection: Axis.horizontal,
+                             itemCount: 3,
+                             itemBuilder: (BuildContext context, int index){
+                               return new Column(
+                                 mainAxisSize: MainAxisSize.min,
+                                 children: <Widget>[
+                                   new SizedBox(
+                                     child: chartList[index],
+                                     height: scaleFactor*450,
+                                     width: scaleFactor*450,
+                                   ),
+                                 ],
+                               );
+                             },
+                           ),
+                         )
+                       ],
+                     ),
                   ) : new SizedBox(width: 50.0,height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                 ),
                 //container for the recording card, show if recording, show blank container if not
@@ -263,7 +307,7 @@ class _ProgressState extends State<Progress> {
         domainFn: (Map result, _) => result['grade'],
         measureFn: (Map result, _) => result['frequency'],
         colorFn: (Map result, _) => result['colour'],
-        data: gradeResultFrequencyList,
+        data: getGradeFrequencies(),
         // Set a label accessor to control the text of the arc label.
         labelAccessorFn: (Map row, _) => '${row['grade']}',
       )
@@ -278,7 +322,7 @@ class _ProgressState extends State<Progress> {
         measureFn: (Map result, _) => result['result'],
         colorFn: (Map result, _) => result['colour'],
         strokeWidthPxFn: (Map result, _) => 4,
-        data: gradeResultsList,
+        data: getGradesForLineGraph(),
         // Set a label accessor to control the text of the arc label.
         labelAccessorFn: (Map row, _) => '${row['grade']}',
       )
@@ -345,15 +389,90 @@ class _ProgressState extends State<Progress> {
     }
   }
 
-  void getTestResults() async {
+  List<Map> getHomeworkFrequencies(){
+
+    List<Map> freqList = new List<Map>();
+    List<bool> completed = [true, false];
+    List<double> split = [100.0, 50.0];
+
+    for (int i = 0; i < completed.length; i++){
+
+      int frequency = 0;
+
+      for (int j = 0; j < homeworkList.length; j++){
+        if (completed[i] == homeworkList[j].isCompleted) {
+          frequency++;
+        }
+      }
+
+      if (frequency != 0) {
+        freqList.add({"completed": completed[i], "frequency": frequency, "colour": colorFromResult(split[i], Color(int.tryParse(widget.subject.colour)))});
+      }
+    }
+
+    return freqList;
+  }
+
+  List<Map> getHomeworkForLineGraph(){
+
+    List<Map> hList = new List<Map>();
+
+    Color c = new Color(int.tryParse(widget.subject.colour));
+
+    charts.Color color = new charts.Color(r: c.red, g: c.green, b: c.blue, a: c.alpha);
+
+    for (int i = 0; i < homeworkList.length; i++){
+      hList.add({"position": i, "completed": homeworkList[i].isCompleted == true ? 100.0 : 0.0, "colour": color});
+    }
+
+    return hList;
+  }
+
+
+  List<charts.Series<Map, String>> getHomeworkListAsSeriesData() {
+    return [
+      new charts.Series<Map, String>(
+        id: 'Homework',
+        domainFn: (Map result, _) => result['completed'] == true ? "Done" : "Not Done",
+        measureFn: (Map result, _) => result['frequency'],
+        colorFn: (Map result, _) => result['colour'],
+        data: getHomeworkFrequencies(),
+        // Set a label accessor to control the text of the arc label.
+        labelAccessorFn: (Map row, _) => '${ row['completed'] == true ? "Done" : "Not Done" }',
+      )
+    ];
+  }
+
+  List<charts.Series<Map, num>> getHomeworkListAsSeriesDataForLineChart() {
+    return [
+      new charts.Series<Map, num>(
+        id: 'Homework',
+        domainFn: (Map result, _) => result['position'],
+        measureFn: (Map result, _) => result['completed'],
+        colorFn: (Map result, _) => result['colour'],
+        strokeWidthPxFn: (Map result, _) => 4,
+        data: getHomeworkForLineGraph(),
+        // Set a label accessor to control the text of the arc label.
+        labelAccessorFn: (Map row, _) => '${ row['completed'] == 100.0 ? "Done" : "Not Done" }',
+      )
+    ];
+  }
+
+
+  void getStatsData() async {
     List<TestResult> reqResults = await requestManager.getTestResults(widget.subject.id);
+    List<Homework> reqHomework = await requestManager.getHomework(widget.subject.id);
+
     this.setState(() {
       resultsList = reqResults;
-      gradeResultFrequencyList = getGradeFrequencies();
-      gradeResultsList = getGradesForLineGraph();
       resultsForChart = getTestResultListAsSeriesData();
       resultsForLineChart = getTestResultListAsSeriesDataForLineChart();
-      resultsLoaded = true;
+
+      homeworkList = reqHomework;
+      homeworkForChart = getHomeworkListAsSeriesData();
+      homeworkForLineChart = getHomeworkListAsSeriesDataForLineChart();
+
+      dataLoaded = true;
     });
   }
 }

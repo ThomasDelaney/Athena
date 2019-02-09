@@ -20,161 +20,165 @@ class SubjectHubTile extends StatelessWidget {
 
   final tileSize = 200.0;
 
+  final smallTileSize = 60.0;
+  final hardbackTileSize = 125.0;
+
   @override
   Widget build(BuildContext context) {
 
     double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
 
     return SizedBox(
-        //height: tileSize*scaleFactor,
-        child: new Card(
-        margin: EdgeInsets.fromLTRB(20.0*scaleFactor, 10.0*scaleFactor, 20.0*scaleFactor, 10.0*scaleFactor),
-        elevation: 3.0,
-        color: Color(int.tryParse(subject.colour)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              new Container(
-                margin: EdgeInsets.fromLTRB(10.0*scaleFactor, 10.0*scaleFactor, 10.0*scaleFactor, 10.0*scaleFactor),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Flexible(child: Text(subject.name, style: TextStyle(fontSize: 29.6*scaleFactor, color: Colors.white, fontWeight: FontWeight.bold))),
-                        Row (
+      //height: tileSize*scaleFactor,
+      child: new Card(
+      margin: EdgeInsets.fromLTRB(20.0*scaleFactor, 10.0*scaleFactor, 20.0*scaleFactor, 10.0*scaleFactor),
+      elevation: 3.0,
+      color: Color(int.tryParse(subject.colour)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            new Container(
+              margin: EdgeInsets.fromLTRB(10.0*scaleFactor, 10.0*scaleFactor, 10.0*scaleFactor, 10.0*scaleFactor),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Flexible(child: Text(subject.name, textScaleFactor: scaleFactor, style: TextStyle(fontSize: 30.0, color: Colors.white, fontWeight: FontWeight.bold))),
+                      Row (
+                        children: <Widget>[
+                          IconButton(
+                              icon: Icon(Icons.edit),
+                              iconSize: 30.0*scaleFactor,
+                              color: Colors.white,
+                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject,))).whenComplete(state.retrieveData)
+                          ),
+                          IconButton(
+                              icon: Icon(Icons.delete),
+                              iconSize: 30.0*scaleFactor,
+                              color: Colors.white,
+                              onPressed: () => state.deleteSubjectDialog(subject.id, subject.name)
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Column(
                           children: <Widget>[
-                            IconButton(
-                                icon: Icon(Icons.edit),
-                                iconSize: 30.0*scaleFactor,
-                                color: Colors.white,
-                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject,))).whenComplete(state.retrieveData)
-                            ),
-                            IconButton(
-                                icon: Icon(Icons.delete),
-                                iconSize: 30.0*scaleFactor,
-                                color: Colors.white,
-                                onPressed: () => state.deleteSubjectDialog(subject.id, subject.name)
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Column(
-                          children: <Widget>[
-                            Card(
-                                elevation: 3.0,
-                                color: Theme.of(context).cardColor,
-                                child: SizedBox(
-                                  width: 104.5*scaleFactor,
-                                  height: 43.5*scaleFactor,
+                            Container(
+                              height: smallTileSize*scaleFactor,
+                              child: Card(
+                                  elevation: 3.0,
+                                  color: Theme.of(context).cardColor,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Icon(Icons.business_center, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                       SizedBox(width: 10.0*scaleFactor),
-                                      Text("Materials", style: TextStyle(fontSize: 13.45*scaleFactor, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                      Text("Materials", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
                                     ],
-                                  ),
-                                )
+                                  )
+                              )
                             ),
                             SizedBox(height: 5.0*scaleFactor),
                             GestureDetector(
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: subject,))),
-                              child: Card(
-                                elevation: 3.0,
-                                color: Theme.of(context).cardColor,
-                                child: SizedBox(
-                                  width: 104.5*scaleFactor,
-                                  height: 43.5*scaleFactor,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.insert_chart, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                      SizedBox(width: 10.0*scaleFactor),
-                                      Text("Progress", style: TextStyle(fontSize: 13.45*scaleFactor, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
-                                    ],
-                                  ),
-                                )
-                              ),
+                              child: Container(
+                                height: smallTileSize*scaleFactor,
+                                child: Card(
+                                    elevation: 3.0,
+                                    color: Theme.of(context).cardColor,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Icon(Icons.insert_chart, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
+                                        SizedBox(width: 10.0*scaleFactor),
+                                        Text("Progress", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                      ],
+                                    )
+                                ),
+                              )
                             )
                           ],
                         ),
-                        Column(
+                      ),
+                      Expanded(
+                        child: Column(
                           children: <Widget>[
                             GestureDetector(
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: subject,))),
-                              child: Card(
-                                  elevation: 3.0,
-                                  color: Theme.of(context).cardColor,
-                                  child: SizedBox(
-                                    width: 120.5*scaleFactor,
-                                    height: 43.5*scaleFactor,
+                              child: Container(
+                                height: smallTileSize*scaleFactor,
+                                child: Card(
+                                    elevation: 3.0,
+                                    color: Theme.of(context).cardColor,
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[
                                         Icon(Icons.school, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                         SizedBox(width: 10.0*scaleFactor),
-                                        Text("Test Results", style: TextStyle(fontSize: 13.45*scaleFactor, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                        Text("Test Results", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
                                       ],
-                                    ),
-                                  )
+                                    )
+                                ),
                               ),
                             ),
                             SizedBox(height: 5.0*scaleFactor),
                             GestureDetector(
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeworkPage(subject: subject,))),
-                              child: Card(
-                                elevation: 3.0,
-                                color: Theme.of(context).cardColor,
-                                child: SizedBox(
-                                  width: 120.5*scaleFactor,
-                                  height: 43.5*scaleFactor,
+                              child: Container(
+                                height: smallTileSize*scaleFactor,
+                                child: Card(
+                                  elevation: 3.0,
+                                  color: Theme.of(context).cardColor,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Icon(Icons.library_books, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                       SizedBox(width: 10.0*scaleFactor),
-                                      Text("Homework", style: TextStyle(fontSize: 13.45*scaleFactor, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                      Text("Homework", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
                                     ],
                                   ),
-                                )
+                                ),
                               ),
                             )
                           ],
                         ),
-                        new GestureDetector(
+                      ),
+                      Expanded(
+                        child: new GestureDetector(
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => VirtualHardback(subject: subject,))),
-                          child: Card(
+                          child: Container(
+                            height: hardbackTileSize*scaleFactor,
+                            child: Card(
                               elevation: 3.0,
                               color: Theme.of(context).cardColor,
-                              child: SizedBox(
-                                width: 108.5*scaleFactor,
-                                height: 100.0*scaleFactor,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Icon(Icons.folder_open, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                    SizedBox(width: 10.0*scaleFactor),
-                                    Text("Hardback", style: TextStyle(fontSize: 13.45*scaleFactor, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
-                                  ],
-                                ),
-                              )
-                          ),
-                        )
-                      ],
-                    )
-                  ],
-                )
-              ),
-              //Icon(icon, size: tileSize/2.69, color: Color.fromRGBO(70, 68, 71, 1),)
-            ],
-          ),
-        )
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Icon(Icons.folder_open, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
+                                  SizedBox(width: 10.0*scaleFactor),
+                                  Text("Hardback", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                ],
+                              ),
+                            ),
+                          )
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              )
+            ),
+            //Icon(icon, size: tileSize/2.69, color: Color.fromRGBO(70, 68, 71, 1),)
+          ],
+        ),
+      )
     );
   }
 }

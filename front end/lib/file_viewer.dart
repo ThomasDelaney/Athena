@@ -99,6 +99,7 @@ class _FileViewerState extends State<FileViewer>
               child: Hero(tag: "fileAt"+widget.i.toString(),
                 //swiper widget allows to swipe between a list
                 child: new Swiper(
+                  viewportFraction: 0.99999,
                   itemBuilder: (BuildContext context, int index){
 
                     //photo view allows for zooming in and out of images
