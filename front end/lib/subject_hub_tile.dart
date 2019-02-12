@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/homework_page.dart';
+import 'package:my_school_life_prototype/materials.dart';
 import 'package:my_school_life_prototype/progress.dart';
 import 'package:my_school_life_prototype/test_results.dart';
 import 'subject.dart';
@@ -72,17 +73,20 @@ class SubjectHubTile extends StatelessWidget {
                           children: <Widget>[
                             Container(
                               height: smallTileSize*scaleFactor,
-                              child: Card(
-                                  elevation: 3.0,
-                                  color: Theme.of(context).cardColor,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.business_center, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                      SizedBox(width: 10.0*scaleFactor),
-                                      Text("Materials", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
-                                    ],
-                                  )
+                              child: GestureDetector(
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject,))),
+                                child: Card(
+                                    elevation: 3.0,
+                                    color: Theme.of(context).cardColor,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Icon(Icons.business_center, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
+                                        SizedBox(width: 10.0*scaleFactor),
+                                        Text("Materials", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                      ],
+                                    )
+                                ),
                               )
                             ),
                             SizedBox(height: 5.0*scaleFactor),

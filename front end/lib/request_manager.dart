@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/class_material.dart';
 import 'package:my_school_life_prototype/homework.dart';
 import 'package:my_school_life_prototype/test_result.dart';
 import 'package:my_school_life_prototype/timetable_slot.dart';
@@ -51,6 +52,9 @@ class RequestManager
   final String putHomeworkURL = url+"/putHomework";
   final String getHomeworkURL = url+"/getHomework";
   final String deleteHomeworkURL = url+"/deleteHomework";
+  final String putMaterialURL = url+"/putMaterial";
+  final String getMaterialsURL = url+"/getMaterials";
+  final String deleteMaterialURL = url+"/deleteMaterial";
 
   Dio dio = new Dio();
 
@@ -942,6 +946,97 @@ class RequestManager
     try {
       //post the request and retrieve the response data
       var responseObj = await dio.post(deleteHomeworkURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<List<ClassMaterial>> getMaterials(String subjectID) async
+  {
+    List<ClassMaterial> reqMaterials = new List<ClassMaterial>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user notes
+    Response response = await dio.get(getMaterialsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+
+    //store images in a string list
+    if (response.data['materials']?.values != null) {
+
+      response.data['materials'].forEach((key, values) {
+        ClassMaterial m = ClassMaterial(key, values['name'], values['photoUrl'] == null ? "" : values['photoUrl'], values['fileName'] == null ? "" : values['fileName']);
+        reqMaterials.add(m);
+      });
+    }
+
+    return reqMaterials;
+  }
+
+  //method for uploading user chosen image
+  dynamic putMaterial(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form with relevant data and image as file
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "subjectID": jsonMap['subjectID'],
+      "name": jsonMap['name'],
+      "previousFile": jsonMap['previousFile'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "file": jsonMap['fileName'] == "" ? null : new UploadFileInfo(new File(jsonMap['fileName']), new DateTime.now().millisecondsSinceEpoch.toString()+jsonMap['fileName'].split('/').last)
+    });
+
+    try {
+      //post the form data to the url
+      var responseObj = await dio.post(putMaterialURL, data: formData);
+
+      //if the refresh token is null, then display an alert dialog with an error
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic deleteMaterial(String id, String subjectID, String fileName) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": id,
+      "subjectID": subjectID,
+      "refreshToken": await prefs.getString("refreshToken"),
+      "fileName": fileName
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteMaterialURL, data: formData);
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {

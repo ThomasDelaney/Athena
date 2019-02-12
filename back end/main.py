@@ -865,6 +865,95 @@ def delete_homework():
         parsedError = new[new.index("{"):]
         return jsonify(response=parsedError)
 
+
+@app.route('/putMaterial', methods=['POST'])
+def put_material():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        storage = firebase.storage()
+        db = firebase.database()
+
+        data = {}
+
+        if (request.form.get('file') != 'null'):
+            # store posted image under posted filename
+            results = storage.child("users").child(user['userId']).child(request.form['subjectID']).child("materials").child(request.files['file'].filename).put(request.files['file'], user['idToken'])
+            # get url from posted image
+            url = storage.child(results['name']).get_url(results['downloadTokens'])
+
+            data = {
+                "fileName": request.files['file'].filename,
+                "name": request.form['name'],
+                "photoUrl": str(url),
+            }
+        else:
+            data = {
+                "name": request.form['name'],
+            }
+
+        if (request.form['nodeID'] == 'null'):
+            addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("materials").push(data, user['idToken'])
+        else:
+            if (request.form['previousFile'] != 'null'):
+                storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/materials/"+request.form['previousFile'])
+
+            addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("materials").child(request.form['nodeID']).set(data, user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+@app.route('/getMaterials', methods=['GET'])
+def get_materials():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        storage = firebase.storage()
+        db = firebase.database()
+
+        # get all image urls from database for the specific user
+        results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("materials").get(user['idToken'])
+
+        # return the images as a list
+        return jsonify(materials=results.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to delete material file
+@app.route('/deleteMaterial', methods=['POST'])
+def delete_material():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        storage = firebase.storage()
+        db = firebase.database()
+
+        print(request.form['fileName'])
+
+        if(request.form['fileName'] != 'null'):
+            storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/materials/"+request.form['fileName'])
+
+        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("materials").child(request.form['nodeID']).remove(user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
 # run app
 if __name__ == '__main__':
     app.run(debug=True)

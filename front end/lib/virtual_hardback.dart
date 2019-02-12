@@ -133,13 +133,16 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                 child: new SizedBox(
                   width: fileCardSize,
                   height: fileCardSize,
-                  child: new Card(
-                    child: new Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
-                          new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
-                        ]
+                  child: GestureDetector(
+                    onTap: () => getImage(),
+                    child: new Card(
+                      child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
+                            new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                          ]
+                      ),
                     ),
                   ),
                 )
@@ -250,14 +253,17 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
               child: new SizedBox(
                 width: MediaQuery.of(context).size.width * 0.95,
-                child: new Card(
-                  child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
-                        new SizedBox(height: 10.0,),
-                        new Icon(Icons.note_add, size: 40.0, color: Colors.grey,),
-                      ]
+                child: GestureDetector(
+                  onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject,))).whenComplete(retrieveData);},
+                  child: new Card(
+                    child: new Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                          new SizedBox(height: 10.0,),
+                          new Icon(Icons.note_add, size: 40.0, color: Colors.grey,),
+                        ]
+                    ),
                   ),
                 ),
               )
@@ -280,7 +286,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                   decoration: new BoxDecoration(
                       border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
                   ),
-                  child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
+                  child: Icon(Icons.insert_drive_file, color: Color(int.tryParse(widget.subject.colour)), size: 32.0,),
                 ),
                 title: Text(
                   notesList[position].fileName,
@@ -333,20 +339,8 @@ class _VirtualHardbackState extends State<VirtualHardback> {
           ),
         ),
         appBar: new AppBar(
-          title: new Row(children: <Widget>[
-            Flexible(child: Text(widget.subject.name, style: TextStyle(fontFamily: font))),
-            filterTag != "" ? IconButton(
-              icon: Icon(Icons.close),
-              iconSize: 30.0,
-              onPressed: () {
-                setState(() {
-                  filterTag = "";
-                  notesList = oldNotesList;
-                  subjectFiles = oldSubjectFiles;
-                });
-              },
-            ) : new Container(),
-          ],),
+          backgroundColor: Color(int.tryParse(widget.subject.colour)),
+          title: Text(widget.subject.name, style: TextStyle(fontFamily: font)),
           //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
           actions: recorder.recording ? <Widget>[
             // action button
@@ -361,7 +355,17 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               iconSize: 30.0,
               onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject,))).whenComplete(retrieveData);},
             ),
-            IconButton(
+            filterTag != "" ? IconButton(
+              icon: Icon(Icons.close),
+              iconSize: 30.0,
+              onPressed: () {
+                setState(() {
+                  filterTag = "";
+                  notesList = oldNotesList;
+                  subjectFiles = oldSubjectFiles;
+                });
+              },
+            ) : IconButton(
               icon: Icon(Icons.filter_list),
               iconSize: 30.0,
               onPressed: () => showTagDialog(false, null),
@@ -401,12 +405,12 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             new IconButton(
-                              color: Colors.red,
+                              color: Color(int.tryParse(widget.subject.colour)),
                               icon: Icon(Icons.add_to_photos, size: 35.0),
                               onPressed: () => getImage(),
                             ),
                             new IconButton(
-                              color: Colors.red,
+                              color: Color(int.tryParse(widget.subject.colour)),
                               icon: Icon(Icons.camera_alt, size: 35.0),
                               onPressed: () => getCameraImage(),
                             )

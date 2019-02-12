@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/add_homework.dart';
+import 'package:my_school_life_prototype/add_material.dart';
 import 'package:my_school_life_prototype/add_result.dart';
 import 'package:my_school_life_prototype/font_settings.dart';
 import 'package:my_school_life_prototype/login_page.dart';
@@ -7,20 +7,19 @@ import 'package:my_school_life_prototype/recording_manager.dart';
 import 'package:my_school_life_prototype/request_manager.dart';
 import 'package:my_school_life_prototype/subject.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'homework.dart';
+import 'class_material.dart';
 
-
-class HomeworkPage extends StatefulWidget {
+class Materials extends StatefulWidget {
 
   final Subject subject;
 
-  HomeworkPage({Key key, this.subject}) : super(key: key);
+  Materials({Key key, this.subject}) : super(key: key);
 
   @override
-  _HomeworkPageState createState() => _HomeworkPageState();
+  _MaterialsState createState() => _MaterialsState();
 }
 
-class _HomeworkPageState extends State<HomeworkPage> {
+class _MaterialsState extends State<Materials> {
 
   bool submitting = false;
 
@@ -33,13 +32,13 @@ class _HomeworkPageState extends State<HomeworkPage> {
 
   String font = "";
 
-  List<Homework> homeworkList = new List<Homework>();
-  bool homeworkLoaded = false;
+  List<ClassMaterial> materialList = new List<ClassMaterial>();
+  bool materialsLoaded = false;
 
   void retrieveData() async {
-    homeworkList.clear();
-    homeworkLoaded = false;
-    await getHomework();
+    materialList.clear();
+    materialsLoaded = false;
+    await getMaterials();
   }
 
   @override
@@ -50,10 +49,10 @@ class _HomeworkPageState extends State<HomeworkPage> {
 
   @override
   Widget build(BuildContext context) {
-    ListView hList;
+    ListView mList;
 
-    if (homeworkList.length == 0 && homeworkLoaded) {
-      hList = new ListView(
+    if (materialList.length == 0 && materialsLoaded) {
+      mList = new ListView(
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         children: <Widget>[
@@ -62,12 +61,12 @@ class _HomeworkPageState extends State<HomeworkPage> {
               child: new SizedBox(
                 width: MediaQuery.of(context).size.width * 0.95,
                 child: GestureDetector(
-                  onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddHomework(subject: widget.subject,))).whenComplete(retrieveData);},
+                  onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddMaterial(subject: widget.subject,))).whenComplete(retrieveData);},
                   child: new Card(
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new Text("Add Homework By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                          new Text("Add Materials By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
                           new SizedBox(height: 10.0,),
                           new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
                         ]
@@ -80,8 +79,8 @@ class _HomeworkPageState extends State<HomeworkPage> {
       );
     }
     else {
-      hList = ListView.builder(
-        itemCount: homeworkList.length,
+      mList = ListView.builder(
+        itemCount: materialList.length,
         itemBuilder: (context, position) {
           return GestureDetector(
               onLongPress: () => {},
@@ -94,46 +93,33 @@ class _HomeworkPageState extends State<HomeworkPage> {
                       margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
                       elevation: 3.0,
                       child: new ListTile(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddHomework(currentHomework: homeworkList[position], subject: widget.subject,))).whenComplete(retrieveData),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddMaterial(currentMaterial: materialList[position], subject: widget.subject,))).whenComplete(retrieveData),
                         contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
                         leading: Container(
                           padding: EdgeInsets.only(right: 12.0),
                           decoration: new BoxDecoration(
                               border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
                           ),
-                          child: Icon(Icons.library_books, color: Color(int.tryParse(widget.subject.colour)), size: 32.0,),
+                          child: Icon(Icons.school, color: Color(int.tryParse(widget.subject.colour)), size: 32.0,),
                         ),
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Expanded(
                               child: Text(
-                                homeworkList[position].description,
+                                materialList[position].name,
                                 style: TextStyle(fontSize: 24.0, fontFamily: font),
                               ),
                             ),
                             Container(
-                              child: Transform.scale(
-                                alignment: Alignment.centerLeft,
-                                scale: 1.25,
-                                child: new Checkbox(
-                                  materialTapTargetSize: MaterialTapTargetSize.padded,
-                                  activeColor: Color(int.tryParse(widget.subject.colour)),
-                                  value: homeworkList[position].isCompleted,
-                                  onChanged: (newVal) {
-                                    setState(() {
-                                      homeworkList[position].isCompleted = newVal;
-                                      updateHomework(homeworkList[position]);
-                                    });
-                                  },
-                                ),
-                              ),
+                              //width: MediaQuery.of(context).size.width/3.5,
+                              child: materialList[position].photoUrl != "" ? Icon(Icons.image, size: 32.0, color: Color(int.parse(widget.subject.colour)),) : new Container(),
                             )
                           ],
                         ),
                         trailing: GestureDetector(
                             child: Icon(Icons.delete, size: 32.0, color: Color.fromRGBO(70, 68, 71, 1)),
-                            onTap: () => deleteHomeworkDialog(homeworkList[position])
+                            onTap: () => deleteMaterialDialog(materialList[position])
                         ),
                       )
                   )
@@ -182,7 +168,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
           ),
           appBar: new AppBar(
             backgroundColor: Color(int.tryParse(widget.subject.colour)),
-            title: Text("Homework", style: TextStyle(fontFamily: font)),
+            title: Text("Materials", style: TextStyle(fontFamily: font)),
             //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
             actions: recorder.recording ? <Widget>[
               // action button
@@ -195,7 +181,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
               IconButton(
                 icon: Icon(Icons.add_circle),
                 iconSize: 30.0,
-                onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddHomework(subject: widget.subject,))).whenComplete(retrieveData);},
+                onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddMaterial(subject: widget.subject,))).whenComplete(retrieveData);},
               ),
               // else display the mic button and settings button
               IconButton(
@@ -214,7 +200,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
           body: Stack(
               children: <Widget>[
                 new Center(
-                  child: homeworkLoaded ? hList : new SizedBox(width: 50.0,
+                  child: materialsLoaded ? mList : new SizedBox(width: 50.0,
                       height: 50.0,
                       child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                 ),
@@ -244,7 +230,8 @@ class _HomeworkPageState extends State<HomeworkPage> {
       ],
     );
   }
-//method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
+
+  //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
   void signOut()
   {
     AlertDialog signOutDialog = new AlertDialog(
@@ -269,45 +256,20 @@ class _HomeworkPageState extends State<HomeworkPage> {
     Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
   }
 
-  void getHomework() async {
-    List<Homework> reqHomework = await requestManager.getHomework(widget.subject.id);
+  void getMaterials() async {
+    List<ClassMaterial> reqMaterials = await requestManager.getMaterials(widget.subject.id);
     this.setState(() {
-      homeworkList = reqHomework;
-      homeworkLoaded = true;
+      materialList = reqMaterials;
+      materialsLoaded = true;
     });
   }
 
-  void updateHomework(Homework homework) async{
-    //create map of subject data
-    Map map = {
-      "id": homework.id,
-      "subjectID": widget.subject.id,
-      "description": homework.description,
-      "isCompleted": homework.isCompleted
-    };
-
-    var response = await requestManager.putHomework(map);
-
-    //if null, then the request was a success, retrieve the information
-    if (response !=  "success"){
-      //display alertdialog with the returned message
-      AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
-        actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
-        ],
-      );
-
-      showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
-    }
-  }
-
-  void deleteHomework(Homework homework) async {
-    var response = await requestManager.deleteHomework(homework.id, widget.subject.id);
+  void deleteMaterial(ClassMaterial material) async {
+    var response = await requestManager.deleteMaterial(material.id, widget.subject.id, material.fileName == "" ? null : material.fileName);
 
     //if null, then the request was a success, retrieve the information
     if (response == "success") {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Homework Deleted!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Material Deleted!')));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
@@ -328,9 +290,9 @@ class _HomeworkPageState extends State<HomeworkPage> {
     }
   }
 
-  void deleteHomeworkDialog(Homework homework) {
+  void deleteMaterialDialog(ClassMaterial material) {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to DELETE this Homework?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to DELETE this Material?", /*style: TextStyle(fontFamily: font),*/),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
@@ -339,7 +301,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
-          await deleteHomework(homework);
+          await deleteMaterial(material);
           submit(false);
         },
             child: new Text("YES",

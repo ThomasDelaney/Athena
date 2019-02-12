@@ -61,14 +61,17 @@ class _TestResultsState extends State<TestResults> {
               margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
               child: new SizedBox(
                 width: MediaQuery.of(context).size.width * 0.95,
-                child: new Card(
-                  child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        new Text("Add Test Results By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
-                        new SizedBox(height: 10.0,),
-                        new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
-                      ]
+                child: new GestureDetector(
+                  onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddResult(subject: widget.subject,))).whenComplete(retrieveData);},
+                  child: new Card(
+                    child: new Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          new Text("Add Test Results By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                          new SizedBox(height: 10.0,),
+                          new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
+                        ]
+                    ),
                   ),
                 ),
               )
@@ -98,7 +101,7 @@ class _TestResultsState extends State<TestResults> {
                           decoration: new BoxDecoration(
                               border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
                           ),
-                          child: Icon(Icons.school, color: Colors.redAccent, size: 32.0,),
+                          child: Icon(Icons.school, color: Color(int.tryParse(widget.subject.colour)), size: 32.0,),
                         ),
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -168,6 +171,7 @@ class _TestResultsState extends State<TestResults> {
               ),
             ),
             appBar: new AppBar(
+              backgroundColor: Color(int.tryParse(widget.subject.colour)),
               title: Text("Test Results", style: TextStyle(fontFamily: font)),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[
