@@ -267,7 +267,7 @@ def get_command_keywords():
 
 
 # route to change font
-@app.route('/font', methods=['POST'])
+@app.route('/putFontData', methods=['POST'])
 def put_font():
     auth = firebase.auth()
 
@@ -276,8 +276,14 @@ def put_font():
 
         db = firebase.database()
 
+        data = {
+            "font": request.form['font'],
+            "fontColour": request.form['fontColour'],
+            "fontSize": request.form['fontSize']
+        }
+
         # set posted font under the design node
-        result = db.child("users").child(user['userId']).child("design").child("font").set(request.form['font'], user['idToken'])
+        result = db.child("users").child(user['userId']).child("design").child("font").set(data, user['idToken'])
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
     except requests.exceptions.HTTPError as e:
@@ -285,9 +291,25 @@ def put_font():
         parsedError = new[new.index("{"):]
         return jsonify(response=parsedError)
 
+# route to change font
+@app.route('/getFontData', methods=['GET'])
+def get_font():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("design").child("font").get(user['idToken'])
+        # return refresh token if successfull
+        return jsonify(data=result.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
 # route to put text file
-
-
 @app.route('/putNote', methods=['POST'])
 def put_note():
     auth = firebase.auth()

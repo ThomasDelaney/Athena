@@ -282,7 +282,7 @@ class _ProgressState extends State<Progress> {
                       alignment: Alignment.center,
                       children: <Widget>[
                         new Container(
-                            margin: MediaQuery.of(context).padding,
+                            margin: MediaQuery.of(context).viewInsets,
                             child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
                 ),
               ]

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/home_page.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
 
 class HomeTile extends StatelessWidget {
 
-  HomeTile({Key key, this.title, this.icon, this.route}) : super(key: key);
+  HomeTile({Key key, this.title, this.icon, this.route, this.fontData}) : super(key: key);
 
   final String title;
   final IconData icon;
   final Widget route;
+  final FontData fontData;
 
   final tileSize = 170.0;
 
@@ -32,9 +34,9 @@ class HomeTile extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                new Text(title, style: TextStyle(fontSize: 24*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1), fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+                new Text(title, style: TextStyle(fontSize: 24*scaleFactor, color: fontData.color, fontWeight: FontWeight.bold, fontFamily: fontData.font), textAlign: TextAlign.center,),
                 SizedBox(height: 10.0),
-                Icon(icon, size: 55.7*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1),)
+                Icon(icon, size: 55.7*scaleFactor, color: Colors.black,)
               ],
             ),)
       ),

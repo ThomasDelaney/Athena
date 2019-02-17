@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:zefyr/zefyr.dart';
 import 'request_manager.dart';
@@ -12,8 +13,9 @@ class TextFileEditor extends StatefulWidget {
 
   final Note note;
   final Subject subject;
+  final FontData fontData;
 
-  TextFileEditor({Key key, this.note, this.subject}) : super(key: key);
+  TextFileEditor({Key key, this.note, this.subject, this.fontData}) : super(key: key);
 
   @override
   _TextFileEditorState createState() => _TextFileEditorState();
@@ -137,10 +139,48 @@ class _TextFileEditorState extends State<TextFileEditor> {
                                   child: new ZefyrScaffold(
                                       child: new ZefyrTheme(
                                         data: new ZefyrThemeData(
+                                            blockTheme: BlockTheme(
+                                              bulletList: StyleTheme(
+                                                  textStyle: TextStyle(
+                                                      fontSize: widget.fontData.size,
+                                                      fontFamily: widget.fontData.font,
+                                                      color: widget.fontData.color
+                                                  )
+                                              ),
+                                              numberList: StyleTheme(
+                                                  textStyle: TextStyle(
+                                                      fontFamily: widget.fontData.font,
+                                                      color: widget.fontData.color,
+                                                      fontSize: widget.fontData.size,
+                                                  )
+                                              ),
+                                              quote: StyleTheme(
+                                                  textStyle: TextStyle(
+                                                      fontFamily: widget.fontData.font,
+                                                      fontSize: widget.fontData.size,
+                                                      color: widget.fontData.color
+                                                  )
+                                              ),
+                                              code: StyleTheme(
+                                                  textStyle: TextStyle(
+                                                      fontFamily: widget.fontData.font,
+                                                      fontSize: widget.fontData.size,
+                                                      color: widget.fontData.color
+                                                  )
+                                              ),
+                                            ),
+                                            paragraphTheme: StyleTheme(
+                                                textStyle: TextStyle(
+                                                    fontFamily: widget.fontData.font,
+                                                    fontSize: widget.fontData.size,
+                                                    color: widget.fontData.color
+                                                )
+                                            ),
                                             toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
                                                 color: Theme.of(context).accentColor,
                                                 iconColor: Theme.of(context).canvasColor,
-                                                disabledIconColor: Theme.of(context).disabledColor)),
+                                                disabledIconColor: Theme.of(context).disabledColor)
+                                        ),
                                         child: ZefyrField(
                                           controller: _controller,
                                           focusNode: _focusNode,
@@ -181,10 +221,48 @@ class _TextFileEditorState extends State<TextFileEditor> {
                                           child: new ZefyrScaffold(
                                               child: new ZefyrTheme(
                                                   data: new ZefyrThemeData(
-                                                      toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
-                                                          color: Theme.of(context).accentColor,
-                                                          iconColor: Theme.of(context).canvasColor,
-                                                          disabledIconColor: Theme.of(context).disabledColor)),
+                                                    blockTheme: BlockTheme(
+                                                        bulletList: StyleTheme(
+                                                            textStyle: TextStyle(
+                                                                fontFamily: widget.fontData.font,
+                                                                fontSize: widget.fontData.size,
+                                                                color: widget.fontData.color
+                                                            )
+                                                        ),
+                                                        numberList: StyleTheme(
+                                                            textStyle: TextStyle(
+                                                                fontFamily: widget.fontData.font,
+                                                                fontSize: widget.fontData.size,
+                                                                color: widget.fontData.color
+                                                            )
+                                                        ),
+                                                        quote: StyleTheme(
+                                                            textStyle: TextStyle(
+                                                                fontFamily: widget.fontData.font,
+                                                                fontSize: widget.fontData.size,
+                                                                color: widget.fontData.color
+                                                            )
+                                                        ),
+                                                        code: StyleTheme(
+                                                            textStyle: TextStyle(
+                                                                fontFamily: widget.fontData.font,
+                                                                fontSize: widget.fontData.size,
+                                                                color: widget.fontData.color
+                                                            )
+                                                        ),
+                                                    ),
+                                                    paragraphTheme: StyleTheme(
+                                                      textStyle: TextStyle(
+                                                        fontFamily: widget.fontData.font,
+                                                          fontSize: widget.fontData.size,
+                                                        color: widget.fontData.color
+                                                      )
+                                                    ),
+                                                    toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
+                                                        color: Theme.of(context).accentColor,
+                                                        iconColor: Theme.of(context).canvasColor,
+                                                        disabledIconColor: Theme.of(context).disabledColor)
+                                                  ),
                                                   child: ZefyrField(
                                                     controller: _controller,
                                                     focusNode: _focusNode,
@@ -254,6 +332,8 @@ class _TextFileEditorState extends State<TextFileEditor> {
   }
 
   Future<bool> exitCheck() async{
+    FocusScope.of(context).requestFocus(new FocusNode());
+
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
         content: new Text("Do you want to SAVE this Note?", /*style: TextStyle(fontFamily: font),*/),

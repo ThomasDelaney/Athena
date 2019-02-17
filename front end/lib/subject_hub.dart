@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'home_tile.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
@@ -27,15 +28,32 @@ class SubjectHubState extends State<SubjectHub> {
 
   bool submitting = false;
 
+  bool fontLoaded = false;
+
   List<Subject> subjectList = new List<Subject>();
 
-  String font = "";
+  FontData fontData;
 
   @override
   void initState() {
     recorder.assignParent(this);
     retrieveData();
     super.initState();
+  }
+
+  //get current font from shared preferences if present
+  void getFontData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        fontLoaded = true;
+        fontData = new FontData(
+            prefs.getString("font"), Color(prefs.getInt("fontColour")),
+            prefs.getDouble("fontSize"));
+      });
+    }
   }
 
   @override
@@ -45,9 +63,11 @@ class SubjectHubState extends State<SubjectHub> {
   }
 
   void retrieveData() {
+    fontLoaded = false;
     subjectsLoaded = false;
     subjectList.clear();
     getSubjects();
+    getFontData();
   }
 
   @override
@@ -68,7 +88,7 @@ class SubjectHubState extends State<SubjectHub> {
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        new Text("Add Subjects By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                        new Text("Add Subjects By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: fontData.font, fontSize: 24.0), ),
                         new SizedBox(height: 10.0,),
                         new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
                       ]
@@ -91,6 +111,7 @@ class SubjectHubState extends State<SubjectHub> {
                 children: <Widget>[
                   SizedBox(height: 10.0),
                   SubjectHubTile(
+                    fontData: fontData,
                     subject: subjectList.elementAt(position), state: this,)
                 ],
               )
@@ -112,7 +133,7 @@ class SubjectHubState extends State<SubjectHub> {
                   //drawer header
                   DrawerHeader(
                     child: Text('Settings',
-                        style: TextStyle(fontSize: 25.0, fontFamily: font)),
+                        style: TextStyle(fontSize: 25.0, fontFamily: fontLoaded ? fontData.font : "")),
                     decoration: BoxDecoration(
                       color: Colors.red,
                     ),
@@ -121,7 +142,7 @@ class SubjectHubState extends State<SubjectHub> {
                   ListTile(
                     leading: Icon(Icons.font_download),
                     title: Text('Fonts',
-                        style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                        style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) => FontSettings()));
@@ -131,7 +152,7 @@ class SubjectHubState extends State<SubjectHub> {
                   ListTile(
                     leading: Icon(Icons.exit_to_app),
                     title: Text('Sign Out',
-                        style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                        style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                     onTap: () {
                       signOut();
                     },
@@ -140,7 +161,7 @@ class SubjectHubState extends State<SubjectHub> {
               ),
             ),
             appBar: new AppBar(
-              title: new Text("Subject Hub", style: TextStyle(fontFamily: font),),
+              title: new Text("Subject Hub", style: TextStyle(fontFamily: fontLoaded ? fontData.font : ""),),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[
                 // action button
@@ -183,7 +204,7 @@ class SubjectHubState extends State<SubjectHub> {
             body: new Stack(
               children: <Widget>[
                 new Center(
-                  child: subjectsLoaded ? sList : new SizedBox(width: 50.0,
+                  child: subjectsLoaded && fontLoaded ? sList : new SizedBox(width: 50.0,
                       height: 50.0,
                       child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                 ),
@@ -218,10 +239,10 @@ class SubjectHubState extends State<SubjectHub> {
   void signOut() {
     AlertDialog signOutDialog = new AlertDialog(
       content: new Text(
-          "You are about to be Signed Out", style: TextStyle(fontFamily: font)),
+          "You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font)),
       actions: <Widget>[
         new FlatButton(onPressed: () => handleSignOut(),
-            child: new Text("OK", style: TextStyle(fontFamily: font)))
+            child: new Text("OK", style: TextStyle(fontFamily: fontData.font)))
       ],
     );
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/class_material.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/homework.dart';
 import 'package:my_school_life_prototype/test_result.dart';
 import 'package:my_school_life_prototype/timetable_slot.dart';
@@ -27,7 +28,8 @@ class RequestManager
   final String deleteFileUrl = url+"/deleteFile";
   final String getFilesUrl = url+"/getFiles";
   final String commandUrl = url+"/command";
-  final String putFontUrl = url+"/font";
+  final String putFontUrl = url+"/putFontData";
+  final String getFontUrl = url+"/getFontData";
   final String loginUrl = url+"/signin";
   final String registerUrl = url+"/register";
   final String uploadNoteURL = url+"/putNote";
@@ -147,7 +149,7 @@ class RequestManager
 
 
   //method to submit the new font
-  Future<String> changeFont(String currentFont) async
+  Future<String> putFontData(FontData fontData) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -155,7 +157,9 @@ class RequestManager
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
-      "font": currentFont
+      "font": fontData.font,
+      "fontColour": fontData.color.value,
+      "fontSize": fontData.size
     });
 
     try {
@@ -169,7 +173,9 @@ class RequestManager
       //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
-        await prefs.setString("font", currentFont);
+        await prefs.setString("font", fontData.font);
+        await prefs.setInt("fontColour", fontData.color.value);
+        await prefs.setDouble("fontSize", fontData.size);
         return "success";
       }
     }
@@ -178,6 +184,37 @@ class RequestManager
     {
       return "error";
     }
+  }
+
+  Future<FontData> getFontData() async
+  {
+    FontData data;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getFontUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['data']?.values != null) {
+
+      final values = response.data['data'];
+
+      data = new FontData(
+          values['font'],
+          Color(int.tryParse(values['fontColour'])),
+          double.tryParse(values['fontSize'])
+      );
+    }else{
+      data = new FontData(
+        "", Colors.black, 24.0
+      );
+    }
+
+    await prefs.setString("font", data.font);
+    await prefs.setInt("fontColour", data.color.value);
+    await prefs.setDouble("fontSize", data.size);
+
+    return data;
   }
 
   dynamic putSubject(Map jsonMap) async

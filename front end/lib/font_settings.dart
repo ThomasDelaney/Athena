@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/block_picker.dart';
+import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/recording_manager.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 import 'request_manager.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart' as rootBundle;
+import 'dart:typed_data';
 
 //Widget that displays the settings that allow the user to change the font used in the application
 class FontSettings extends StatefulWidget {
@@ -11,157 +21,383 @@ class FontSettings extends StatefulWidget {
 
 class _FontSettingsState extends State<FontSettings> {
 
-  //placeholder for current font
-  String currentFont = "";
-  bool uploadingFont = false;
+  bool submitting = false;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   RequestManager requestManager = RequestManager.singleton;
 
+  //Recording Manager Object
+  RecordingManger recorder = RecordingManger.singleton;
 
+  bool loaded = false;
+
+  FontData currentData;
+  FontData oldData;
+
+  @override
   void initState() {
-    getCurrentFont();
+    getCurrentFontData();
+    super.initState();
   }
 
   //get current font from shared preferences if present
-  void getCurrentFont() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  void getCurrentFontData() async {
+
+    FontData data = await requestManager.getFontData();
 
     setState(() {
-      currentFont = prefs.getString("font");
+      loaded = true;
+      currentData = new FontData(data.font, data.color, data.size);
+      oldData = new FontData(data.font, data.color, data.size);
     });
+  }
+
+  bool isFileEdited() {
+    if (currentData.font == oldData.font) {
+      return false;
+    }
+    else {
+      return true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final page = Scaffold(
-      //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-      endDrawer: new Drawer(
-        child: ListView(
-          //Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
+    return WillPopScope(
+        onWillPop: exitCheck,
+        child: Stack(
           children: <Widget>[
-            //drawer header
-            DrawerHeader(
-              child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: currentFont)),
-              decoration: BoxDecoration(
-                color: Colors.red,
-              ),
-            ),
-            //fonts option
-            ListTile(
-              leading: Icon(Icons.font_download),
-              title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: currentFont)),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
-              },
-            ),
-            //sign out option
-            ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: currentFont)),
-              onTap: () {
-                signOut();
-              },
-            ),
-          ],
-        ),
-      ),
-        appBar: new AppBar(
-          title: new Text("Thomas Delaney"),
-          actions: <Widget>[
-            // action button for settings
-            Builder(
-              builder: (context) => IconButton(
-                icon: Icon(Icons.settings),
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
-              ),
-            ),
-          ],
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) =>
-          //create stack to layout all the following widgets
-          new Stack(
-            children: <Widget>[
-              new Container(
-                alignment: Alignment.topLeft,
-                padding: EdgeInsets.fromLTRB(20.0, 10.0, 0.0, 0.0),
-                //dropdown for choosing the current font, the current fonts are stored in the assets folder
-                child: new DropdownButton<String>(
-                  //initial value
-                  value: this.currentFont == "" ? null : this.currentFont,
-                  hint: new Text("Choose a Font", style: TextStyle(fontSize: 20.0)),
-                  items: <String>['Roboto', 'NotoSansTC', 'Montserrat'].map((String value) {
-                    return new DropdownMenuItem<String>(
-                      value: value,
-                      child: new Text(value,  style: TextStyle(fontSize: 20.0)),
-                    );
-                  }).toList(),
-                  //when the font is changed in the dropdown, change the current font state
-                  onChanged: (String val){
-                    setState(() {this.currentFont = val;});
-                  },
+            Scaffold(
+              key: _scaffoldKey,
+              endDrawer: new Drawer(
+                child: ListView(
+                  //Remove any padding from the ListView.
+                  padding: EdgeInsets.zero,
+                  children: <Widget>[
+                    //drawer header
+                    DrawerHeader(
+                      child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: loaded ? oldData.font : "")),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).accentColor,
+                      ),
+                    ),
+                    //fonts option
+                    ListTile(
+                      leading: Icon(Icons.font_download),
+                      title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: loaded ? oldData.font : "")),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
+                      },
+                    ),
+                    //sign out option
+                    ListTile(
+                      leading: Icon(Icons.exit_to_app),
+                      title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: loaded ? oldData.font : "")),
+                      onTap: () {
+                        signOut();
+                      },
+                    ),
+                  ],
                 ),
               ),
-              //container to display a piece of text, which shows off how the new font looks when selected from the dropdown
-              new Container(alignment: Alignment.center, child: Text("Test the Font Here!", style: TextStyle(fontFamily: this.currentFont, fontSize: 35.0))),
-              //container for button that submits the new font
-              new Container(
-                  padding: EdgeInsets.all(10.0),
-                  alignment: Alignment.topRight,
-                  child: new RaisedButton(
-                    child: const Text('Okay', style: TextStyle(color: Colors.white)),
-                    color: Theme.of(context).accentColor,
-                    elevation: 4.0,
-                    splashColor: Colors.blueGrey,
-                    onPressed: () {
-                      //if the font is empty, show a snackbar with an error
-                      this.currentFont == "" ? Scaffold.of(context).showSnackBar(new SnackBar(content: Text('Please Choose a new Font!'))) : changeFont(context);
-                    },
-                  )
+              appBar: new AppBar(
+                backgroundColor: Theme.of(context).accentColor,
+                title: Text("Font Settings", style: TextStyle(fontFamily: loaded ? oldData.font : "")),
+                //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
+                actions: recorder.recording ? <Widget>[
+                  // action button
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    iconSize: 30.0,
+                    onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
+                  ),
+                ] : <Widget>[
+                  // else display the mic button and settings button
+                  IconButton(
+                    icon: Icon(Icons.mic),
+                    iconSize: 30.0,
+                    onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
+                  ),
+                  Builder(
+                    builder: (context) => IconButton(
+                      icon: Icon(Icons.settings),
+                      onPressed: () => Scaffold.of(context).openEndDrawer(),
+                    ),
+                  ),
+                ],
               ),
-              new Container(
-                //if submitting font, show a circular progress indicator, with a modal barrier which ensures the user cannot interact with the app while submitting
-                  alignment: Alignment.center,
-                  child: uploadingFont ? new Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      new Container(
-                          margin: MediaQuery.of(context).padding,
-                          child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
-                    ],
-                  )
-                  : new Container()
-              ),
-            ],
-          ),
-        ),
-    );
+              resizeToAvoidBottomPadding: false,
+              body: loaded ? new ListView(
+                children: <Widget>[
+                  SizedBox(height: 20.0),
+                  new Card(
+                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                      elevation: 3.0,
+                      child: new Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          new Container(
+                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                            child: new DropdownButton<String>(
+                              isExpanded: true,
+                              value: this.currentData.font == "" ? null : this.currentData.font,
+                              hint: new Text("Choose a Font", style: TextStyle(fontSize: 24.0)),
+                              items: <String>['Roboto', 'NotoSansTC', 'Montserrat', 'Arimo', 'B612', 'FiraSans', 'JosefinSans', 'Oxygen', 'Teko', 'Cuprum',
+                              'Orbitron', 'Rajdhani', 'Monda', 'Philosopher', 'SignikaNegative', 'Amaranth'].map((String value) {
+                                return new DropdownMenuItem<String>(
+                                  value: value,
+                                  child: new Text(value,  style: TextStyle(fontSize: 24.0, fontFamily: value)),
+                                );
+                              }).toList(),
+                              //when the font is changed in the dropdown, change the current font state
+                              onChanged: (String val){
+                                setState(() {this.currentData.font = val;});
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 20.0),
+                          Container(
+                            margin: EdgeInsets.fromLTRB(5.0, 0.0, 20.0, 0.0),
+                            child: new Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Flexible(
+                                  child: new Slider(
+                                    activeColor: Theme.of(context).accentColor,
+                                    divisions: 26,
+                                    value: currentData.size != null ? currentData.size : 12.0,
+                                    min: 12.0,
+                                    onChanged: (newVal) {
+                                      setState(() {
+                                        currentData.size = newVal;
+                                      });
+                                    },
+                                    max: 64,
+                                  ),
+                                ),
+                                new Text(currentData.size.round().toString(), style: TextStyle(fontSize: 18.0)),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 20.0),
+                          new Container(
+                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                              child: ButtonTheme(
+                                height: 50.0,
+                                child: RaisedButton(
+                                  elevation: 3.0,
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Center(
+                                          child: Container(
+                                              height: MediaQuery.of(context).size.height*0.8,
+                                              width: MediaQuery.of(context).size.width*0.985,
+                                              child: Card(
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: <Widget>[
+                                                    Text('Select a Colour for the Font', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+                                                    Container(
+                                                      width: MediaQuery.of(context).size.width,
+                                                      height: MediaQuery.of(context).size.height * 0.65,
+                                                      child: Swiper(
+                                                        viewportFraction: 0.99999,
+                                                        scale: 0.9,
+                                                        pagination: new SwiperPagination(
+                                                          builder: SwiperPagination.dots,
+                                                        ),
+                                                        scrollDirection: Axis.horizontal,
+                                                        control: SwiperControl(color: Theme.of(context).accentColor),
+                                                        itemCount: 2,
+                                                        itemBuilder: (BuildContext context, int index){
+                                                          if (index == 0) {
+                                                            return Column(
+                                                              children: <Widget>[
+                                                                Text("Basic Colours", style: TextStyle(fontSize: 20.0)),
+                                                                new SizedBox(height: 20.0,),
+                                                                SingleChildScrollView(
+                                                                    child: Container(
+                                                                      height: MediaQuery.of(context).size.height * 0.50,
+                                                                      child: BlockPicker(
+                                                                        pickerColor: currentData.color,
+                                                                        onColorChanged: changeColorAndPopout,
+                                                                      ),
+                                                                    )
+                                                                )
+                                                              ],
+                                                            );
+                                                          }
+                                                          else {
+                                                            return Column(
+                                                              children: <Widget>[
+                                                                Text("Colourblind Friendly Colours", style: TextStyle(fontSize: 20.0)),
+                                                                new SizedBox(height: 20.0,),
+                                                                SingleChildScrollView(
+                                                                  child: BlockPicker(
+                                                                    availableColors: ThemeCheck.colorBlindFriendlyColours(),
+                                                                    pickerColor: currentData.color,
+                                                                    onColorChanged: changeColorAndPopout,
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            );
+                                                          }
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                          ),
+                                        );},
+                                    );},
+                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Font Colour', style: TextStyle(fontSize: 24.0))),
+                                  color: currentData.color,
 
-    return page;
+                                  textColor: ThemeCheck.colorCheck(currentData.color) ? Colors.white : Colors.black,
+                                ),
+                              )
+                          ),
+                          SizedBox(height: 20.0),
+                          new Container(
+                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                              child: Text(
+                                  "Test the Font Here!",
+                                  style: TextStyle(
+                                      fontFamily: this.currentData.font,
+                                      color: currentData.color != null ? currentData.color : Colors.black,
+                                      fontSize: currentData.size != null ? currentData.size : 35.0
+                                  ))
+                          ),
+                          SizedBox(height: 20.0),
+                        ],
+                      )
+                  ),
+                  SizedBox(height: 10.0),
+                  new Container(
+                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                      child: ButtonTheme(
+                        height: 50.0,
+                        child: RaisedButton(
+                          elevation: 3.0,
+                          onPressed: showAreYouSureDialog,
+                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
+                          color: Theme.of(context).errorColor,
+
+                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                        ),
+                      )
+                  )
+                ],
+              ) : new Container()
+            ),
+            submitting || !loaded ? new Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                new Container(
+                    margin: MediaQuery.of(context).padding,
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+              ],
+            ): new Container()
+          ],
+        )
+    );
   }
 
+  changeColorAndPopout(Color color) => setState(() {
+    currentData.color = color;
+    Navigator.of(context).pop();
+  });
+
   //method to submit the new font
-  void changeFont(BuildContext _context) async
+  void changeFont() async
   {
     submit(true);
 
-    String result = await requestManager.changeFont(this.currentFont);
+    String result = await requestManager.putFontData(this.currentData);
 
     if (result == "error") {
       showErrorDialog();
     }
     else {
-      Scaffold.of(_context).showSnackBar(new SnackBar(content: Text('Font Updated!!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Font Updated!')));
       submit(false);
     }
+  }
+
+  Future<bool> exitCheck() async{
+    if (isFileEdited()) {
+      AlertDialog areYouSure = new AlertDialog(
+        content: new Text("Do you want to change your Font?", style: TextStyle(fontFamily: oldData.font),),
+        actions: <Widget>[
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () async {
+            if (currentData.font == "") {
+              Navigator.pop(context);
+              showMustHaveFontDialog();
+            }
+            else {
+              submit(true);
+              Navigator.pop(context);
+              await changeFont();
+              submit(false);
+              Navigator.pop(context);
+            }
+          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        ],
+      );
+
+      return showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
+    }
+    else {
+      return true;
+    }
+  }
+
+  void showAreYouSureDialog() {
+
+    AlertDialog areYouSure = new AlertDialog(
+      content: new Text("Do you want to change your Font?", style: TextStyle(fontFamily: oldData.font),),
+      actions: <Widget>[
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () async {
+          if (currentData.font == "") {
+            Navigator.pop(context);
+            showMustHaveFontDialog();
+          }
+          else {
+            submit(true);
+            Navigator.pop(context);
+            await changeFont();
+            submit(false);
+            Navigator.pop(context);
+          }
+        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+      ],
+    );
+
+    showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
+  }
+
+  void showMustHaveFontDialog() {
+    AlertDialog areYouSure = new AlertDialog(
+      content: new Text("You must select a Font", style: TextStyle(fontFamily: oldData.font),),
+      actions: <Widget>[
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+      ],
+    );
+
+    showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
   //change submission state
   void submit(bool state)
   {
     setState(() {
-      uploadingFont = state;
+      submitting = state;
     });
   }
 
@@ -184,9 +420,9 @@ class _FontSettingsState extends State<FontSettings> {
   void signOut()
   {
     AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: currentFont)),
+      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: currentData.font)),
       actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: currentFont)))
+        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: currentData.font)))
       ],
     );
 

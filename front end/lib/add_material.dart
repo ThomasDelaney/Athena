@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/MaterialViewer.dart';
+import 'package:my_school_life_prototype/material_viewer.dart';
 import 'package:my_school_life_prototype/class_material.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
 import 'package:my_school_life_prototype/request_manager.dart';

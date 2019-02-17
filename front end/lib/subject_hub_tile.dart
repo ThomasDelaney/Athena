@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/homework_page.dart';
 import 'package:my_school_life_prototype/materials.dart';
 import 'package:my_school_life_prototype/progress.dart';
@@ -11,11 +12,13 @@ import 'request_manager.dart';
 
 class SubjectHubTile extends StatelessWidget {
 
-  SubjectHubTile({Key key, this.subject, this.state}) : super(key: key);
+  SubjectHubTile({Key key, this.subject, this.state, this.fontData}) : super(key: key);
 
   final SubjectHubState state;
 
   final Subject subject;
+
+  final FontData fontData;
 
   final RequestManager requestManager = RequestManager.singleton;
 
@@ -49,7 +52,7 @@ class SubjectHubTile extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Flexible(child: Text(subject.name, textScaleFactor: scaleFactor, style: TextStyle(fontSize: 30.0, color: Colors.white, fontWeight: FontWeight.bold))),
+                      Flexible(child: Text(subject.name, textScaleFactor: scaleFactor, style: TextStyle(fontSize: 30.0, fontFamily: fontData.font, color: Colors.white, fontWeight: FontWeight.bold))),
                       Row (
                         children: <Widget>[
                           IconButton(
@@ -86,7 +89,7 @@ class SubjectHubTile extends StatelessWidget {
                                       children: <Widget>[
                                         Icon(Icons.business_center, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                         SizedBox(width: 10.0*scaleFactor),
-                                        Text("Materials", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                        Text("Materials", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
                                       ],
                                     )
                                 ),
@@ -105,7 +108,7 @@ class SubjectHubTile extends StatelessWidget {
                                       children: <Widget>[
                                         Icon(Icons.insert_chart, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                         SizedBox(width: 10.0*scaleFactor),
-                                        Text("Progress", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                        Text("Progress", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
                                       ],
                                     )
                                 ),
@@ -129,7 +132,7 @@ class SubjectHubTile extends StatelessWidget {
                                       children: <Widget>[
                                         Icon(Icons.school, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                         SizedBox(width: 10.0*scaleFactor),
-                                        Text("Test Results", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                        Text("Test Results", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
                                       ],
                                     )
                                 ),
@@ -148,7 +151,7 @@ class SubjectHubTile extends StatelessWidget {
                                     children: <Widget>[
                                       Icon(Icons.library_books, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                       SizedBox(width: 10.0*scaleFactor),
-                                      Text("Homework", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                      Text("Homework", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
                                     ],
                                   ),
                                 ),
@@ -170,7 +173,7 @@ class SubjectHubTile extends StatelessWidget {
                                 children: <Widget>[
                                   Icon(Icons.folder_open, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                                   SizedBox(width: 10.0*scaleFactor),
-                                  Text("Hardback", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontWeight: FontWeight.bold, color: Color.fromRGBO(70, 68, 71, 1)))
+                                  Text("Hardback", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
                                 ],
                               ),
                             ),
@@ -182,7 +185,6 @@ class SubjectHubTile extends StatelessWidget {
                 ],
               )
             ),
-            //Icon(icon, size: tileSize/2.69, color: Color.fromRGBO(70, 68, 71, 1),)
           ],
         ),
       )

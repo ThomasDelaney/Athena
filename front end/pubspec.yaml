@@ -69,7 +69,83 @@ flutter:
           style: italic
         - asset: assets/fonts/Montserrat-Bold.ttf
           weight: 700
-
+    - family: Arimo
+      fonts:
+      - asset: assets/fonts/Arimo-Regular.ttf
+      - asset: assets/fonts/Arimo-Italic.ttf
+        style: italic
+      - asset: assets/fonts/Arimo-Bold.ttf
+        weight: 700
+    - family: B612
+      fonts:
+      - asset: assets/fonts/B612-Regular.ttf
+      - asset: assets/fonts/B612-Italic.ttf
+        style: italic
+      - asset: assets/fonts/B612-Bold.ttf
+        weight: 700
+    - family: FiraSans
+      fonts:
+      - asset: assets/fonts/FiraSans-Regular.ttf
+      - asset: assets/fonts/FiraSans-Italic.ttf
+        style: italic
+      - asset: assets/fonts/FiraSans-Bold.ttf
+        weight: 700
+    - family: JosefinSans
+      fonts:
+      - asset: assets/fonts/JosefinSans-Regular.ttf
+      - asset: assets/fonts/JosefinSans-Italic.ttf
+        style: italic
+      - asset: assets/fonts/JosefinSans-Bold.ttf
+        weight: 700
+    - family: Oxygen
+      fonts:
+      - asset: assets/fonts/Oxygen-Regular.ttf
+      - asset: assets/fonts/Oxygen-Bold.ttf
+        weight: 700
+    - family: Teko
+      fonts:
+      - asset: assets/fonts/Teko-Regular.ttf
+      - asset: assets/fonts/Teko-Bold.ttf
+        weight: 700
+    - family: Cuprum
+      fonts:
+      - asset: assets/fonts/Cuprum-Regular.ttf
+      - asset: assets/fonts/Cuprum-Bold.ttf
+        weight: 700
+    - family: Orbitron
+      fonts:
+      - asset: assets/fonts/Orbitron-Regular.ttf
+      - asset: assets/fonts/Orbitron-Bold.ttf
+        weight: 700
+    - family: Rajdhani
+      fonts:
+      - asset: assets/fonts/Rajdhani-Regular.ttf
+      - asset: assets/fonts/Rajdhani-Bold.ttf
+        weight: 700
+    - family: Monda
+      fonts:
+      - asset: assets/fonts/Monda-Regular.ttf
+      - asset: assets/fonts/Monda-Bold.ttf
+        weight: 700
+    - family: Philosopher
+      fonts:
+      - asset: assets/fonts/Philosopher-Regular.ttf
+      - asset: assets/fonts/Philosopher-Italic.ttf
+        style: italic
+      - asset: assets/fonts/Philosopher-Bold.ttf
+        weight: 700
+    - family: SignikaNegative
+      fonts:
+      - asset: assets/fonts/SignikaNegative-Regular.ttf
+      - asset: assets/fonts/SignikaNegative-Bold.ttf
+        weight: 700
+    - family: Amaranth
+      fonts:
+      - asset: assets/fonts/Amaranth-Regular.ttf
+      - asset: assets/fonts/Amaranth-Italic.ttf
+        style: italic
+      - asset: assets/fonts/Amaranth-Bold.ttf
+        weight: 700
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

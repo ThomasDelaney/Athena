@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/tag.dart';
 import 'dart:async';
 import 'login_page.dart';
@@ -59,7 +60,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   //size of file card
   double fileCardSize = 150.0;
-  String font = "";
+  FontData fontData;
+
+  bool fontLoaded = false;
 
   //get user files
   void getFiles() async
@@ -82,12 +85,15 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   }
 
   //get current font from shared preferences if present
-  void getFont() async
+  void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (this.mounted) {
-      this.setState((){font = prefs.getString("font");});
+      this.setState((){
+        fontLoaded = true;
+        fontData = new FontData(prefs.getString("font"), Color(prefs.getInt("fontColour")), prefs.getDouble("fontSize"));
+      });
     }
   }
 
@@ -113,7 +119,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     oldNotesList.clear();
     getFiles();
     getNotes();
-    getFont();
+    getFontData();
   }
 
   @override
@@ -144,7 +150,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                       child: new Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 14.0/scaleFactor),),
+                            new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: fontData.font, color: fontData.color, fontSize: 14.0/scaleFactor),),
                             new Icon(Icons.cloud_upload, size: 40.0 / scaleFactor, color: Colors.grey,)
                           ]
                       ),
@@ -259,12 +265,12 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               child: new SizedBox(
                 width: MediaQuery.of(context).size.width * 0.95,
                 child: GestureDetector(
-                  onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject,))).whenComplete(retrieveData);},
+                  onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontData,))).whenComplete(retrieveData);},
                   child: new Card(
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0/scaleFactor), ),
+                          new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: fontData.font, color: fontData.color, fontSize: 24.0/scaleFactor), ),
                           new SizedBox(height: 10.0,),
                           new Icon(Icons.note_add, size: 40.0/scaleFactor, color: Colors.grey,),
                         ]
@@ -284,7 +290,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
               elevation: 3.0,
               child: new ListTile(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position], subject: widget.subject,))).whenComplete(retrieveData),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position], subject: widget.subject, fontData: fontData))).whenComplete(retrieveData),
                 contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
                 leading: Container(
                   padding: EdgeInsets.only(right: 12.0),
@@ -295,7 +301,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                 ),
                 title: Text(
                   notesList[position].fileName,
-                  style: TextStyle(fontSize: 20.0/scaleFactor, fontFamily: font),
+                  style: TextStyle(fontSize: 20.0/scaleFactor, fontFamily: fontData.font, color: fontData.color),
                 ),
                 trailing: GestureDetector(
                   child: Icon(Icons.delete, size: 32.0/scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
@@ -319,7 +325,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             children: <Widget>[
               //drawer header
               DrawerHeader(
-                child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font)),
+                child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: fontLoaded ? fontData.font : "")),
                 decoration: BoxDecoration(
                   color: Colors.red,
                 ),
@@ -327,7 +333,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               //fonts option
               ListTile(
                 leading: Icon(Icons.font_download),
-                title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
                 },
@@ -335,7 +341,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               //sign out option
               ListTile(
                 leading: Icon(Icons.exit_to_app),
-                title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                 onTap: () {
                   signOut();
                 },
@@ -345,7 +351,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
         ),
         appBar: new AppBar(
           backgroundColor: Color(int.tryParse(widget.subject.colour)),
-          title: Text(widget.subject.name, style: TextStyle(fontFamily: font)),
+          title: Text(widget.subject.name, style: TextStyle(fontFamily: fontLoaded ? fontData.font : "")),
           //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
           actions: recorder.recording ? <Widget>[
             // action button
@@ -358,7 +364,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             IconButton(
               icon: Icon(Icons.note_add),
               iconSize: 30.0,
-              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject,))).whenComplete(retrieveData);},
+              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontLoaded ? fontData.font : new FontData("", Colors.black, 24.0)))).whenComplete(retrieveData);},
             ),
             filterTag != "" ? IconButton(
               icon: Icon(Icons.close),
@@ -502,9 +508,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   void showErrorDialog()
   {
     AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again", style: TextStyle(fontFamily: font),),
+      content: new Text("An Error has occured. Please try again", style: TextStyle(fontFamily: fontData.font),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font),))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: fontData.font),))
       ],
     );
 
@@ -513,7 +519,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   void deleteNoteDialog(Note note) {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to DELETE this note?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to DELETE this note?", style: TextStyle(fontFamily: fontData.font),),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
         new FlatButton(onPressed: () {
@@ -540,7 +546,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
       AlertDialog responseDialog = new AlertDialog(
         content: new Text(response['error']['response']),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); /*submit(false);*/}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK"))
         ],
       );
 
@@ -552,9 +558,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   void signOut()
   {
     AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: font)),
+      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font)),
       actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: font)))
+        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: fontData.font)))
       ],
     );
 
