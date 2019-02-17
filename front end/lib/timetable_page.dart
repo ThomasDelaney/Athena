@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/add_timeslot.dart';
+import 'package:my_school_life_prototype/materials.dart';
+import 'package:my_school_life_prototype/subject.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'timetable_slot.dart';
 import 'request_manager.dart';
@@ -31,6 +33,8 @@ class _TimetablePageState extends State<TimetablePage> {
   String font = "";
 
   bool slotsLoaded = false;
+
+  bool submitting = false;
 
   //map is "weekday", list of timeslot objects for that weekday
   Map<String, List<TimetableSlot>> timeslots = new Map<String, List<TimetableSlot>>();
@@ -74,36 +78,71 @@ class _TimetablePageState extends State<TimetablePage> {
         //start the user on the initial day
         initialIndex: weekdays.indexOf(widget.initialDay),
         length: weekdays.length,
-        child: Scaffold(
-          key: _scaffoldKey,
-          appBar: AppBar(
-            title: Text('Timetables', style: TextStyle(fontFamily: font)),
-            //tab bar implements the drawing and navigation between tabs
-            bottom: TabBar(
-              isScrollable: true,
-              labelPadding: EdgeInsets.fromLTRB(12.5, 0.0, 12.5, 0.0),
-              tabs: weekdays.map((String day) {
-                return Tab(
-                  text: day,
-                );
-              }).toList(),
-            ),
-          ),
-          //body of the tab
-          body: TabBarView(
-            children: weekdays.map((String day) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: slotsLoaded ? TimeslotCard(font: font, subjectList: timeslots[day], day: day, pageState: this) :
-                new Center(
-                  child: SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+        child: Stack(
+          children: <Widget>[
+            Scaffold(
+                key: _scaffoldKey,
+                appBar: AppBar(
+                  title: Text('Timetables', style: TextStyle(fontFamily: font)),
+                  //tab bar implements the drawing and navigation between tabs
+                  bottom: TabBar(
+                    isScrollable: true,
+                    labelPadding: EdgeInsets.fromLTRB(12.5, 0.0, 12.5, 0.0),
+                    tabs: weekdays.map((String day) {
+                      return Tab(
+                        text: day,
+                      );
+                    }).toList(),
+                  ),
+                ),
+                //body of the tab
+                body: new Stack(
+                  children: <Widget>[
+                    new Center(
+                      child: TabBarView(
+                        children: weekdays.map((String day) {
+                          return Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: slotsLoaded ? TimeslotCard(font: font, subjectList: timeslots[day], day: day, pageState: this) :
+                              new Center(
+                                child: SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+                              )
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    new Container(
+                        child: recorder.recording ?
+                        new Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            new Container(
+                                child: new ModalBarrier(
+                                  color: Colors.black54, dismissible: false,)),
+                            recorder.drawRecordingCard(context)
+                          ],) : new Container()
+                    ),
+                  ],
                 )
-              );
-            }).toList(),
-          ),
-        ),
+            ),
+            submitting ? new Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                new Container(
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+              ],
+            ) : new Container()
+          ],
+        )
       ),
     );
+  }
+
+  void submit(bool state)
+  {
+    setState(() {
+      submitting = state;
+    });
   }
 }
 
@@ -212,7 +251,13 @@ class TimeslotCard extends StatelessWidget {
                             IconButton(
                                 icon: Icon(Icons.business_center, color: Colors.grey),
                                 iconSize: 32.5,
-                                onPressed: () {},
+                                onPressed: ()
+                                  async {
+                                    pageState.submit(true);
+                                    Subject subject = await Subject.getSubjectByTitle(subjectList[position].subjectTitle);
+                                    pageState.submit(false);
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject)));
+                                  },
                             ),
                           ]
                         ),

@@ -49,70 +49,70 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-        endDrawer: new Drawer(
-          child: ListView(
-            //Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              //drawer header
-              DrawerHeader(
-                child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font, color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black)),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                ),
+      //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
+      endDrawer: new Drawer(
+        child: ListView(
+          //Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            //drawer header
+            DrawerHeader(
+              child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font, color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black)),
+              decoration: BoxDecoration(
+                color: Colors.red,
               ),
-              //fonts option
-              ListTile(
-                leading: Icon(Icons.font_download),
-                title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: font)),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.local_offer),
-                title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: font)),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
-                },
-              ),
-              //sign out option
-              ListTile(
-                leading: Icon(Icons.exit_to_app),
-                title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: font)),
-                onTap: () {
-                  signOut();
-                },
-              ),
-            ],
-          ),
-        ),
-        appBar: new AppBar(
-          title: new Text("Home", style: TextStyle(fontFamily: font),),
-          //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
-          actions: recorder.recording ? <Widget>[
-            // action button
-            IconButton(
-              icon: Icon(Icons.close),
-              iconSize: 30.0,
-              onPressed: () {setState(() {recorder.cancelRecording();});},
             ),
-          ] : <Widget>[
-            // else display the mic button and settings button
-            IconButton(
-              icon: Icon(Icons.mic),
-              iconSize: 30.0,
-              onPressed: () {setState(() {recorder.recordAudio(context);});},
+            //fonts option
+            ListTile(
+              leading: Icon(Icons.font_download),
+              title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
+              },
             ),
-            Builder(
-              builder: (context) => IconButton(
-                icon: Icon(Icons.settings),
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
-              ),
+            ListTile(
+              leading: Icon(Icons.local_offer),
+              title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
+              },
+            ),
+            //sign out option
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+              onTap: () {
+                signOut();
+              },
             ),
           ],
         ),
+      ),
+      appBar: new AppBar(
+        title: new Text("Home", style: TextStyle(fontFamily: font),),
+        //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
+        actions: recorder.recording ? <Widget>[
+          // action button
+          IconButton(
+            icon: Icon(Icons.close),
+            iconSize: 30.0,
+            onPressed: () {setState(() {recorder.cancelRecording();});},
+          ),
+        ] : <Widget>[
+          // else display the mic button and settings button
+          IconButton(
+            icon: Icon(Icons.mic),
+            iconSize: 30.0,
+            onPressed: () {setState(() {recorder.recordAudio(context);});},
+          ),
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
+          ),
+        ],
+      ),
       body: new Stack(
         children: <Widget>[
           new Center(
@@ -125,12 +125,14 @@ class HomePageState extends State<HomePage> {
             ),
           ),
           new Container(
-              child: recorder.recording ?
-              new Stack(
-                alignment: Alignment.center,
-                children: <Widget>[
-                  new Container(
-                      child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
+            child: recorder.recording ?
+            new Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                new Container(
+                  margin: MediaQuery.of(context).viewInsets,
+                  child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],
+            ) : new Container()
           ),
         ],
       )

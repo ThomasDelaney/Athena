@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:zefyr/zefyr.dart';
 import 'request_manager.dart';
 import 'note.dart';
@@ -86,6 +87,11 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
   @override
   Widget build(BuildContext context) {
+
+    double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*1.85;
+    double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+    double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
+
     return WillPopScope(
         onWillPop: exitCheck,
         child: new Stack(children: <Widget>[
@@ -107,8 +113,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
                       )
                     ]
                 ),
-                body: new Container(
-                  child: Column(
+                body: MediaQuery.of(context).orientation == Orientation.portrait ? new Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       SizedBox(height: 10.0),
@@ -120,12 +125,12 @@ class _TextFileEditorState extends State<TextFileEditor> {
                         controller: fileNameController,
                         decoration: InputDecoration(
                           hintText: "Note Name",
-                          contentPadding: EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
+                          contentPadding: EdgeInsets.fromLTRB(15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor),
                           border: InputBorder.none,
                         ),
                       ),
-                      SizedBox(height: 10.0),
-                      new Flexible(
+                      SizedBox(height: 10.0/scaleFactor),
+                      new Expanded(
                           child: Container(
                               child: Card(
                                   elevation: 18.0,
@@ -136,19 +141,80 @@ class _TextFileEditorState extends State<TextFileEditor> {
                                                 color: Theme.of(context).accentColor,
                                                 iconColor: Theme.of(context).canvasColor,
                                                 disabledIconColor: Theme.of(context).disabledColor)),
-                                        child: ZefyrEditor(
-                                          autofocus: true,
+                                        child: ZefyrField(
                                           controller: _controller,
                                           focusNode: _focusNode,
-                                        ),
+                                          autofocus: false,
+                                          physics: ClampingScrollPhysics(),
+                                        )
                                       )
                                   )
                               )
                           )
                       )
                     ],
-                  ),
-                )
+                ) :
+                    new Row(
+                      children: <Widget>[
+                        Flexible(
+                          child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              MediaQuery.of(context).viewInsets.bottom == 0 ? SizedBox(height: 10.0/scaleFactor) : new Container(),
+                              MediaQuery.of(context).viewInsets.bottom == 0 ? new TextFormField(
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 18.0),
+                                keyboardType: TextInputType.text,
+                                autofocus: false,
+                                controller: fileNameController,
+                                decoration: InputDecoration(
+                                  hintText: "Note Name",
+                                  contentPadding: EdgeInsets.fromLTRB(15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor),
+                                  border: InputBorder.none,
+                                ),
+                              ) : new Container(),
+                              MediaQuery.of(context).viewInsets.bottom == 0 ? SizedBox(height: 10.0/scaleFactor) : new Container(),
+                              new Expanded(
+                                  child: Container(
+                                      child: Card(
+                                          elevation: 18.0,
+                                          child: new ZefyrScaffold(
+                                              child: new ZefyrTheme(
+                                                  data: new ZefyrThemeData(
+                                                      toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
+                                                          color: Theme.of(context).accentColor,
+                                                          iconColor: Theme.of(context).canvasColor,
+                                                          disabledIconColor: Theme.of(context).disabledColor)),
+                                                  child: ZefyrField(
+                                                    controller: _controller,
+                                                    focusNode: _focusNode,
+                                                    autofocus: false,
+                                                    physics: ClampingScrollPhysics(),
+                                                  )
+                                              )
+                                          )
+                                      )
+                                  )
+                              )
+                            ],
+                          ),
+                        ),
+                        MediaQuery.of(context).viewInsets.bottom != 0 ? new Container(
+                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                            child: ButtonTheme(
+                              height: 25.0,
+                              child: RaisedButton(
+                                elevation: 3.0,
+                                onPressed: () => FocusScope.of(context).requestFocus(new FocusNode()),
+                                child: Align(alignment: Alignment.centerLeft, child: Text('Done', style: TextStyle(fontSize: 24.0))),
+                                color: Theme.of(context).errorColor,
+
+                                textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                              ),
+                            )
+                        ) : new Container()
+                      ],
+                    )
             ),
             submitting ? new Stack(
               alignment: Alignment.center,

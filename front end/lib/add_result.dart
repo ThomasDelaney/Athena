@@ -69,6 +69,7 @@ class _AddResultState extends State<AddResult> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
                 title: widget.subject == null ? new Text("Add a New Test Result") : new Text(widget.subject.name),
               ),

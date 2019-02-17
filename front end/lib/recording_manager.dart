@@ -99,6 +99,8 @@ class RecordingManger
           //static list of days
           List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
+          print(result.data['option']);
+
           //if the day from the response object is not in the list, then display and error saying the user does not have classes for that day
           if (!weekdays.contains(result.data['option'])) {
             AlertDialog cannotUnderstand = new AlertDialog(

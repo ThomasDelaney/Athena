@@ -27,7 +27,10 @@ class SubjectHubTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+    double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*1.85;
+    double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+
+    double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
 
     return SizedBox(
       //height: tileSize*scaleFactor,

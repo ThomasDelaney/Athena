@@ -74,6 +74,7 @@ class _AddTagState extends State<AddTag> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
                 title: widget.tag == null ? new Text("Add a New Tag") : new Text(widget.tag.tag),
               ),

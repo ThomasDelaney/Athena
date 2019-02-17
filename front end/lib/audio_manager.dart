@@ -18,7 +18,7 @@ class _AudioManagerState extends State<AudioManager> {
   int currentProgress = 0;
   int maxSize;
 
-  bool playing = true;
+  bool playing = false;
 
   bool init = false;
 
@@ -85,6 +85,11 @@ class _AudioManagerState extends State<AudioManager> {
     };
 
     _audioPlayer.durationHandler = (Duration duration) {
+
+      if (!playing){
+        _audioPlayer.pause();
+      }
+
       setState(() {
         maxSize = duration.inMilliseconds;
       });
@@ -130,11 +135,14 @@ class _AudioManagerState extends State<AudioManager> {
 
   @override
   Widget build(BuildContext context) {
+
+    double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+
     return Container(
         child: Center(
             child: SizedBox(
                 width: MediaQuery.of(context).size.width ,
-                height: MediaQuery.of(context).size.height * 0.70,
+                height: MediaQuery.of(context).size.height * (0.70*scaleFactor),
                 child: Card (
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

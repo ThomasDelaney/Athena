@@ -118,12 +118,17 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   @override
   Widget build(BuildContext context) {
+
+    double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*2.25;
+    double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+    double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
+
     Container subjectList;
 
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
     if (subjectFiles.length == 0 && filesLoaded) {
       subjectList = new Container(
-        height: fileCardSize,
+        height: fileCardSize / scaleFactor,
         child: new ListView(
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
@@ -131,16 +136,16 @@ class _VirtualHardbackState extends State<VirtualHardback> {
             new Container(
                 margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                 child: new SizedBox(
-                  width: fileCardSize,
-                  height: fileCardSize,
+                  width: fileCardSize / scaleFactor,
+                  height: fileCardSize / scaleFactor,
                   child: GestureDetector(
                     onTap: () => getImage(),
                     child: new Card(
                       child: new Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
-                            new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                            new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 14.0/scaleFactor),),
+                            new Icon(Icons.cloud_upload, size: 40.0 / scaleFactor, color: Colors.grey,)
                           ]
                       ),
                     ),
@@ -154,7 +159,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the images cover the card
     else if (filesLoaded){
       subjectList =  new Container(
-          height: fileCardSize,
+          height: fileCardSize / scaleFactor,
           child: new ListView.builder (
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
@@ -186,8 +191,8 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(),
                                       imageUrl: subjectFiles[index].url,
-                                      height: fileCardSize,
-                                      width: fileCardSize,
+                                      height: fileCardSize / scaleFactor,
+                                      width: fileCardSize / scaleFactor,
                                       fit: BoxFit.cover
                                   ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "video" ? new Stack(children: <Widget>[
                                     new Chewie(
@@ -203,13 +208,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                         placeholder: new Center(child: new CircularProgressIndicator(backgroundColor: Theme.of(context).accentColor,)),
                                       ),
                                     ),
-                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0, color: Color.fromRGBO(255, 255, 255, 0.85),)),
+                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0/scaleFactor, color: Color.fromRGBO(255, 255, 255, 0.85),)),
                                   ],) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
                                   new Container(
                                     child: new Column(
                                       children: <Widget>[
-                                        new SizedBox(height: 27.5,),
-                                        new Icon(Icons.volume_up, size: 70.0, color: Colors.red),
+                                        new SizedBox(height: 27.5/scaleFactor,),
+                                        new Icon(Icons.volume_up, size: 70.0/scaleFactor, color: Colors.red),
                                         new Flexible(
                                             child: Marquee(
                                               text: subjectFiles[index].fileName,
@@ -229,8 +234,8 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                         )
                     ),
                     //Keeps the card the same size when the image is loading
-                    width: fileCardSize,
-                    height: fileCardSize,
+                    width: fileCardSize / scaleFactor,
+                    height: fileCardSize / scaleFactor,
                   ),
                 );
               }
@@ -239,7 +244,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     }
     else{
       //display a circular progress indicator when the image list is loading
-      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0), child: new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0))));
+      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0/scaleFactor), child: new SizedBox(width: 50.0/scaleFactor, height: 50.0/scaleFactor, child: new CircularProgressIndicator(strokeWidth: 5.0/scaleFactor))));
     }
 
     ListView textFileList;
@@ -259,9 +264,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                          new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0/scaleFactor), ),
                           new SizedBox(height: 10.0,),
-                          new Icon(Icons.note_add, size: 40.0, color: Colors.grey,),
+                          new Icon(Icons.note_add, size: 40.0/scaleFactor, color: Colors.grey,),
                         ]
                     ),
                   ),
@@ -286,14 +291,14 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                   decoration: new BoxDecoration(
                       border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
                   ),
-                  child: Icon(Icons.insert_drive_file, color: Color(int.tryParse(widget.subject.colour)), size: 32.0,),
+                  child: Icon(Icons.insert_drive_file, color: Color(int.tryParse(widget.subject.colour)), size: 32.0/scaleFactor,),
                 ),
                 title: Text(
                   notesList[position].fileName,
-                  style: TextStyle(fontSize: 20.0, fontFamily: font),
+                  style: TextStyle(fontSize: 20.0/scaleFactor, fontFamily: font),
                 ),
                 trailing: GestureDetector(
-                  child: Icon(Icons.delete, size: 32.0, color: Color.fromRGBO(70, 68, 71, 1)),
+                  child: Icon(Icons.delete, size: 32.0/scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
                   onTap: () => deleteNoteDialog(notesList[position])
                 ),
               ),
@@ -387,13 +392,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
         body: LayoutBuilder(
           builder: (context, constraints) =>
           //stack to display the main widgets; the notes and images
-          Stack(
+          Column(
               children: <Widget>[
                 new Container(
                   //note container, which is 63% the size of the screen
-                  height: MediaQuery.of(context).size.height * 0.63,
+                  height: MediaQuery.of(context).orientation == Orientation.portrait ? MediaQuery.of(context).size.height * 0.63 : MediaQuery.of(context).size.height * 0.37,
                   alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
-                  child: notesLoaded ? textFileList : new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+                  child: notesLoaded ? textFileList : new SizedBox(width: 50.0/scaleFactor, height: 50.0/scaleFactor, child: new CircularProgressIndicator(strokeWidth: 5.0/scaleFactor,)),
                 ),
                 new Container(
                   //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
@@ -406,12 +411,12 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                           children: <Widget>[
                             new IconButton(
                               color: Color(int.tryParse(widget.subject.colour)),
-                              icon: Icon(Icons.add_to_photos, size: 35.0),
+                              icon: Icon(Icons.add_to_photos, size: 35.0/scaleFactor),
                               onPressed: () => getImage(),
                             ),
                             new IconButton(
                               color: Color(int.tryParse(widget.subject.colour)),
-                              icon: Icon(Icons.camera_alt, size: 35.0),
+                              icon: Icon(Icons.camera_alt, size: 35.0/scaleFactor),
                               onPressed: () => getCameraImage(),
                             )
                           ]
@@ -429,7 +434,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                       alignment: Alignment.center,
                       children: <Widget>[
                         new Container(
-                            margin: MediaQuery.of(context).padding,
+                            margin: MediaQuery.of(context).viewInsets,
                             child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
                 ),
               ]
@@ -446,7 +451,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
           children: <Widget>[
             new Container(
                 margin: MediaQuery.of(context).padding,
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0/scaleFactor, height: 50.0/scaleFactor, child: new CircularProgressIndicator(strokeWidth: 5.0/scaleFactor,))
           ],
         ): new Container()
       ],

@@ -1,3 +1,5 @@
+import 'request_manager.dart';
+
 class Subject {
   String _id;
   String _name;
@@ -20,5 +22,18 @@ class Subject {
 
   String get colour {
     return this._colour;
+  }
+
+  static Future<Subject> getSubjectByTitle(String title) async {
+    Subject withTitle;
+
+    List<Subject> reqSubjects = await RequestManager.singleton.getSubjects();
+    reqSubjects.forEach((subject) {
+      if (subject.name == title){
+        withTitle = subject;
+      }
+    });
+
+    return withTitle;
   }
 }

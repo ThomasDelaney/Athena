@@ -82,7 +82,9 @@ class _VideoManagerState extends State<VideoManager> {
   @override
   Widget build(BuildContext context) {
 
-     double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+     double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*1.85;
+     double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+     double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorLandscape : scaleFactorPortrait);
 
     _chewieController = new ChewieController(
       videoPlayerController: _controller,
@@ -94,7 +96,9 @@ class _VideoManagerState extends State<VideoManager> {
 
     if (!_controller.value.initialized) {
       _controller.initialize().then((_) {
-        setState(() {_aspectRatio = (_controller.value.size.height / _controller.value.size.width) / 2.5 ;});
+        setState(() {
+          _aspectRatio = (_controller.value.size.height / _controller.value.size.width) / scaleFactor * 1.5;
+        });
       });
 
       return new Container(

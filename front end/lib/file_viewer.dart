@@ -99,7 +99,6 @@ class _FileViewerState extends State<FileViewer>
               child: Hero(tag: "fileAt"+widget.i.toString(),
                 //swiper widget allows to swipe between a list
                 child: new Swiper(
-                  viewportFraction: 0.99999,
                   itemBuilder: (BuildContext context, int index){
 
                     //photo view allows for zooming in and out of images
@@ -124,7 +123,10 @@ class _FileViewerState extends State<FileViewer>
                         ) : new Container();
                   },
                   itemCount: widget.fromTagMap == null ? widget.list.length : widget.fromTagMap.length,
-                  pagination: new SwiperPagination(),
+                  pagination: new SwiperPagination(
+                    builder: MediaQuery.of(context).orientation == Orientation.portrait && FileTypeManger.getFileTypeFromURL(
+                        widget.fromTagMap == null ? widget.list[currentIndex].url : widget.fromTagMap.values.elementAt(currentIndex).url) == "video" ? SwiperPagination.dots : SwiperPagination.rect
+                  ),
                   control: new SwiperControl(color: Colors.white70),
                   //start the wiper on the index of the image selected
                   index: currentIndex,

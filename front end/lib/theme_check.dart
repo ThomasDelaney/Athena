@@ -22,4 +22,11 @@ class ThemeCheck
       Color.fromRGBO(250, 230, 190, 1),
     ];
   }
+
+  //scale factor based on orientation
+  static double orientatedScaleFactor(BuildContext _context){
+    double scaleFactorLandscape = (MediaQuery.of(_context).size.height/MediaQuery.of(_context).size.width)*1.85;
+    double scaleFactorPortrait = (MediaQuery.of(_context).size.width/MediaQuery.of(_context).size.height)*1.85;
+    return (MediaQuery.of(_context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
+  }
 }

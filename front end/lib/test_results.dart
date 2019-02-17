@@ -19,7 +19,6 @@ class TestResults extends StatefulWidget {
 }
 
 class _TestResultsState extends State<TestResults> {
-  @override
 
   bool submitting = false;
 
@@ -86,8 +85,6 @@ class _TestResultsState extends State<TestResults> {
           return GestureDetector(
               onLongPress: () => {},
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   SizedBox(height: 10.0),
                   Card(
@@ -216,7 +213,7 @@ class _TestResultsState extends State<TestResults> {
                           alignment: Alignment.center,
                           children: <Widget>[
                             new Container(
-                                margin: MediaQuery.of(context).padding,
+                                margin: MediaQuery.of(context).viewInsets,
                                 child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
                     ),
                   ]

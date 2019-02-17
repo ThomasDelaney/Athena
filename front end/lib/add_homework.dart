@@ -69,6 +69,7 @@ class _AddHomeworkState extends State<AddHomework> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
                 title: widget.subject == null ? new Text("Add a New Homework") : new Text(widget.subject.name),
               ),

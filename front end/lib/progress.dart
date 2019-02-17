@@ -85,32 +85,55 @@ class _ProgressState extends State<Progress> {
     double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
 
     List<Widget> chartList = [
-      charts.PieChart(
-          currentDesc == 0 ? resultsForChart : homeworkForChart,
-          animate: true,
-          defaultRenderer: new charts.ArcRendererConfig(
-              arcWidth: (90*scaleFactor).round(),
-              arcRendererDecorators: [new charts.ArcLabelDecorator(
-                labelPosition: charts.ArcLabelPosition.inside,
-                insideLabelStyleSpec: new charts.TextStyleSpec(
-                    fontSize: ((scaleFactor*450)/30).round(),
+      Container(
+        width: MediaQuery.of(context).size.width/scaleFactor,
+        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/scaleFactor : MediaQuery.of(context).size.height/scaleFactor*1.25,
+        child: charts.PieChart(
+            currentDesc == 0 ? resultsForChart : homeworkForChart,
+            animate: true,
+            defaultRenderer: new charts.ArcRendererConfig(
+                arcWidth: (90*scaleFactor).round(),
+                arcRendererDecorators: [new charts.ArcLabelDecorator(
+                  labelPosition: charts.ArcLabelPosition.inside,
+                  insideLabelStyleSpec: new charts.TextStyleSpec(
+                    fontSize: ((450/scaleFactor)/30).round(),
                     color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? charts.Color.white : charts.Color.black,
+                  ),
+                )]
+            )
+        ),
+      ),
+      Container(
+        width: MediaQuery.of(context).size.width/scaleFactor,
+        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/scaleFactor : MediaQuery.of(context).size.height/scaleFactor*1.25,
+        child: charts.BarChart(
+            currentDesc == 0 ? resultsForChart : homeworkForChart,
+            animate: true,
+            domainAxis: new charts.OrdinalAxisSpec(
+                renderSpec: new charts.SmallTickRendererSpec(
+                    labelStyle: new charts.TextStyleSpec(
+                      fontSize: ((450/scaleFactor)/40).round(),
+                    )
+                )
+            ),
+            primaryMeasureAxis: new charts.NumericAxisSpec(
+              renderSpec: new charts.GridlineRendererSpec(
+                labelStyle: new charts.TextStyleSpec(
+                  fontSize: ((450/scaleFactor)/30).round(),
                 ),
-                outsideLabelStyleSpec: new charts.TextStyleSpec(
-                  fontSize: ((scaleFactor*450)/30).round(),
-                ),
-              )]
-          )
+              )
+            )
+        )
       ),
-      charts.BarChart(
-        currentDesc == 0 ? resultsForChart : homeworkForChart,
-        animate: true,
-      ),
-      charts.LineChart(
-          currentDesc == 0 ? resultsForLineChart : homeworkForLineChart,
-          animate: true,
-          defaultRenderer: new charts.LineRendererConfig(includePoints: true)
-      ),
+      Container(
+        width: MediaQuery.of(context).size.width/scaleFactor,
+        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/scaleFactor : MediaQuery.of(context).size.height/scaleFactor*1.25,
+        child: charts.LineChart(
+            currentDesc == 0 ? resultsForLineChart : homeworkForLineChart,
+            animate: true,
+            defaultRenderer: new charts.LineRendererConfig(includePoints: true)
+        ),
+      )
     ];
 
     return Stack(
@@ -198,54 +221,57 @@ class _ProgressState extends State<Progress> {
           body: Stack(
               children: <Widget>[
                 new Center(
-                  child: dataLoaded ? new Card(
-                     child: new Column(
-                       mainAxisAlignment: MainAxisAlignment.center,
-                       children: <Widget>[
-                         new Text(statsDescription[currentDesc], style: TextStyle(fontSize: 32.0*scaleFactor),),
-                         new SizedBox(height: 25.0*scaleFactor,),
-                         new ConstrainedBox(
-                           constraints: new BoxConstraints.loose(new Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height*0.70)),
-                           child: Swiper(
-                             controller: controller,
-                             viewportFraction: 0.99999,
-                             pagination: SwiperPagination(builder: new SwiperCustomPagination(builder: (BuildContext context, SwiperPluginConfig config) {
-                               return new Row(
-                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                 children: <Widget>[
-                                   IconButton(
-                                       icon: Icon(Icons.pie_chart, size: 32*scaleFactor, color: config.activeIndex == 0 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
-                                       onPressed: () => controller.move(0)
-                                   ),
-                                   IconButton(
-                                       icon: Icon(Icons.insert_chart, size: 32*scaleFactor, color: config.activeIndex == 1 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
-                                       onPressed: () => controller.move(1)
-                                   ),
-                                   IconButton(
-                                       icon: Icon(Icons.show_chart, size: 32*scaleFactor, color: config.activeIndex == 2 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
-                                       onPressed: () => controller.move(2)
-                                   ),
-                                 ],
-                               );
-                             }), alignment: Alignment.bottomCenter),
-                             scrollDirection: Axis.horizontal,
-                             itemCount: 3,
-                             itemBuilder: (BuildContext context, int index){
-                               return new Column(
-                                 mainAxisSize: MainAxisSize.min,
-                                 children: <Widget>[
-                                   new SizedBox(
-                                     child: chartList[index],
-                                     height: scaleFactor*450,
-                                     width: scaleFactor*450,
-                                   ),
-                                 ],
-                               );
-                             },
-                           ),
-                         )
-                       ],
-                     ),
+                  child: dataLoaded ? new Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: new Card(
+                      child: new Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          new Text(statsDescription[currentDesc], style: TextStyle(fontSize: 32.0),),
+                          new SizedBox(height: 25.0/scaleFactor,),
+                          new Container(
+                            height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height*0.70)/scaleFactor :
+                            (MediaQuery.of(context).size.height*0.70)/(scaleFactor/2.5),
+                            width: MediaQuery.of(context).size.width,
+                            child: Swiper(
+                              controller: controller,
+                              viewportFraction: 0.99999,
+                              scale: 0.9,
+                              pagination: SwiperPagination(builder: new SwiperCustomPagination(builder: (BuildContext context, SwiperPluginConfig config) {
+                                return new Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+                                    IconButton(
+                                        icon: Icon(Icons.pie_chart, size: 28, color: config.activeIndex == 0 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                        onPressed: () => controller.move(0)
+                                    ),
+                                    IconButton(
+                                        icon: Icon(Icons.insert_chart, size: 28, color: config.activeIndex == 1 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                        onPressed: () => controller.move(1)
+                                    ),
+                                    IconButton(
+                                        icon: Icon(Icons.show_chart, size: 28, color: config.activeIndex == 2 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                        onPressed: () => controller.move(2)
+                                    ),
+                                  ],
+                                );
+                              }), alignment: Alignment.bottomCenter),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 3,
+                              itemBuilder: (BuildContext context, int index){
+                                return new Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Flexible(child: chartList[index]),
+                                  ],
+                                );
+                              },
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
                   ) : new SizedBox(width: 50.0,height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                 ),
                 //container for the recording card, show if recording, show blank container if not

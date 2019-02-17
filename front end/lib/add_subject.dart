@@ -79,6 +79,7 @@ class _AddSubjectState extends State<AddSubject> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
                 title: widget.subject == null ? new Text("Add a New Subject") : new Text(widget.subject.name),
               ),
@@ -117,49 +118,66 @@ class _AddSubjectState extends State<AddSubject> {
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text('Select a Colour for the Subject', style: TextStyle( fontWeight: FontWeight.bold)),
-                                          content: Container(
-                                            width: MediaQuery.of(context).size.width,
-                                            height: MediaQuery.of(context).size.height * 0.60,
-                                            child: Swiper(
-                                              pagination: new SwiperPagination(
-                                                  margin: new EdgeInsets.all(5.0)
-                                              ),
-                                              scrollDirection: Axis.horizontal,
-                                              itemCount: 2,
-                                              itemBuilder: (BuildContext context, int index){
-                                                if (index == 0) {
-                                                  return Column(
-                                                    children: <Widget>[
-                                                      Text("Basic Colours", style: TextStyle(fontSize: 20.0)),
-                                                      new SizedBox(height: 20.0,),
-                                                      SingleChildScrollView(
-                                                        child: BlockPicker(
-                                                          pickerColor: currentColor,
-                                                          onColorChanged: changeColorAndPopout,
+                                        return Center(
+                                          child: Container(
+                                              height: MediaQuery.of(context).size.height*0.8,
+                                              width: MediaQuery.of(context).size.width*0.985,
+                                              child: Card(
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: <Widget>[
+                                                    Text('Select a Colour for the Subject', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+                                                    Container(
+                                                      width: MediaQuery.of(context).size.width,
+                                                      height: MediaQuery.of(context).size.height * 0.65,
+                                                      child: Swiper(
+                                                        viewportFraction: 0.99999,
+                                                        scale: 0.9,
+                                                        pagination: new SwiperPagination(
+                                                            builder: SwiperPagination.dots,
                                                         ),
-                                                      )
-                                                    ],
-                                                  );
-                                                }
-                                                else {
-                                                  return Column(
-                                                    children: <Widget>[
-                                                      Text("Colourblind Friendly Colours", style: TextStyle(fontSize: 20.0)),
-                                                      new SizedBox(height: 20.0,),
-                                                      SingleChildScrollView(
-                                                        child: BlockPicker(
-                                                          availableColors: ThemeCheck.colorBlindFriendlyColours(),
-                                                          pickerColor: currentColor,
-                                                          onColorChanged: changeColorAndPopout,
-                                                        ),
-                                                      )
-                                                    ],
-                                                  );
-                                                }
-                                              },
-                                            ),
+                                                        scrollDirection: Axis.horizontal,
+                                                        control: SwiperControl(color: Theme.of(context).accentColor),
+                                                        itemCount: 2,
+                                                        itemBuilder: (BuildContext context, int index){
+                                                          if (index == 0) {
+                                                            return Column(
+                                                              children: <Widget>[
+                                                                Text("Basic Colours", style: TextStyle(fontSize: 20.0)),
+                                                                new SizedBox(height: 20.0,),
+                                                                SingleChildScrollView(
+                                                                  child: Container(
+                                                                    height: MediaQuery.of(context).size.height * 0.50,
+                                                                    child: BlockPicker(
+                                                                      pickerColor: currentColor,
+                                                                      onColorChanged: changeColorAndPopout,
+                                                                    ),
+                                                                  )
+                                                                )
+                                                              ],
+                                                            );
+                                                          }
+                                                          else {
+                                                            return Column(
+                                                              children: <Widget>[
+                                                                Text("Colourblind Friendly Colours", style: TextStyle(fontSize: 20.0)),
+                                                                new SizedBox(height: 20.0,),
+                                                                SingleChildScrollView(
+                                                                  child: BlockPicker(
+                                                                    availableColors: ThemeCheck.colorBlindFriendlyColours(),
+                                                                    pickerColor: currentColor,
+                                                                    onColorChanged: changeColorAndPopout,
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            );
+                                                          }
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
                                           ),
                                         );},
                                     );},

@@ -245,12 +245,12 @@ def get_command_keywords():
 
             if (payload['function'] == 'timetable'):
                 # get date from payload, and convert it to a datetime object
-                #dayInfo = payload['option'].split('-')
+                dayInfo = payload['option'].split('-')
 
-                #date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
+                date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
                 # get the day of the week from the datetime object
-                #option = date.strftime("%A")
-                option = payload['option']
+                option = date.strftime("%A")
+                #option = payload['option']
 
             elif (payload['function'] == 'notes'):
                 option = payload['option']

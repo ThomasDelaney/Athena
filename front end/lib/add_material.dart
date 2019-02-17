@@ -36,6 +36,7 @@ class _AddMaterialState extends State<AddMaterial> {
   String fileName = "";
 
   double tileSize = 150;
+  bool fileChanged = false;
 
   String font = "";
 
@@ -60,15 +61,70 @@ class _AddMaterialState extends State<AddMaterial> {
 
   @override
   void initState() {
+
     if (widget.currentMaterial != null) {
+      fileName = widget.currentMaterial.fileName;
+      materialNameController.text = widget.currentMaterial.name;
+    }
+    super.initState();
+  }
 
-      if (widget.currentMaterial.photoUrl == ""){
+  @override
+  void didChangeDependencies() {
+    if (widget.currentMaterial != null) {
+      if(!fileChanged) {
+        if (widget.currentMaterial.photoUrl == ""){
 
-        materialImage = GestureDetector(
+          materialImage = GestureDetector(
+              onTap: () => getImage(),
+              child: new SizedBox(
+                width: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                height: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                child: new Card(
+                  elevation: 3,
+                  child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
+                        new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                      ]
+                  ),
+                ),
+              )
+          );
+        }
+        else{
+          materialImage = new Container(
+            child: SizedBox(
+                width: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                height: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                child: Center(
+                    child: new GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => MaterialViewer(network: true, source: widget.currentMaterial.photoUrl,))),
+                      child: new Hero(
+                        tag: "material"+widget.currentMaterial.photoUrl,
+                        child: CachedNetworkImage(
+                          fit: BoxFit.cover,
+                          width: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                          height: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                          placeholder: CircularProgressIndicator(),
+                          imageUrl: widget.currentMaterial.photoUrl,
+                        ),
+                      ),
+                    )
+                )
+            ),
+          );
+        }
+      }
+
+    }
+    else{
+      materialImage = GestureDetector(
           onTap: () => getImage(),
           child: new SizedBox(
-            width: tileSize,
-            height: tileSize,
+            width: tileSize * ThemeCheck.orientatedScaleFactor(context),
+            height: tileSize * ThemeCheck.orientatedScaleFactor(context),
             child: new Card(
               elevation: 3,
               child: new Column(
@@ -80,57 +136,10 @@ class _AddMaterialState extends State<AddMaterial> {
               ),
             ),
           )
-        );
-      }
-      else{
-        materialImage = new Container(
-          child: SizedBox(
-            width: tileSize,
-            height: tileSize,
-            child: Center(
-              child: new GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => MaterialViewer(network: true, source: widget.currentMaterial.photoUrl,))),
-                child: new Hero(
-                  tag: "material"+widget.currentMaterial.photoUrl,
-                  child: CachedNetworkImage(
-                    fit: BoxFit.cover,
-                    width: tileSize,
-                    height: tileSize,
-                    placeholder: CircularProgressIndicator(),
-                    imageUrl: widget.currentMaterial.photoUrl,
-                  ),
-                ),
-              )
-            )
-          ),
-        );
-      }
-
-      fileName = widget.currentMaterial.fileName;
-      materialNameController.text = widget.currentMaterial.name;
-
-    }
-    else{
-      materialImage = GestureDetector(
-        onTap: () => getImage(),
-        child: new SizedBox(
-          width: tileSize,
-          height: tileSize,
-          child: new Card(
-            elevation: 3,
-            child: new Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
-                  new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
-                ]
-            ),
-          ),
-        )
       );
     }
 
-    super.initState();
+    super.didChangeDependencies();
   }
 
   @override
@@ -150,7 +159,8 @@ class _AddMaterialState extends State<AddMaterial> {
                   new Card(
                       margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                       elevation: 3.0,
-                      child: new Column(
+                      child: MediaQuery.of(context).orientation == Orientation.portrait ?
+                      new Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           new Container(
@@ -188,12 +198,13 @@ class _AddMaterialState extends State<AddMaterial> {
                                     color: Color(int.tryParse(widget.subject.colour)),
                                     icon: Icon(Icons.close, size: 35.0),
                                     onPressed: () => setState((){
+                                      fileChanged = true;
                                       fileName = "";
                                       materialImage = GestureDetector(
                                         onTap: () => getImage(),
                                         child: new SizedBox(
-                                          width: tileSize,
-                                          height: tileSize,
+                                          width: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                                          height: tileSize * ThemeCheck.orientatedScaleFactor(context),
                                           child: new Card(
                                             elevation: 3,
                                             child: new Column(
@@ -214,6 +225,94 @@ class _AddMaterialState extends State<AddMaterial> {
                           new Container(
                               margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                               child: materialImage
+                          ),
+                          new Container(
+                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                              child: ButtonTheme(
+                                height: 50.0,
+                                child: RaisedButton(
+                                  elevation: 3.0,
+                                  onPressed: showAreYouSureDialog,
+                                  child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
+                                  color: Theme.of(context).errorColor,
+
+                                  textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                                ),
+                              )
+                          )
+                        ],
+                      ) :
+                      new Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          new Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Flexible(
+                                child: new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: TextFormField(
+                                    focusNode: materialNameFocusNode,
+                                    keyboardType: TextInputType.text,
+                                    autofocus: false,
+                                    controller: materialNameController,
+                                    style: TextStyle(fontSize: 24.0),
+                                    decoration: InputDecoration(
+                                        hintText: "Material Name",
+                                        labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
+                                        border: UnderlineInputBorder()
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: new Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        new IconButton(
+                                          color: Color(int.tryParse(widget.subject.colour)),
+                                          icon: Icon(Icons.photo_library, size: 35.0),
+                                          onPressed: () => getImage(),
+                                        ),
+                                        new IconButton(
+                                          color: Color(int.tryParse(widget.subject.colour)),
+                                          icon: Icon(Icons.camera_alt, size: 35.0),
+                                          onPressed: () => getCameraImage(),
+                                        ),
+                                        fileName != "" ? new IconButton(
+                                          color: Color(int.tryParse(widget.subject.colour)),
+                                          icon: Icon(Icons.close, size: 35.0),
+                                          onPressed: () => setState((){
+                                            fileChanged = true;
+                                            fileName = "";
+                                            materialImage = GestureDetector(
+                                                onTap: () => getImage(),
+                                                child: new SizedBox(
+                                                  width: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                                                  height: tileSize * ThemeCheck.orientatedScaleFactor(context),
+                                                  child: new Card(
+                                                    elevation: 3,
+                                                    child: new Column(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: <Widget>[
+                                                          new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
+                                                          new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                                                        ]
+                                                    ),
+                                                  ),
+                                                )
+                                            );
+                                          }),
+                                        ) : new Container()
+                                      ]
+                                  )
+                              ),
+                              new Container(
+                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                child: materialImage
+                              )
+                            ],
                           ),
                           new Container(
                               margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
@@ -257,10 +356,11 @@ class _AddMaterialState extends State<AddMaterial> {
     //if image is not null then upload the image and add the url to the image files list
     if (image != null) {
       setState(() {
+        fileChanged = true;
         fileName = image;
         materialImage = materialImage = new Container(
-            width: tileSize,
-            height: tileSize,
+            width: tileSize * ThemeCheck.orientatedScaleFactor(context),
+            height: tileSize * ThemeCheck.orientatedScaleFactor(context),
             child: new GestureDetector(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => MaterialViewer(network: false, source: image,))),
               child: new Hero(
@@ -286,6 +386,7 @@ class _AddMaterialState extends State<AddMaterial> {
     if (image != null) {
       setState(() {
         fileName = image;
+        fileChanged = true;
         materialImage = new Container(
           width: tileSize,
           height: tileSize,
