@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/icon_settings.dart';
 import 'package:my_school_life_prototype/tag.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'dart:async';
 import 'login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +21,7 @@ import 'note.dart';
 import 'subject.dart';
 import 'subject_file.dart';
 import 'package:marquee/marquee.dart';
+import 'athena_icon_data.dart';
 
 class VirtualHardback extends StatefulWidget {
   VirtualHardback({Key key, this.subject}) : super(key: key);
@@ -45,8 +49,6 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   String filterTag = "";
 
-  String check = "";
-
   RequestManager requestManager = RequestManager.singleton;
 
   //Recording Manager Object
@@ -59,10 +61,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   bool notesLoaded = false;
 
   //size of file card
-  double fileCardSize = 150.0;
-  FontData fontData;
+  double fileCardSize = 185.0;
 
+  FontData fontData;
   bool fontLoaded = false;
+
+  AthenaIconData iconData;
+  bool iconLoaded = false;
 
   //get user files
   void getFiles() async
@@ -97,6 +102,21 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     }
   }
 
+  //get current icon settings from shared preferences if present
+  void getIconData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        iconLoaded = true;
+        iconData = new AthenaIconData(
+            Color(prefs.getInt("iconColour")),
+            prefs.getDouble("iconSize"));
+      });
+    }
+  }
+
   //method called before the page is rendered
   void initState() {
     recorder.assignParent(this);
@@ -111,6 +131,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   }
 
   void retrieveData() {
+    iconLoaded = false;
     filesLoaded = false;
     notesLoaded = false;
     subjectFiles.clear();
@@ -120,44 +141,53 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     getFiles();
     getNotes();
     getFontData();
+    getIconData();
   }
 
   @override
   Widget build(BuildContext context) {
-
-    double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*2.25;
-    double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
-    double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
 
     Container subjectList;
 
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
     if (subjectFiles.length == 0 && filesLoaded) {
       subjectList = new Container(
-        height: fileCardSize / scaleFactor,
+        alignment: Alignment.center,
+        height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
         child: new ListView(
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
           children: <Widget>[
-            new Container(
-                margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-                child: new SizedBox(
-                  width: fileCardSize / scaleFactor,
-                  height: fileCardSize / scaleFactor,
-                  child: GestureDetector(
-                    onTap: () => getImage(),
-                    child: new Card(
-                      child: new Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            new Text("Add Photos, Audio and Videos!", textAlign: TextAlign.center, style: TextStyle(fontFamily: fontData.font, color: fontData.color, fontSize: 14.0/scaleFactor),),
-                            new Icon(Icons.cloud_upload, size: 40.0 / scaleFactor, color: Colors.grey,)
-                          ]
+            SingleChildScrollView(
+              child: new Container(
+                  margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+                  child: new SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.95,
+                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                    child: GestureDetector(
+                      onTap: () => getImage(),
+                      child: new Card(
+                        child: new Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              new Text(
+                                "Add Photos, Audio and Videos!",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontFamily: fontData.font,
+                                    color: fontData.color,
+                                    fontSize: fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size
+                                ),
+                              ),
+                              new SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context),),
+                              new Icon(Icons.cloud_upload, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,)
+                            ]
+                        ),
                       ),
                     ),
-                  ),
-                )
-            ),
+                  )
+              ),
+            )
           ],
         ),
       );
@@ -165,7 +195,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the images cover the card
     else if (filesLoaded){
       subjectList =  new Container(
-          height: fileCardSize / scaleFactor,
+          height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
           child: new ListView.builder (
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
@@ -186,7 +216,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                   final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: subjectFiles, i: index, subject: widget.subject,))).whenComplete(retrieveData);
 
                                   if (result){
-                                    _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('File Deleted!')));
+                                    _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('File Deleted!', style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font))));
                                   }
                                 },
                                 //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
@@ -197,8 +227,8 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(),
                                       imageUrl: subjectFiles[index].url,
-                                      height: fileCardSize / scaleFactor,
-                                      width: fileCardSize / scaleFactor,
+                                      height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                                      width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
                                       fit: BoxFit.cover
                                   ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "video" ? new Stack(children: <Widget>[
                                     new Chewie(
@@ -214,13 +244,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                                         placeholder: new Center(child: new CircularProgressIndicator(backgroundColor: Theme.of(context).accentColor,)),
                                       ),
                                     ),
-                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0/scaleFactor, color: Color.fromRGBO(255, 255, 255, 0.85),)),
+                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: Color.fromRGBO(255, 255, 255, 0.85),)),
                                   ],) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
                                   new Container(
                                     child: new Column(
                                       children: <Widget>[
-                                        new SizedBox(height: 27.5/scaleFactor,),
-                                        new Icon(Icons.volume_up, size: 70.0/scaleFactor, color: Colors.red),
+                                        new SizedBox(height: 40*ThemeCheck.orientatedScaleFactor(context),),
+                                        new Icon(Icons.volume_up, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: Color(int.tryParse(widget.subject.colour))),
                                         new Flexible(
                                             child: Marquee(
                                               text: subjectFiles[index].fileName,
@@ -240,8 +270,8 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                         )
                     ),
                     //Keeps the card the same size when the image is loading
-                    width: fileCardSize / scaleFactor,
-                    height: fileCardSize / scaleFactor,
+                    width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
                   ),
                 );
               }
@@ -250,7 +280,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     }
     else{
       //display a circular progress indicator when the image list is loading
-      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0/scaleFactor), child: new SizedBox(width: 50.0/scaleFactor, height: 50.0/scaleFactor, child: new CircularProgressIndicator(strokeWidth: 5.0/scaleFactor))));
+      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context)))));
     }
 
     ListView textFileList;
@@ -261,24 +291,36 @@ class _VirtualHardbackState extends State<VirtualHardback> {
         scrollDirection: Axis.horizontal,
         children: <Widget>[
           new Container(
-              margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-              child: new SizedBox(
-                width: MediaQuery.of(context).size.width * 0.95,
-                child: GestureDetector(
-                  onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontData,))).whenComplete(retrieveData);},
-                  child: new Card(
-                    child: new Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          new Text("Add Notes By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: fontData.font, color: fontData.color, fontSize: 24.0/scaleFactor), ),
-                          new SizedBox(height: 10.0,),
-                          new Icon(Icons.note_add, size: 40.0/scaleFactor, color: Colors.grey,),
-                        ]
+                margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+                child: new Container(
+                  width: MediaQuery.of(context).size.width * 0.95,
+                  child: GestureDetector(
+                    onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontData,))).whenComplete(retrieveData);},
+                    child: new Card(
+                      child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            new Text(
+                              "Add Notes By Using the",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontFamily: fontData.font,
+                                  color: fontData.color,
+                                  fontSize: fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size
+                              ),
+                            ),
+                            new SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context),),
+                            new Icon(
+                              Icons.note_add,
+                              size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                              color: iconData.color,
+                            ),
+                          ]
+                      ),
                     ),
                   ),
-                ),
-              )
-          ),
+                )
+            )
         ],
       );
     }
@@ -297,14 +339,18 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                   decoration: new BoxDecoration(
                       border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
                   ),
-                  child: Icon(Icons.insert_drive_file, color: Color(int.tryParse(widget.subject.colour)), size: 32.0/scaleFactor,),
+                  child: Icon(
+                    Icons.insert_drive_file,
+                    color: Color(int.tryParse(widget.subject.colour)),
+                    size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                  ),
                 ),
                 title: Text(
                   notesList[position].fileName,
-                  style: TextStyle(fontSize: 20.0/scaleFactor, fontFamily: fontData.font, color: fontData.color),
+                  style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color),
                 ),
                 trailing: GestureDetector(
-                  child: Icon(Icons.delete, size: 32.0/scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
+                  child: Icon(Icons.delete, size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: ThemeCheck.errorColorOfColor(iconData.color)),
                   onTap: () => deleteNoteDialog(notesList[position])
                 ),
               ),
@@ -318,57 +364,97 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     final page = Scaffold(
         key: _scaffoldKey,
         //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-        endDrawer: new Drawer(
-          child: ListView(
-            //Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              //drawer header
-              DrawerHeader(
-                child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: fontLoaded ? fontData.font : "")),
-                decoration: BoxDecoration(
-                  color: Colors.red,
+        endDrawer: Container(
+          width: MediaQuery.of(context).size.width/1.25,
+          child: new Drawer(
+            child: ListView(
+              //Remove any padding from the ListView.
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                //drawer header
+                DrawerHeader(
+                  child: Text('Settings', style: TextStyle(
+                      fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
+                    )
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                  ),
                 ),
-              ),
-              //fonts option
-              ListTile(
-                leading: Icon(Icons.font_download),
-                title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
-                },
-              ),
-              //sign out option
-              ListTile(
-                leading: Icon(Icons.exit_to_app),
-                title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                onTap: () {
-                  signOut();
-                },
-              ),
-            ],
+                //fonts option
+                ListTile(
+                  leading: Icon(
+                      Icons.font_download,
+                      size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Colors.red,
+                  ),
+                  title: Text('Fonts', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.insert_emoticon,
+                    size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                    color: iconLoaded ? iconData.color : Colors.red,
+                  ),
+                  title: Text('Icons', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                  },
+                ),
+                //sign out option
+                ListTile(
+                  leading: Icon(
+                    Icons.exit_to_app,
+                    size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                    color: iconLoaded ? iconData.color : Colors.red,
+                  ),
+                  title: Text('Sign Out', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                  onTap: () {
+                    signOut();
+                  },
+                ),
+              ],
+            ),
           ),
         ),
         appBar: new AppBar(
+          iconTheme: IconThemeData(
+              color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+          ),
           backgroundColor: Color(int.tryParse(widget.subject.colour)),
-          title: Text(widget.subject.name, style: TextStyle(fontFamily: fontLoaded ? fontData.font : "")),
+          title: new Text(widget.subject.name, style: TextStyle(
+              fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: fontLoaded ? fontData.font : "",
+              color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+            )
+          ),
           //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
           actions: recorder.recording ? <Widget>[
             // action button
             IconButton(
+                icon: Icon(Icons.home),
+                iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
+                onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+            ),
+            IconButton(
               icon: Icon(Icons.close),
-              iconSize: 30.0,
+              iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
               onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
             ),
           ] : <Widget>[
             IconButton(
               icon: Icon(Icons.note_add),
-              iconSize: 30.0,
-              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontLoaded ? fontData.font : new FontData("", Colors.black, 24.0)))).whenComplete(retrieveData);},
+              iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
+              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0)))).whenComplete(retrieveData);},
             ),
             filterTag != "" ? IconButton(
               icon: Icon(Icons.close),
-              iconSize: 30.0,
+              iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
               onPressed: () {
                 setState(() {
                   filterTag = "";
@@ -378,13 +464,13 @@ class _VirtualHardbackState extends State<VirtualHardback> {
               },
             ) : IconButton(
               icon: Icon(Icons.filter_list),
-              iconSize: 30.0,
+              iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
               onPressed: () => showTagDialog(false, null),
             ),
             // else display the mic button and settings button
             IconButton(
               icon: Icon(Icons.mic),
-              iconSize: 30.0,
+              iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
               onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
             ),
             Builder(
@@ -398,14 +484,18 @@ class _VirtualHardbackState extends State<VirtualHardback> {
         body: LayoutBuilder(
           builder: (context, constraints) =>
           //stack to display the main widgets; the notes and images
+          MediaQuery.of(context).orientation == Orientation.portrait ?
           Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 new Container(
-                  //note container, which is 63% the size of the screen
-                  height: MediaQuery.of(context).orientation == Orientation.portrait ? MediaQuery.of(context).size.height * 0.63 : MediaQuery.of(context).size.height * 0.37,
+                  //note container, which is 60% the size of the screen
+                  height: MediaQuery.of(context).size.height * ((0.45 + (iconData.size/10) / iconData.size)) * ThemeCheck.orientatedScaleFactor(context),
                   alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
-                  child: notesLoaded ? textFileList : new SizedBox(width: 50.0/scaleFactor, height: 50.0/scaleFactor, child: new CircularProgressIndicator(strokeWidth: 5.0/scaleFactor,)),
+                  child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context),)),
                 ),
+                new SizedBox(height: 15/iconData.size,),
                 new Container(
                   //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
                   alignment: Alignment.bottomCenter,
@@ -413,16 +503,18 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       new Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             new IconButton(
                               color: Color(int.tryParse(widget.subject.colour)),
-                              icon: Icon(Icons.add_to_photos, size: 35.0/scaleFactor),
+                              iconSize: 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                              icon: Icon(Icons.add_to_photos),
                               onPressed: () => getImage(),
                             ),
                             new IconButton(
                               color: Color(int.tryParse(widget.subject.colour)),
-                              icon: Icon(Icons.camera_alt, size: 35.0/scaleFactor),
+                              iconSize: 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                              icon: Icon(Icons.camera_alt),
                               onPressed: () => getCameraImage(),
                             )
                           ]
@@ -430,6 +522,58 @@ class _VirtualHardbackState extends State<VirtualHardback> {
                       //display the image list
                       subjectList,
                     ],
+                  ),
+                ),
+                //container for the recording card, show if recording, show blank container if not
+                new Container(
+                    alignment: Alignment.center,
+                    child: recorder.recording ?
+                    new Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        new Container(
+                            margin: MediaQuery.of(context).viewInsets,
+                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
+                ),
+              ]
+          ) :
+          Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                new Container(
+                  width: MediaQuery.of(context).size.width * 0.50,
+                  alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
+                  child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context),)),
+                ),
+                new Flexible(
+                    child: Container(
+                  //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
+                    alignment: Alignment.center,
+                    child: new Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              new IconButton(
+                                color: Color(int.tryParse(widget.subject.colour)),
+                                iconSize: 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                                icon: Icon(Icons.add_to_photos),
+                                onPressed: () => getImage(),
+                              ),
+                              new IconButton(
+                                color: Color(int.tryParse(widget.subject.colour)),
+                                iconSize: 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                                icon: Icon(Icons.camera_alt),
+                                onPressed: () => getCameraImage(),
+                              )
+                            ]
+                        ),
+                        //display the image list
+                        subjectList,
+                      ],
+                    ),
                   ),
                 ),
                 //container for the recording card, show if recording, show blank container if not
@@ -457,7 +601,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
           children: <Widget>[
             new Container(
                 margin: MediaQuery.of(context).padding,
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0/scaleFactor, height: 50.0/scaleFactor, child: new CircularProgressIndicator(strokeWidth: 5.0/scaleFactor,))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context),))
           ],
         ): new Container()
       ],
@@ -508,9 +652,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   void showErrorDialog()
   {
     AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again", style: TextStyle(fontFamily: fontData.font),),
+      content: new Text("An Error has occured. Please try again", style: TextStyle(fontFamily: fontData.font, fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: fontData.font),))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: fontData.font, fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),),))
       ],
     );
 
@@ -519,12 +663,12 @@ class _VirtualHardbackState extends State<VirtualHardback> {
 
   void deleteNoteDialog(Note note) {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to DELETE this note?", style: TextStyle(fontFamily: fontData.font),),
+      content: new Text("Do you want to DELETE this Note?", style: TextStyle(fontFamily: fontData.font, fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context)),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold, fontFamily: fontData.font),)),
         new FlatButton(onPressed: () {
           deleteNote(note);
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold,),)),
       ],
     );
 
@@ -537,7 +681,7 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
       Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Deleted!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Deleted!', style: TextStyle(fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font),)));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
@@ -558,9 +702,9 @@ class _VirtualHardbackState extends State<VirtualHardback> {
   void signOut()
   {
     AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font)),
+      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font, fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context))),
       actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: fontData.font)))
+        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: fontData.font, fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context))))
       ],
     );
 
@@ -618,46 +762,99 @@ class _VirtualHardbackState extends State<VirtualHardback> {
     AlertDialog tagDialog = new AlertDialog(
       content: new Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          new Text("Select a Tag to filter Files and Notes", style: TextStyle(fontSize: 20.0)),
+          new Text("Select a Tag to filter Files and Notes", style: TextStyle(fontSize: 20.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font)),
           new SizedBox(height: 20.0,),
-          new DropdownButton<String>(
-            value: filterTag == "" ? null : filterTag,
-            hint: new Text("Choose a Tag", style: TextStyle(fontSize: 20.0)),
-            items: tagValues.map((String tag) {
-              return new DropdownMenuItem<String>(
-                value: tag,
-                child: new Text(tag,  style: TextStyle(fontSize: 20.0)),
-              );
-            }).toList(),
-            //when the font is changed in the dropdown, change the current font state
-            onChanged: (String val){
-              setState(() {
-                filterTag = val;
-                Navigator.pop(context);
-                showTagDialog(true, tagValues);
-              });
-            },
-          ),
+          new Flexible(
+            child: Container(
+                child: ButtonTheme(
+                  child: RaisedButton(
+                    elevation: 3.0,
+                    onPressed: () => showTagList(tagValues),
+                    child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          filterTag == "" ? 'Choose a Tag' : filterTag,
+                          style: TextStyle(
+                            fontSize: 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
+                            fontFamily: fontData.font,
+                          )
+                        )
+                    ),
+                    color: Theme.of(context).errorColor,
+
+                    textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                  ),
+                )
+            )
+          )
         ],
       ),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context); setState(() {
           filterTag = "";
-        });}, child: new Text("Close", style: TextStyle(fontSize: 18.0),)),
+        });}, child: new Text("Close", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font),)),
         new FlatButton(onPressed: () async {
           submit(true);
           Navigator.pop(context);
           await filterByTag();
           submit(false);
-        }, child: new Text("Filter By Tag", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Container(
+            width: MediaQuery.of(context).orientation == Orientation.portrait ? 65*ThemeCheck.orientatedScaleFactor(context)*fontData.size : null,
+            child: new Text(
+              "Filter By Tag",
+              style: TextStyle(
+                  fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                  fontWeight: FontWeight.bold,
+                  fontFamily: fontData.font
+              ),
+            ),
+           )
+        ),
       ],
     );
 
-    showDialog(context: context, barrierDismissible: true, builder: (_) => tagDialog);
+    showDialog(context: context, barrierDismissible: false, builder: (_) => tagDialog, );
   }
 
+  void showTagList(List<String> tagValues){
+    AlertDialog tags = new AlertDialog(
+      content: new Container(
+        width: MediaQuery.of(context).size.width,
+        child: new ListView.builder(
+          shrinkWrap: true,
+          itemCount: tagValues.length,
+          itemBuilder: (BuildContext ctxt, int index) {
+            return new RadioListTile<String>(
+              value: tagValues[index],
+              groupValue: filterTag == "" ? null : filterTag,
+              title: Text(
+                tagValues[index], style: TextStyle(
+                  fontSize: 20.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                  fontFamily: fontData.font,
+                  color: fontData.color
+              ),
+              ),
+              onChanged: (String value) {
+                setState(() {
+                  filterTag = value;
+                  Navigator.pop(context); //pop this dialog
+                  Navigator.pop(context); //pop context of previous dialog
+                  showTagDialog(true, tagValues);
+                });
+              },
+            );
+          }
+        ),
+      ),
+    );
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => tags, );
+  }
+  
   void filterByTag() async {
     if (filterTag == ""){
       return;

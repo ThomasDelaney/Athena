@@ -142,40 +142,44 @@ class _LoginPageState extends State<LoginPage> {
           appBar: new AppBar(
           title: new Text(widget.pageTitle),
           ),
-          body: new Stack(
-              children: <Widget>[
-                new Container(
-                  padding: EdgeInsets.only(left: 25.0, right: 25.0),
-                  child: new Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      email,
-                      SizedBox(height: 30.0),
-                      password,
-                      SizedBox(height: 30.0),
-                      forgot,
-                      SizedBox(height: 30.0),
-                      loginButton,
-                      SizedBox(height: 30.0),
-                      newUser,
-                    ],
-                  ),
-                ),
-                new Container(
-                  //if submitting font, show a circular progress indicator, with a modal barrier which ensures the user cannot interact with the app while submitting
-                    alignment: Alignment.center,
-                    child: signingIn ? new Stack(
-                      alignment: Alignment.center,
+          body: new Center(
+            child: SingleChildScrollView(
+              child: new Stack(
+                children: <Widget>[
+                  new Container(
+                    padding: EdgeInsets.only(left: 25.0, right: 25.0),
+                    child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        new Container(
-                            margin: MediaQuery.of(context).padding,
-                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                        email,
+                        SizedBox(height: 30.0),
+                        password,
+                        SizedBox(height: 30.0),
+                        forgot,
+                        SizedBox(height: 30.0),
+                        loginButton,
+                        SizedBox(height: 30.0),
+                        newUser,
                       ],
-                    )
-                        : new Container()
-                ),
-              ],
-            )
+                    ),
+                  ),
+                  new Container(
+                    //if submitting font, show a circular progress indicator, with a modal barrier which ensures the user cannot interact with the app while submitting
+                      alignment: Alignment.center,
+                      child: signingIn ? new Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          new Container(
+                              margin: MediaQuery.of(context).padding,
+                              child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                        ],
+                      )
+                          : new Container()
+                  ),
+                ],
+              ),
+            ),
+          )
         );
     }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/home_page.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'tag.dart';
 import 'request_manager.dart';
@@ -77,6 +78,13 @@ class _AddTagState extends State<AddTag> {
               resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
                 title: widget.tag == null ? new Text("Add a New Tag") : new Text(widget.tag.tag),
+                actions: <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.home),
+                      iconSize: 30.0,
+                      onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
+                ],
               ),
               body: new Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -110,7 +118,7 @@ class _AddTagState extends State<AddTag> {
                   new Container(
                       margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                       child: ButtonTheme(
-                        height: 50.0,
+                        height: 50.0*ThemeCheck.orientatedScaleFactor(context),
                         child: RaisedButton(
                           elevation: 3.0,
                           onPressed: showAreYouSureDialog,
@@ -162,9 +170,11 @@ class _AddTagState extends State<AddTag> {
             submit(true);
             Navigator.pop(context);
             String result = await addTag();
-            submit(false);
             if (result != "error") {
               Navigator.pop(context);
+            }
+            else{
+              submit(false);
             }
           }
         }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),

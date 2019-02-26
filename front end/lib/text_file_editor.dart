@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/tag_picker_dialog.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:zefyr/zefyr.dart';
 import 'request_manager.dart';
@@ -18,10 +20,10 @@ class TextFileEditor extends StatefulWidget {
   TextFileEditor({Key key, this.note, this.subject, this.fontData}) : super(key: key);
 
   @override
-  _TextFileEditorState createState() => _TextFileEditorState();
+  TextFileEditorState createState() => TextFileEditorState();
 }
 
-class _TextFileEditorState extends State<TextFileEditor> {
+class TextFileEditorState extends State<TextFileEditor> {
 
   RequestManager requestManager = RequestManager.singleton;
 
@@ -89,13 +91,16 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
   @override
   Widget build(BuildContext context) {
-
-    double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*1.85;
-    double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
-    double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
-
     return WillPopScope(
-        onWillPop: exitCheck,
+        onWillPop: () async {
+
+          if(await exitCheck() == null){
+            Navigator.pop(context, true);
+          }
+          else{
+            Navigator.pop(context, false);
+          }
+        },
         child: new Stack(children: <Widget>[
             Scaffold(
                 resizeToAvoidBottomPadding: true,
@@ -103,6 +108,16 @@ class _TextFileEditorState extends State<TextFileEditor> {
                 appBar: AppBar(
                     title: new Text(title),
                     actions: <Widget>[
+                      IconButton(
+                          icon: Icon(Icons.home),
+                          iconSize: 30.0,
+                          onPressed: () async {
+
+                            if(await exitCheck() == null){
+                              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false);
+                            }
+                          }
+                      ),
                       IconButton(
                         icon: Icon(Icons.local_offer),
                         iconSize: 30.0,
@@ -121,17 +136,17 @@ class _TextFileEditorState extends State<TextFileEditor> {
                       SizedBox(height: 10.0),
                       new TextFormField(
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18.0),
+                        style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
                         keyboardType: TextInputType.text,
                         autofocus: false,
                         controller: fileNameController,
                         decoration: InputDecoration(
                           hintText: "Note Name",
-                          contentPadding: EdgeInsets.fromLTRB(15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor),
+                          contentPadding: EdgeInsets.fromLTRB(15.0*ThemeCheck.orientatedScaleFactor(context), 15.0*ThemeCheck.orientatedScaleFactor(context), 15.0*ThemeCheck.orientatedScaleFactor(context), 15.0*ThemeCheck.orientatedScaleFactor(context)),
                           border: InputBorder.none,
                         ),
                       ),
-                      SizedBox(height: 10.0/scaleFactor),
+                      SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)),
                       new Expanded(
                           child: Container(
                               child: Card(
@@ -139,40 +154,11 @@ class _TextFileEditorState extends State<TextFileEditor> {
                                   child: new ZefyrScaffold(
                                       child: new ZefyrTheme(
                                         data: new ZefyrThemeData(
-                                            blockTheme: BlockTheme(
-                                              bulletList: StyleTheme(
-                                                  textStyle: TextStyle(
-                                                      fontSize: widget.fontData.size,
-                                                      fontFamily: widget.fontData.font,
-                                                      color: widget.fontData.color
-                                                  )
-                                              ),
-                                              numberList: StyleTheme(
-                                                  textStyle: TextStyle(
-                                                      fontFamily: widget.fontData.font,
-                                                      color: widget.fontData.color,
-                                                      fontSize: widget.fontData.size,
-                                                  )
-                                              ),
-                                              quote: StyleTheme(
-                                                  textStyle: TextStyle(
-                                                      fontFamily: widget.fontData.font,
-                                                      fontSize: widget.fontData.size,
-                                                      color: widget.fontData.color
-                                                  )
-                                              ),
-                                              code: StyleTheme(
-                                                  textStyle: TextStyle(
-                                                      fontFamily: widget.fontData.font,
-                                                      fontSize: widget.fontData.size,
-                                                      color: widget.fontData.color
-                                                  )
-                                              ),
-                                            ),
+
                                             paragraphTheme: StyleTheme(
                                                 textStyle: TextStyle(
                                                     fontFamily: widget.fontData.font,
-                                                    fontSize: widget.fontData.size,
+                                                    fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
                                                     color: widget.fontData.color
                                                 )
                                             ),
@@ -200,7 +186,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
                           child: new Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              MediaQuery.of(context).viewInsets.bottom == 0 ? SizedBox(height: 10.0/scaleFactor) : new Container(),
+                              MediaQuery.of(context).viewInsets.bottom == 0 ? SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)) : new Container(),
                               MediaQuery.of(context).viewInsets.bottom == 0 ? new TextFormField(
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 18.0),
@@ -209,11 +195,11 @@ class _TextFileEditorState extends State<TextFileEditor> {
                                 controller: fileNameController,
                                 decoration: InputDecoration(
                                   hintText: "Note Name",
-                                  contentPadding: EdgeInsets.fromLTRB(15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor, 15.0/scaleFactor),
+                                  contentPadding: EdgeInsets.fromLTRB(15.0*ThemeCheck.orientatedScaleFactor(context), 15.0*ThemeCheck.orientatedScaleFactor(context), 15.0*ThemeCheck.orientatedScaleFactor(context), 15.0*ThemeCheck.orientatedScaleFactor(context)),
                                   border: InputBorder.none,
                                 ),
                               ) : new Container(),
-                              MediaQuery.of(context).viewInsets.bottom == 0 ? SizedBox(height: 10.0/scaleFactor) : new Container(),
+                              MediaQuery.of(context).viewInsets.bottom == 0 ? SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)) : new Container(),
                               new Expanded(
                                   child: Container(
                                       child: Card(
@@ -221,40 +207,10 @@ class _TextFileEditorState extends State<TextFileEditor> {
                                           child: new ZefyrScaffold(
                                               child: new ZefyrTheme(
                                                   data: new ZefyrThemeData(
-                                                    blockTheme: BlockTheme(
-                                                        bulletList: StyleTheme(
-                                                            textStyle: TextStyle(
-                                                                fontFamily: widget.fontData.font,
-                                                                fontSize: widget.fontData.size,
-                                                                color: widget.fontData.color
-                                                            )
-                                                        ),
-                                                        numberList: StyleTheme(
-                                                            textStyle: TextStyle(
-                                                                fontFamily: widget.fontData.font,
-                                                                fontSize: widget.fontData.size,
-                                                                color: widget.fontData.color
-                                                            )
-                                                        ),
-                                                        quote: StyleTheme(
-                                                            textStyle: TextStyle(
-                                                                fontFamily: widget.fontData.font,
-                                                                fontSize: widget.fontData.size,
-                                                                color: widget.fontData.color
-                                                            )
-                                                        ),
-                                                        code: StyleTheme(
-                                                            textStyle: TextStyle(
-                                                                fontFamily: widget.fontData.font,
-                                                                fontSize: widget.fontData.size,
-                                                                color: widget.fontData.color
-                                                            )
-                                                        ),
-                                                    ),
                                                     paragraphTheme: StyleTheme(
                                                       textStyle: TextStyle(
                                                         fontFamily: widget.fontData.font,
-                                                          fontSize: widget.fontData.size,
+                                                          fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
                                                         color: widget.fontData.color
                                                       )
                                                     ),
@@ -284,7 +240,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
                               child: RaisedButton(
                                 elevation: 3.0,
                                 onPressed: () => FocusScope.of(context).requestFocus(new FocusNode()),
-                                child: Align(alignment: Alignment.centerLeft, child: Text('Done', style: TextStyle(fontSize: 24.0))),
+                                child: Align(alignment: Alignment.centerLeft, child: Text('Done', style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font))),
                                 color: Theme.of(context).errorColor,
 
                                 textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
@@ -310,9 +266,9 @@ class _TextFileEditorState extends State<TextFileEditor> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to SAVE this Note?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to SAVE this Note?", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font)),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)),
         new FlatButton(onPressed: () async {
             if (fileNameController.text == "") {
               Navigator.pop(context);
@@ -324,7 +280,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
               await uploadNote();
               submit(false);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
       ],
     );
 
@@ -336,22 +292,22 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Note?", /*style: TextStyle(fontFamily: font),*/),
+        content: new Text("Do you want to SAVE this Note?", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font)),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
           new FlatButton(onPressed: () async {
             if (fileNameController.text == "") {
-              Navigator.pop(context, false);
               showYouMustHaveFileNameDialog();
+              return false;
             }
             else {
               submit(true);
               Navigator.pop(context);
               await uploadNote();
               submit(false);
-              Navigator.pop(context, true);
+              return true;
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
         ],
       );
 
@@ -364,9 +320,9 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
   void showYouMustHaveFileNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must have a Note Name", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("You must have a Note Name", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font)),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
       ],
     );
 
@@ -391,52 +347,50 @@ class _TextFileEditorState extends State<TextFileEditor> {
       tagValues = currentTags;
     }
 
-    AlertDialog tagDialog = new AlertDialog(
-      content: new Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new Row(
-            children: <Widget>[
-              new Text("Current Tag is: ", style: TextStyle(fontSize: 20.0)),
-              new Text(previousTag, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          new SizedBox(height: 20.0,),
-          new DropdownButton<String>(
-            //initial value
-            value: currentTag,
-            hint: new Text("Choose a Tag", style: TextStyle(fontSize: 20.0)),
-            items: tagValues.map((String tag) {
-              return new DropdownMenuItem<String>(
-                value: tag,
-                child: new Text(tag,  style: TextStyle(fontSize: 20.0)),
-              );
-            }).toList(),
-            //when the font is changed in the dropdown, change the current font state
-            onChanged: (String val){
-              setState(() {
-                currentTag = val;
-                Navigator.pop(context);
-                showTagDialog(true, tagValues);
-              });
-            },
-          ),
-        ],
-      ),
-      actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("Close", style: TextStyle(fontSize: 18.0),)),
-        new FlatButton(onPressed: () async {
-          submit(true);
-          Navigator.pop(context);
-          await addTagToNote();
-          submit(false);
-        }, child: new Text("Add Tag", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
-      ],
+    showDialog(context: context, barrierDismissible: true, builder: (_) => new TagPickerDialog(
+        fontData: widget.fontData,
+        previousTag: previousTag,
+        parent: this,
+        tagValues: tagValues,
+        currentTag: currentTag,
+      )
     );
-
-    showDialog(context: context, barrierDismissible: true, builder: (_) => tagDialog);
   }
 
+  void showTagList(List<String> tagValues){
+    AlertDialog tags = new AlertDialog(
+      content: new Container(
+        width: MediaQuery.of(context).size.width,
+        child: new ListView.builder(
+            shrinkWrap: true,
+            itemCount: tagValues.length,
+            itemBuilder: (BuildContext ctxt, int index) {
+              return new RadioListTile<String>(
+                value: tagValues[index],
+                groupValue: currentTag == "" ? null : currentTag,
+                title: Text(
+                  tagValues[index], style: TextStyle(
+                    fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                    fontFamily: widget.fontData.font,
+                    color: widget.fontData.color
+                ),
+                ),
+                onChanged: (String value) {
+                  setState(() {
+                    currentTag = value;
+                    Navigator.pop(context); //pop this dialog
+                    Navigator.pop(context); //pop context of previous dialog
+                    showTagDialog(true, tagValues);
+                  });
+                },
+              );
+            }
+        ),
+      ),
+    );
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => tags, );
+  }
 
   Future<void> uploadNote() async {
 
@@ -453,7 +407,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Saved!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Saved!', style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)));
 
       currentlySaved = true;
 
@@ -477,7 +431,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
 
   void addTagToNote() async {
     if (widget.note == null) {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)));
     }
     else {
       Map map = {"id": widget.note.id, "tag": currentTag, "subjectID": widget.subject.id};
@@ -489,7 +443,7 @@ class _TextFileEditorState extends State<TextFileEditor> {
         setState(() {
           previousTag = currentTag;
         });
-        _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!')));
+        _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)));
       }
       //else the response ['response']  is not null, then print the error message
       else{

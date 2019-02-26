@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:my_school_life_prototype/add_result.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/font_settings.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/icon_settings.dart';
 import 'package:my_school_life_prototype/login_page.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
 import 'package:my_school_life_prototype/request_manager.dart';
 import 'package:my_school_life_prototype/subject.dart';
+import 'package:my_school_life_prototype/tag_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'test_result.dart';
 import 'homework.dart';
@@ -26,8 +31,6 @@ class _ProgressState extends State<Progress> {
 
   bool submitting = false;
 
-  bool swiperLoaded = false;
-
   static const grades = ['H1/O1', 'H2/O2', 'H3/O3', 'H4/O4', 'H5/O5', 'H6/O6', 'H7/O7', 'H8/O8', 'NG'];
   static const thresholds = [[90.0, 100.0], [80.0, 89.9], [70.0, 79.9], [60.0, 69.9], [50.0, 59.9], [40.0, 49.9], [30.0, 39.9], [10.0, 29.9], [0.0, 9.9]];
 
@@ -41,8 +44,6 @@ class _ProgressState extends State<Progress> {
   RecordingManger recorder = RecordingManger.singleton;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  String font = "";
 
   List<String> statsDescription = ["Test Results", "Homework"];
 
@@ -59,7 +60,48 @@ class _ProgressState extends State<Progress> {
   List<charts.Series<Map, String>> homeworkForChart = new List<charts.Series<Map, String>>();
   List<charts.Series<Map, num>> homeworkForLineChart = new List<charts.Series<Map, num>>();
 
+  bool fontLoaded = false;
+  FontData fontData;
+
+  bool iconLoaded = false;
+  AthenaIconData iconData;
+
+  //get current font from shared preferences if present
+  void getFontData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState((){
+        fontLoaded = true;
+        fontData = new FontData(prefs.getString("font"), Color(prefs.getInt("fontColour")), prefs.getDouble("fontSize"));
+      });
+    }
+  }
+
+  //get current icon settings from shared preferences if present
+  void getIconData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        iconLoaded = true;
+        iconData = new AthenaIconData(
+            Color(prefs.getInt("iconColour")),
+            prefs.getDouble("iconSize"));
+      });
+    }
+  }
+
   void retrieveData() async {
+
+    iconLoaded = false;
+    fontLoaded = false;
+
+    await getFontData();
+    await getIconData();
+
     resultsForChart.clear();
     resultsForLineChart.clear();
     resultsList.clear();
@@ -97,7 +139,7 @@ class _ProgressState extends State<Progress> {
                   labelPosition: charts.ArcLabelPosition.inside,
                   insideLabelStyleSpec: new charts.TextStyleSpec(
                     fontSize: ((450/scaleFactor)/30).round(),
-                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? charts.Color.white : charts.Color.black,
+                    color: charts.Color(r: fontData.color.red, g: fontData.color.green, b: fontData.color.blue, a: fontData.color.alpha),
                   ),
                 )]
             )
@@ -113,12 +155,14 @@ class _ProgressState extends State<Progress> {
                 renderSpec: new charts.SmallTickRendererSpec(
                     labelStyle: new charts.TextStyleSpec(
                       fontSize: ((450/scaleFactor)/40).round(),
+                      color: charts.Color(r: fontData.color.red, g: fontData.color.green, b: fontData.color.blue, a: fontData.color.alpha),
                     )
                 )
             ),
             primaryMeasureAxis: new charts.NumericAxisSpec(
               renderSpec: new charts.GridlineRendererSpec(
                 labelStyle: new charts.TextStyleSpec(
+                  color: charts.Color(r: fontData.color.red, g: fontData.color.green, b: fontData.color.blue, a: fontData.color.alpha),
                   fontSize: ((450/scaleFactor)/30).round(),
                 ),
               )
@@ -141,40 +185,62 @@ class _ProgressState extends State<Progress> {
         Scaffold(
           key: _scaffoldKey,
           //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-          endDrawer: new Drawer(
-            child: ListView(
-              //Remove any padding from the ListView.
-              padding: EdgeInsets.zero,
-              children: <Widget>[
-                //drawer header
-                DrawerHeader(
-                  child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font)),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).accentColor,
+          endDrawer: Container(
+            width: MediaQuery.of(context).size.width/1.25,
+            child: new Drawer(
+              child: ListView(
+                //Remove any padding from the ListView.
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  //drawer header
+                  DrawerHeader(
+                    child: Text('Settings', style: TextStyle(
+                      fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
+                    )
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                    ),
                   ),
-                ),
-                //fonts option
-                ListTile(
-                  leading: Icon(Icons.font_download),
-                  title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: font)),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
-                  },
-                ),
-                //sign out option
-                ListTile(
-                  leading: Icon(Icons.exit_to_app),
-                  title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: font)),
-                  onTap: () {
-                    signOut();
-                  },
-                ),
-              ],
+                  //fonts option
+                  ListTile(
+                    leading: Icon(Icons.font_download),
+                    title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.insert_emoticon),
+                    title: Text('Icons', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.local_offer),
+                    title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
+                    },
+                  ),
+                  //sign out option
+                  ListTile(
+                    leading: Icon(Icons.exit_to_app),
+                    title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    onTap: () {
+                      signOut();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
           appBar: new AppBar(
             backgroundColor: Color(int.tryParse(widget.subject.colour)),
-            title: Text("Progress", style: TextStyle(fontFamily: font)),
+            title: Text("Progress", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
             //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
             actions: recorder.recording ? <Widget>[
               // action button
@@ -184,6 +250,11 @@ class _ProgressState extends State<Progress> {
                 onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
               ),
             ] : <Widget>[
+              IconButton(
+                  icon: Icon(Icons.home),
+                  iconSize: 30.0,
+                  onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+              ),
               // else display the mic button and settings button
               IconButton(
                 icon: Icon(Icons.mic),
@@ -208,12 +279,20 @@ class _ProgressState extends State<Progress> {
             currentIndex: currentDesc, // this will be set when a new tab is tapped
             items: [
               BottomNavigationBarItem(
-                icon: new Icon(Icons.school),
-                title: new Text(statsDescription[0]),
+                icon: new Icon(Icons.school, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
+                title: new Text(statsDescription[0], style: TextStyle(
+                  fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
+                  fontFamily: fontData.font,
+                  color: fontData.color
+                ),),
               ),
               BottomNavigationBarItem(
-                icon: new Icon(Icons.library_books),
-                title: new Text(statsDescription[1]),
+                icon: new Icon(Icons.library_books, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
+                title: new Text(statsDescription[1], style: TextStyle(
+                  fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
+                  fontFamily: fontData.font,
+                  color: fontData.color
+                )),
               ),
             ],
           ),
@@ -221,55 +300,73 @@ class _ProgressState extends State<Progress> {
           body: Stack(
               children: <Widget>[
                 new Center(
-                  child: dataLoaded ? new Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    child: new Card(
-                      child: new Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          new Text(statsDescription[currentDesc], style: TextStyle(fontSize: 32.0),),
-                          new SizedBox(height: 25.0/scaleFactor,),
-                          new Container(
-                            height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height*0.70)/scaleFactor :
-                            (MediaQuery.of(context).size.height*0.70)/(scaleFactor/2.5),
-                            width: MediaQuery.of(context).size.width,
-                            child: Swiper(
-                              controller: controller,
-                              viewportFraction: 0.99999,
-                              scale: 0.9,
-                              pagination: SwiperPagination(builder: new SwiperCustomPagination(builder: (BuildContext context, SwiperPluginConfig config) {
-                                return new Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: <Widget>[
-                                    IconButton(
-                                        icon: Icon(Icons.pie_chart, size: 28, color: config.activeIndex == 0 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
-                                        onPressed: () => controller.move(0)
-                                    ),
-                                    IconButton(
-                                        icon: Icon(Icons.insert_chart, size: 28, color: config.activeIndex == 1 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
-                                        onPressed: () => controller.move(1)
-                                    ),
-                                    IconButton(
-                                        icon: Icon(Icons.show_chart, size: 28, color: config.activeIndex == 2 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
-                                        onPressed: () => controller.move(2)
-                                    ),
-                                  ],
-                                );
-                              }), alignment: Alignment.bottomCenter),
-                              scrollDirection: Axis.horizontal,
-                              itemCount: 3,
-                              itemBuilder: (BuildContext context, int index){
-                                return new Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Flexible(child: chartList[index]),
-                                  ],
-                                );
-                              },
+                  child: dataLoaded && fontLoaded && iconLoaded ?
+                  new SingleChildScrollView(
+                    child: new Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * ((0.65 + (iconData.size/fontData.size/10) / iconData.size/fontData.size)),
+                      child: new Card(
+                        child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            new SizedBox(height: 25.0/scaleFactor,),
+                            new Text(statsDescription[currentDesc],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 32.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
+                                  fontFamily: fontData.font,
+                                  color: fontData.color
+                              ),
                             ),
-                          )
-                        ],
+                            new Expanded(
+                                child: Container(
+                                  child: Swiper(
+                                    outer: true,
+                                    controller: controller,
+                                    viewportFraction: 0.99999,
+                                    scale: 0.9,
+                                    pagination: SwiperPagination(builder: new SwiperCustomPagination(builder: (BuildContext context, SwiperPluginConfig config) {
+                                      return Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: <Widget>[
+                                          IconButton(
+                                              icon: Icon(Icons.pie_chart, color: config.activeIndex == 0 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                              iconSize: 28*iconData.size*ThemeCheck.orientatedScaleFactor(context),
+                                              onPressed: () => controller.move(0)
+                                          ),
+                                          IconButton(
+                                              icon: Icon(Icons.insert_chart, color: config.activeIndex == 1 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                              iconSize: 28*iconData.size*ThemeCheck.orientatedScaleFactor(context),
+                                              onPressed: () => controller.move(1)
+                                          ),
+                                          IconButton(
+                                              icon: Icon(Icons.show_chart, color: config.activeIndex == 2 ? Color(int.tryParse(widget.subject.colour)) : Colors.grey,),
+                                              iconSize: 28*iconData.size*ThemeCheck.orientatedScaleFactor(context),
+                                              onPressed: () => controller.move(2)
+                                          ),
+                                        ],
+                                      );
+                                    }),
+                                        alignment: Alignment.bottomCenter
+                                    ),
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: 3,
+                                    itemBuilder: (BuildContext context, int index){
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Flexible(
+                                              child: chartList[index]
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                )
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   ) : new SizedBox(width: 50.0,height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
@@ -305,9 +402,9 @@ class _ProgressState extends State<Progress> {
   void signOut()
   {
     AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: font)),
+      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font)),
       actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: font)))
+        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: fontData.font)))
       ],
     );
 

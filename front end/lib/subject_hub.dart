@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/icon_settings.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'home_tile.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
@@ -29,10 +33,12 @@ class SubjectHubState extends State<SubjectHub> {
   bool submitting = false;
 
   bool fontLoaded = false;
+  bool iconLoaded = false;
 
   List<Subject> subjectList = new List<Subject>();
 
   FontData fontData;
+  AthenaIconData iconData;
 
   @override
   void initState() {
@@ -56,6 +62,21 @@ class SubjectHubState extends State<SubjectHub> {
     }
   }
 
+  //get current font from shared preferences if present
+  void getIconData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        iconLoaded = true;
+        iconData = new AthenaIconData(
+            Color(prefs.getInt("iconColour")),
+            prefs.getDouble("iconSize"));
+      });
+    }
+  }
+
   @override
   void didUpdateWidget(SubjectHub oldWidget) {
     recorder.assignParent(this);
@@ -63,10 +84,12 @@ class SubjectHubState extends State<SubjectHub> {
   }
 
   void retrieveData() {
+    iconLoaded = false;
     fontLoaded = false;
     subjectsLoaded = false;
     subjectList.clear();
     getSubjects();
+    getIconData();
     getFontData();
   }
 
@@ -107,10 +130,10 @@ class SubjectHubState extends State<SubjectHub> {
               onLongPress: () => {},
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   SizedBox(height: 10.0),
                   SubjectHubTile(
+                    iconData: iconData,
                     fontData: fontData,
                     subject: subjectList.elementAt(position), state: this,)
                 ],
@@ -125,49 +148,72 @@ class SubjectHubState extends State<SubjectHub> {
         Scaffold(
             key: _scaffoldKey,
             //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-            endDrawer: new Drawer(
-              child: ListView(
-                //Remove any padding from the ListView.
-                padding: EdgeInsets.zero,
-                children: <Widget>[
-                  //drawer header
-                  DrawerHeader(
-                    child: Text('Settings',
-                        style: TextStyle(fontSize: 25.0, fontFamily: fontLoaded ? fontData.font : "")),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
+            endDrawer: Container(
+              width: MediaQuery.of(context).size.width/1.25,
+              child: new Drawer(
+                child: ListView(
+                  //Remove any padding from the ListView.
+                  padding: EdgeInsets.zero,
+                  children: <Widget>[
+                    //drawer header
+                    DrawerHeader(
+                      child: Text('Settings', style: TextStyle(
+                        fontSize: 20.0,
+                        fontFamily: fontLoaded ? fontData.font : "",
+                        color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
+                      )
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                      ),
                     ),
-                  ),
-                  //fonts option
-                  ListTile(
-                    leading: Icon(Icons.font_download),
-                    title: Text('Fonts',
-                        style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => FontSettings()));
-                    },
-                  ),
-                  //sign out option
-                  ListTile(
-                    leading: Icon(Icons.exit_to_app),
-                    title: Text('Sign Out',
-                        style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                    onTap: () {
-                      signOut();
-                    },
-                  ),
-                ],
+                    //fonts option
+                    ListTile(
+                      leading: Icon(
+                        Icons.font_download,
+                        size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Colors.red,
+                      ),
+                      title: Text('Fonts', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.insert_emoticon,
+                        size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Colors.red,
+                      ),
+                      title: Text('Icons', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                      },
+                    ),
+                    //sign out option
+                    ListTile(
+                      leading: Icon(
+                        Icons.exit_to_app,
+                        size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Colors.red,
+                      ),
+                      title: Text('Sign Out', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                      onTap: () {
+                        signOut();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             appBar: new AppBar(
-              title: new Text("Subject Hub", style: TextStyle(fontFamily: fontLoaded ? fontData.font : ""),),
+              title: new Text("Subject Hub", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : ""),),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[
                 // action button
                 IconButton(
                   icon: Icon(Icons.close),
-                  iconSize: 30.0,
+                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                   onPressed: () {
                     setState(() {
                       recorder.cancelRecording();
@@ -176,16 +222,21 @@ class SubjectHubState extends State<SubjectHub> {
                 ),
               ] : <Widget>[
                 IconButton(
+                  icon: Icon(Icons.home),
+                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
+                  onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                ),
+                IconButton(
                   icon: Icon(Icons.add_circle),
-                  iconSize: 30.0,
+                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                   onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => AddSubject()))
+                      MaterialPageRoute(builder: (context) => AddSubject(fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),)))
                       .whenComplete(retrieveData),
                 ),
                 // else display the mic button and settings button
                 IconButton(
                   icon: Icon(Icons.mic),
-                  iconSize: 30.0,
+                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                   onPressed: () {
                     setState(() {
                       recorder.recordAudio(context);
@@ -204,7 +255,7 @@ class SubjectHubState extends State<SubjectHub> {
             body: new Stack(
               children: <Widget>[
                 new Center(
-                  child: subjectsLoaded && fontLoaded ? sList : new SizedBox(width: 50.0,
+                  child: subjectsLoaded && fontLoaded && iconLoaded ? sList : new SizedBox(width: 50.0,
                       height: 50.0,
                       child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                 ),
@@ -278,7 +329,7 @@ class SubjectHubState extends State<SubjectHub> {
     //if null, then the request was a success, retrieve the information
     if (response == "success") {
       _scaffoldKey.currentState.showSnackBar(
-          new SnackBar(content: Text('Subject Deleted!')));
+          new SnackBar(content: Text('Subject Deleted!', style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font),)));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
@@ -288,7 +339,7 @@ class SubjectHubState extends State<SubjectHub> {
         content: new Text("An error has occured please try again"),
         actions: <Widget>[
           new FlatButton(onPressed: () {
-            Navigator.pop(context); /*submit(false);*/
+            Navigator.pop(context);
           }, child: new Text("OK"))
         ],
       );
@@ -302,12 +353,12 @@ class SubjectHubState extends State<SubjectHub> {
   void deleteSubjectDialog(String id, String title) {
     AlertDialog areYouSure = new AlertDialog(
       content: new Text(
-        "Do you want to DELETE this SUBJECT and all its DATA?", /*style: TextStyle(fontFamily: font),*/),
+        "Do you want to DELETE this SUBJECT and all its DATA?", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font),),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
         }, child: new Text("NO", style: TextStyle(
-          fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold,),)),
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
@@ -315,7 +366,7 @@ class SubjectHubState extends State<SubjectHub> {
           submit(false);
         },
             child: new Text("YES",
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+              style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold,),)),
       ],
     );
 

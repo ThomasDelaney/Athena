@@ -81,13 +81,13 @@ class _FileViewerState extends State<FileViewer>
                   IconButton(
                     icon: Icon(Icons.local_offer),
                     iconSize: 30.0,
-                    color: ThemeCheck.colorCheck(Theme.of(context).backgroundColor) ? Theme.of(context).accentColor : Colors.white,
+                    color: Colors.white,
                     onPressed: () => showTagDialog(false, null),
                   ),
                   IconButton(
                     icon: Icon(Icons.delete),
                     iconSize: 30.0,
-                    color: ThemeCheck.colorCheck(Theme.of(context).backgroundColor) ? Theme.of(context).accentColor : Colors.white,
+                    color: Colors.white,
                     onPressed: deleteFileDialog,
                   ),
                 ]

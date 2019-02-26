@@ -1,3 +1,5 @@
+import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
@@ -8,11 +10,12 @@ import 'timetable_slot.dart';
 
 class AddTimeslot extends StatefulWidget {
 
-  AddTimeslot({Key key, this.day, this.lastTime, this.currentTimeslot}) : super(key: key);
+  AddTimeslot({Key key, this.day, this.lastTime, this.currentTimeslot, this.fontData}) : super(key: key);
 
   final String day;
   final String lastTime;
   final TimetableSlot currentTimeslot;
+  final FontData fontData;
 
   @override
   _AddTimeslotState createState() => _AddTimeslotState();
@@ -90,8 +93,13 @@ class _AddTimeslotState extends State<AddTimeslot> {
           children: <Widget>[
             Scaffold(
               appBar: new AppBar(
-                title: widget.currentTimeslot == null ? new Text("Add a New Timeslot") : new Text(widget.currentTimeslot.subjectTitle+" at "+widget.currentTimeslot.time),
+                title: widget.currentTimeslot == null ? new Text("Add a New Timeslot", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),) : new Text(widget.currentTimeslot.subjectTitle+" at "+widget.currentTimeslot.time),
                   actions: <Widget>[
+                    IconButton(
+                        icon: Icon(Icons.home),
+                        iconSize: 30.0,
+                        onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                    ),
                     widget.currentTimeslot != null ? IconButton(
                       icon: Icon(Icons.delete),
                       iconSize: 30.0,
@@ -112,25 +120,30 @@ class _AddTimeslotState extends State<AddTimeslot> {
                           new Container(
                             margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                             child: !submitting ?
-                                DropdownButton<Subject>(
-                                  isExpanded: true,
-                                  //initial value
-                                  value: selectedSubject,
-                                  hint: new Text("Choose a Subject", style: TextStyle(fontSize: 24.0)),
-                                  items: subjects.map((Subject subject) {
-                                    return new DropdownMenuItem<Subject>(
-                                      value: subject,
-                                      child: new Text(subject.name,  style: TextStyle(fontSize: 24.0)),
-                                    );
-                                  }).toList(),
-                                  onChanged: (Subject val){
-                                    setState(() {
-                                      selectedSubject = val;
-                                    });
-                                  },
+                            new Container(
+                                child: ButtonTheme(
+                                  height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                  child: RaisedButton(
+                                    elevation: 3.0,
+                                    onPressed: () => showSubjectList(),
+                                    child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                            selectedSubject == null ? 'Choose a Subject' : selectedSubject.name,
+                                            style: TextStyle(
+                                              fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                              fontFamily: widget.fontData.font,
+                                            )
+                                        )
+                                    ),
+                                    color: Theme.of(context).errorColor,
+
+                                    textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                                  ),
+                                )
                             ) : new Container(),
                           ),
-                          SizedBox(height: 20.0),
+                          SizedBox(height: 10.0),
                           new Container(
                             margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                             child: TextFormField(
@@ -138,7 +151,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
                               keyboardType: TextInputType.text,
                               autofocus: false,
                               controller: roomController,
-                              style: TextStyle(fontSize: 24.0),
+                              style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
                               onFieldSubmitted: (String value) {
                                 FocusScope.of(context).requestFocus(teacherFocusNode);
                               },
@@ -158,7 +171,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
                               keyboardType: TextInputType.text,
                               autofocus: false,
                               controller: teacherController,
-                              style: TextStyle(fontSize: 24.0),
+                              style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
                               onFieldSubmitted: (String value) {
                                 FocusScope.of(context).requestFocus(new FocusNode());
                               },
@@ -186,13 +199,14 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
                                   FocusScope.of(context).requestFocus(new FocusNode());
                                 },
-                                style: TextStyle(fontSize: 24.0),
+                                style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
                                 decoration: InputDecoration(
                                     hintText: "What Time is the class at?",
-                                    hintStyle: TextStyle(fontSize: 24.0),
-                                    hasFloatingPlaceholder: false
+                                    hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font),
+                                    hasFloatingPlaceholder: false,
                                 ),
                                 initialTime: null,
+
                               )
                           ),
                           SizedBox(height: 20.0),
@@ -203,11 +217,11 @@ class _AddTimeslotState extends State<AddTimeslot> {
                   new Container(
                       margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                       child: ButtonTheme(
-                        height: 50.0,
+                        height: 50.0*ThemeCheck.orientatedScaleFactor(context),
                         child: RaisedButton(
                           elevation: 3.0,
                           onPressed: showAreYouSureDialog,
-                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
+                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size))),
                           color: Theme.of(context).errorColor,
 
                           textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
@@ -228,6 +242,39 @@ class _AddTimeslotState extends State<AddTimeslot> {
           ],
         )
     );
+  }
+
+  void showSubjectList(){
+    AlertDialog tags = new AlertDialog(
+      content: new Container(
+        width: MediaQuery.of(context).size.width,
+        child: new ListView.builder(
+            shrinkWrap: true,
+            itemCount: subjects.length,
+            itemBuilder: (BuildContext ctxt, int index) {
+              return new RadioListTile<Subject>(
+                value: subjects[index],
+                groupValue: selectedSubject == null ? null : selectedSubject,
+                title: Text(
+                  subjects[index].name, style: TextStyle(
+                    fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                    fontFamily: widget.fontData.font,
+                    color: widget.fontData.color
+                  ),
+                ),
+                onChanged: (Subject val) {
+                  setState(() {
+                    selectedSubject = val;
+                    Navigator.pop(context);
+                  });
+                },
+              );
+            }
+        ),
+      ),
+    );
+
+    showDialog(context: context, barrierDismissible: true, builder: (_) => tags, );
   }
 
   void getSubjects() async {

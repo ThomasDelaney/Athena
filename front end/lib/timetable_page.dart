@@ -1,8 +1,14 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/add_timeslot.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
+import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/font_settings.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/icon_settings.dart';
 import 'package:my_school_life_prototype/materials.dart';
 import 'package:my_school_life_prototype/subject.dart';
+import 'package:my_school_life_prototype/tag_manager.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'timetable_slot.dart';
 import 'request_manager.dart';
@@ -30,7 +36,6 @@ class _TimetablePageState extends State<TimetablePage> {
 
   //list of weekdays
   List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  String font = "";
 
   bool slotsLoaded = false;
 
@@ -39,12 +44,39 @@ class _TimetablePageState extends State<TimetablePage> {
   //map is "weekday", list of timeslot objects for that weekday
   Map<String, List<TimetableSlot>> timeslots = new Map<String, List<TimetableSlot>>();
 
+  FontData fontData;
+  bool fontLoaded = false;
 
-  //get the currently selected font in shared preferences, if there is one
-  void getFont() async
+  bool iconLoaded = false;
+  AthenaIconData iconData;
+
+  //get current font from shared preferences if present
+  void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    this.setState((){font = prefs.getString("font");});
+
+    if (this.mounted) {
+      this.setState(() {
+        fontLoaded = true;
+        fontData = new FontData(
+            prefs.getString("font"), Color(prefs.getInt("fontColour")),
+            prefs.getDouble("fontSize"));
+      });
+    }
+  }
+
+  void getIconData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        iconLoaded = true;
+        iconData = new AthenaIconData(
+            Color(prefs.getInt("iconColour")),
+            prefs.getDouble("iconSize"));
+      });
+    }
   }
 
   void getTimeslots() async {
@@ -57,10 +89,13 @@ class _TimetablePageState extends State<TimetablePage> {
   }
 
   void retrieveData() async {
+    iconLoaded = false;
     slotsLoaded = false;
+    fontLoaded = false;
     timeslots.clear();
+    getIconData();
     getTimeslots();
-    getFont();
+    getFontData();
   }
 
   @override
@@ -82,9 +117,97 @@ class _TimetablePageState extends State<TimetablePage> {
           children: <Widget>[
             Scaffold(
                 key: _scaffoldKey,
+                endDrawer: Container(
+                  width: MediaQuery.of(context).size.width/1.25,
+                  child: new Drawer(
+                    child: ListView(
+                      //Remove any padding from the ListView.
+                      padding: EdgeInsets.zero,
+                      children: <Widget>[
+                        //drawer header
+                        DrawerHeader(
+                          child: Text('Settings', style: TextStyle(
+                            fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
+                          )
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                          ),
+                        ),
+                        //fonts option
+                        ListTile(
+                          leading: Icon(Icons.font_download),
+                          title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.insert_emoticon),
+                          title: Text('Icons', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.local_offer),
+                          title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
+                          },
+                        ),
+                        //sign out option
+                        ListTile(
+                          leading: Icon(Icons.exit_to_app),
+                          title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                          onTap: () {
+                            //signOut();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 appBar: AppBar(
-                  title: Text('Timetables', style: TextStyle(fontFamily: font)),
+                  title: Text('Timetables', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
                   //tab bar implements the drawing and navigation between tabs
+                  actions: recorder.recording ? <Widget>[
+                    // action button
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      iconSize: 30.0,
+                      onPressed: () {
+                        setState(() {
+                          recorder.cancelRecording();
+                        });
+                      },
+                    ),
+                  ] : <Widget>[
+                    // else display the mic button and settings button
+                    IconButton(
+                        icon: Icon(Icons.home),
+                        iconSize: 30.0,
+                        onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.mic),
+                      iconSize: 30.0,
+                      onPressed: () {
+                        setState(() {
+                          recorder.recordAudio(context);
+                        });
+                      },
+                    ),
+                    Builder(
+                      builder: (context) =>
+                          IconButton(
+                            icon: Icon(Icons.settings),
+                            onPressed: () => Scaffold.of(context).openEndDrawer(),
+                          ),
+                    ),
+                  ],
                   bottom: TabBar(
                     isScrollable: true,
                     labelPadding: EdgeInsets.fromLTRB(12.5, 0.0, 12.5, 0.0),
@@ -103,7 +226,7 @@ class _TimetablePageState extends State<TimetablePage> {
                         children: weekdays.map((String day) {
                           return Padding(
                               padding: const EdgeInsets.all(16.0),
-                              child: slotsLoaded ? TimeslotCard(font: font, subjectList: timeslots[day], day: day, pageState: this) :
+                              child: slotsLoaded ? TimeslotCard(fontData: fontData, iconData: iconData, subjectList: timeslots[day], day: day, pageState: this) :
                               new Center(
                                 child: SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
                               )
@@ -148,9 +271,10 @@ class _TimetablePageState extends State<TimetablePage> {
 
 //widget for a timeslot card, for this prototype implementation however, it is just all the dummy timeslots
 class TimeslotCard extends StatelessWidget {
-  const TimeslotCard({Key key, this.font, this.subjectList, this.day, this.pageState}) : super(key: key);
+  const TimeslotCard({Key key, this.fontData, this.iconData, this.subjectList, this.day, this.pageState}) : super(key: key);
 
-  final font;
+  final FontData fontData;
+  final AthenaIconData iconData;
 
   final List<TimetableSlot> subjectList;
 
@@ -166,9 +290,11 @@ class TimeslotCard extends StatelessWidget {
         children: <Widget>[
           new SizedBox(height: 10.0),
           IconButton(
-            icon: Icon(Icons.add_circle, color: Theme.of(context).accentColor),
-            iconSize: 42.0,
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTimeslot(day: day,))).whenComplete(() => pageState.retrieveData()),
+            alignment: Alignment.center,
+            icon: Icon(Icons.add_circle),
+            iconSize: 42.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+            color: iconData.color,
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTimeslot(day: day, fontData: fontData))).whenComplete(() => pageState.retrieveData()),
           )
         ],
       );
@@ -183,103 +309,117 @@ class TimeslotCard extends StatelessWidget {
               children: <Widget>[
                 GestureDetector(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTimeslot(
-                    day: day, currentTimeslot: subjectList[position],
-                    lastTime: subjectList.length == 1 ? null : subjectList[position-1].time,)
+                      day: day, currentTimeslot: subjectList[position],
+                      lastTime: subjectList.length == 1 ? null : position == 0 ? subjectList[position].time : subjectList[position-1].time,
+                      fontData: fontData
+                    )
                   )).whenComplete(() => pageState.retrieveData()),
-                  child: Card(
-                      margin: new EdgeInsets.symmetric(vertical: 6.0),
-                      elevation: 3.0,
-                      //display a slot in a list tile
-                      child: new Container(
-                        padding: new EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
-                        child: new Row(
-                          children: <Widget>[
-                            Text(
-                              //subject time
-                              subjectList[position].time + periodOfDay(
-                                  TimeOfDay(hour: int.tryParse(subjectList[position].time.split(':')[0]), minute: int.tryParse(subjectList[position].time.split(':')[1]))
-                              ),
-                              style: TextStyle(fontSize: 22.5, fontFamily: font, color: Colors.grey, fontWeight: FontWeight.bold),
-                            ),
-                            new SizedBox(width: MediaQuery.of(context).size.width/9),
-                            new Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    subjectList[position].subjectTitle,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20.0,
-                                        fontFamily: font,
-                                        color: Color(int.tryParse(subjectList[position].colour))
-                                    )
-                                  ),
-                                  new SizedBox(height: 10.0),
-                                  Row(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    child: Card(
+                        margin: new EdgeInsets.symmetric(vertical: 6.0),
+                        elevation: 3.0,
+                        //display a slot in a list tile
+                        child: new Container(
+                          padding: new EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 15.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Expanded(
+                                child: new Column(
+                                    //alignment: WrapAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Icon(Icons.location_on, color: Colors.grey, size: 20.0,),
-                                      SizedBox(width: 5.0,),
-                                      Expanded(
-                                        child: Text(
-                                          subjectList[position].room,
-                                          style: TextStyle(fontSize: 18.0, fontFamily: font),
-                                        )
-                                      ),
-                                    ],
-                                  ),
-                                  new SizedBox(height: 10.0),
-                                  Row(
-                                    children: <Widget>[
-                                      Icon(Icons.face, color: Colors.grey, size: 20.0,),
-                                      SizedBox(width: 5.0,),
-                                      Expanded(
-                                        //fit: FlexFit.loose,
-                                        child: Text(
-                                          subjectList[position].teacher,
-                                          style: TextStyle(fontSize: 18.0, fontFamily: font),
-                                          //softWrap: false,
-                                          //overflow: TextOverflow.ellipsis,
+                                      Text(
+                                        //subject time
+                                        subjectList[position].time + periodOfDay(
+                                            TimeOfDay(hour: int.tryParse(subjectList[position].time.split(':')[0]), minute: int.tryParse(subjectList[position].time.split(':')[1]))
                                         ),
-                                      )
-                                    ],
-                                  ),
-                                ],
-                              )
-                            ),
-                            new SizedBox(width: 15.0),
-                            IconButton(
-                                icon: Icon(Icons.business_center, color: Colors.grey),
-                                iconSize: 32.5,
+                                        style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color, fontWeight: FontWeight.bold),
+                                      ),
+                                      new Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                              subjectList[position].subjectTitle,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
+                                                  fontFamily: fontData.font,
+                                                  color: Color(int.tryParse(subjectList[position].colour))
+                                              )
+                                          ),
+                                          new SizedBox(height: 10.0),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: <Widget>[
+                                              Icon(Icons.location_on, color: iconData.color, size: 22*ThemeCheck.orientatedScaleFactor(context)*iconData.size,),
+                                              SizedBox(width: 5.0*ThemeCheck.orientatedScaleFactor(context),),
+                                              Flexible(
+                                                  child: Text(
+                                                    subjectList[position].room,
+                                                    style: TextStyle(fontSize: 22.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color),
+                                                  )
+                                              ),
+                                            ],
+                                          ),
+                                          new SizedBox(height: 10.0),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: <Widget>[
+                                              Icon(Icons.face, color: iconData.color, size: 22*ThemeCheck.orientatedScaleFactor(context)*iconData.size,),
+                                              SizedBox(width: 5.0*ThemeCheck.orientatedScaleFactor(context),),
+                                              Flexible(
+                                                child: Text(
+                                                  subjectList[position].teacher,
+                                                  style: TextStyle(fontSize: 22.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ]
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.business_center),
+                                alignment: Alignment.center,
+                                iconSize: 35*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                                color: iconData.color,
                                 onPressed: ()
-                                  async {
-                                    pageState.submit(true);
-                                    Subject subject = await Subject.getSubjectByTitle(subjectList[position].subjectTitle);
-                                    pageState.submit(false);
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject)));
-                                  },
-                            ),
-                          ]
-                        ),
-                      )
+                                async {
+                                  pageState.submit(true);
+                                  Subject subject = await Subject.getSubjectByTitle(subjectList[position].subjectTitle);
+                                  pageState.submit(false);
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject)));
+                                },
+                              ),
+                            ],
+                          )
+                        )
                     ),
                   ),
-                  position == subjectList.length-1 ?
-                  new Column(
-                    children: <Widget>[
-                      new SizedBox(height: 10.0),
-                      IconButton(
-                        icon: Icon(Icons.add_circle, color: Theme.of(context).accentColor),
-                        iconSize: 42.0,
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                            AddTimeslot(day: day, lastTime: subjectList[subjectList.length-1].time,))).whenComplete(() => pageState.retrieveData()),
-                      )
-                    ],
-                  ) : new Container()
-                ],
-              );
-            },
-          )
+                ),
+                position == subjectList.length-1 ?
+                new Column(
+                  children: <Widget>[
+                    new SizedBox(height: 10.0),
+                    IconButton(
+                      icon: Icon(Icons.add_circle),
+                      alignment: Alignment.center,
+                      color: iconData.color,
+                      iconSize: 42.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                        AddTimeslot(day: day, lastTime: subjectList[subjectList.length-1].time, fontData: fontData))).whenComplete(() => pageState.retrieveData()),
+                    )
+                  ],
+               ) : new Container()
+             ],
+            );
+          },
+        )
       );
     }
   }

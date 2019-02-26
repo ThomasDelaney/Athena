@@ -225,7 +225,7 @@ def get_command_keywords():
 
             # set up dialogflow session, and create a dialogflow query with the
             # text input
-            session = session_client.session_path("glassy-acolyte-228916", "1")
+            session = session_client.session_path("moonlit-caster-232518", "1")
             text_input = dialogflow.types.TextInput(
                 text=text, language_code="en-US")
             query_input = dialogflow.types.QueryInput(text=text_input)
@@ -302,6 +302,48 @@ def get_font():
         db = firebase.database()
 
         result = db.child("users").child(user['userId']).child("design").child("font").get(user['idToken'])
+        # return refresh token if successfull
+        return jsonify(data=result.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to change icon settings
+@app.route('/putIconData', methods=['POST'])
+def put_icon_data():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        data = {
+            "iconColour": request.form['iconColour'],
+            "iconSize": request.form['iconSize']
+        }
+
+        # set posted font under the design node
+        result = db.child("users").child(user['userId']).child("design").child("icon").set(data, user['idToken'])
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to get icon settings
+@app.route('/getIconData', methods=['GET'])
+def get_icon_data():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("design").child("icon").get(user['idToken'])
         # return refresh token if successfull
         return jsonify(data=result.val(), refreshToken=user['refreshToken'])
     except requests.exceptions.HTTPError as e:

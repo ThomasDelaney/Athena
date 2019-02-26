@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
 import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/homework_page.dart';
 import 'package:my_school_life_prototype/materials.dart';
@@ -9,185 +10,182 @@ import 'add_subject.dart';
 import 'virtual_hardback.dart';
 import 'subject_hub.dart';
 import 'request_manager.dart';
+import 'theme_check.dart';
 
 class SubjectHubTile extends StatelessWidget {
 
-  SubjectHubTile({Key key, this.subject, this.state, this.fontData}) : super(key: key);
+  SubjectHubTile({Key key, this.subject, this.state, this.fontData, this.iconData}) : super(key: key);
 
   final SubjectHubState state;
 
   final Subject subject;
 
   final FontData fontData;
+  final AthenaIconData iconData;
 
   final RequestManager requestManager = RequestManager.singleton;
 
-  final tileSize = 200.0;
-
   final smallTileSize = 60.0;
-  final hardbackTileSize = 125.0;
+  final hardbackTileSize = 108.5;
 
   @override
   Widget build(BuildContext context) {
 
-    double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*1.85;
-    double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
-
-    double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
-
-    return SizedBox(
-      //height: tileSize*scaleFactor,
-      child: new Card(
-      margin: EdgeInsets.fromLTRB(20.0*scaleFactor, 10.0*scaleFactor, 20.0*scaleFactor, 10.0*scaleFactor),
+    return new Card(
+      margin: EdgeInsets.fromLTRB(20.0*ThemeCheck.orientatedScaleFactor(context), 10.0*ThemeCheck.orientatedScaleFactor(context), 20.0*ThemeCheck.orientatedScaleFactor(context), 10.0*ThemeCheck.orientatedScaleFactor(context)),
       elevation: 3.0,
       color: Color(int.tryParse(subject.colour)),
+      child: new Container(
+        margin: EdgeInsets.fromLTRB(10.0*ThemeCheck.orientatedScaleFactor(context), 10.0*ThemeCheck.orientatedScaleFactor(context), 10.0*ThemeCheck.orientatedScaleFactor(context), 10.0*ThemeCheck.orientatedScaleFactor(context)),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            new Container(
-              margin: EdgeInsets.fromLTRB(10.0*scaleFactor, 10.0*scaleFactor, 10.0*scaleFactor, 10.0*scaleFactor),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+              child: Wrap(
+                runAlignment: WrapAlignment.spaceBetween,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Text(
+                    subject.name,
+                    style: TextStyle(
+                        fontSize: 32.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                        fontFamily: fontData.font,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold
+                    )
+                  ),
+                  new Row (
+                    mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Flexible(child: Text(subject.name, textScaleFactor: scaleFactor, style: TextStyle(fontSize: 30.0, fontFamily: fontData.font, color: Colors.white, fontWeight: FontWeight.bold))),
-                      Row (
-                        children: <Widget>[
-                          IconButton(
-                              icon: Icon(Icons.edit),
-                              iconSize: 30.0*scaleFactor,
-                              color: Colors.white,
-                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject,))).whenComplete(state.retrieveData)
-                          ),
-                          IconButton(
-                              icon: Icon(Icons.delete),
-                              iconSize: 30.0*scaleFactor,
-                              color: Colors.white,
-                              onPressed: () => state.deleteSubjectDialog(subject.id, subject.name)
-                          ),
-                        ],
-                      )
+                      IconButton(
+                          icon: Icon(Icons.edit),
+                          iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                          color: Colors.white,
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject, fontData: fontData,))).whenComplete(state.retrieveData)
+                      ),
+                      IconButton(
+                          icon: Icon(Icons.delete),
+                          iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                          color: Colors.white,
+                          onPressed: () => state.deleteSubjectDialog(subject.id, subject.name)
+                      ),
                     ],
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              height: smallTileSize*scaleFactor,
-                              child: GestureDetector(
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject,))),
-                                child: Card(
-                                    elevation: 3.0,
-                                    color: Theme.of(context).cardColor,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.business_center, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                        SizedBox(width: 10.0*scaleFactor),
-                                        Text("Materials", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
-                                      ],
-                                    )
-                                ),
-                              )
-                            ),
-                            SizedBox(height: 5.0*scaleFactor),
-                            GestureDetector(
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: subject,))),
-                              child: Container(
-                                height: smallTileSize*scaleFactor,
-                                child: Card(
-                                    elevation: 3.0,
-                                    color: Theme.of(context).cardColor,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.insert_chart, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                        SizedBox(width: 10.0*scaleFactor),
-                                        Text("Progress", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
-                                      ],
-                                    )
-                                ),
-                              )
-                            )
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: subject,))),
-                              child: Container(
-                                height: smallTileSize*scaleFactor,
-                                child: Card(
-                                    elevation: 3.0,
-                                    color: Theme.of(context).cardColor,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.school, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                        SizedBox(width: 10.0*scaleFactor),
-                                        Text("Test Results", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
-                                      ],
-                                    )
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 5.0*scaleFactor),
-                            GestureDetector(
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeworkPage(subject: subject,))),
-                              child: Container(
-                                height: smallTileSize*scaleFactor,
-                                child: Card(
-                                  elevation: 3.0,
-                                  color: Theme.of(context).cardColor,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(Icons.library_books, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                      SizedBox(width: 10.0*scaleFactor),
-                                      Text("Homework", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: new GestureDetector(
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => VirtualHardback(subject: subject,))),
+                ],
+              ),
+            ),
+            SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context),),
+            Wrap(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject,))).whenComplete(state.retrieveData),
+                      child: Card(
+                          elevation: 3.0,
+                          color: Theme.of(context).cardColor,
                           child: Container(
-                            height: hardbackTileSize*scaleFactor,
-                            child: Card(
-                              elevation: 3.0,
-                              color: Theme.of(context).cardColor,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Icon(Icons.folder_open, size: 20.5*scaleFactor, color: Color.fromRGBO(70, 68, 71, 1)),
-                                  SizedBox(width: 10.0*scaleFactor),
-                                  Text("Hardback", textScaleFactor: scaleFactor, style: TextStyle(fontSize: 13.45, fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color))
-                                ],
-                              ),
+                            padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Icon(Icons.business_center, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
+                                Text("Materials", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                              ],
                             ),
                           )
+                      ),
+                    ),
+                    GestureDetector(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: subject,))).whenComplete(state.retrieveData),
+                        child: Card(
+                            elevation: 3.0,
+                            color: Theme.of(context).cardColor,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Icon(Icons.insert_chart, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                  SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
+                                  Text("Progress", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                                ],
+                              ),
+                            )
+                        )
+                    )
+                  ],
+                ),
+                Column(
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: subject,))).whenComplete(state.retrieveData),
+                      child: Card(
+                          elevation: 3.0,
+                          color: Theme.of(context).cardColor,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Icon(Icons.school, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
+                                Text("Test Results", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                              ],
+                            ),
+                          )
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeworkPage(subject: subject,))).whenComplete(state.retrieveData),
+                      child: Container(
+                        child: Card(
+                            elevation: 3.0,
+                            color: Theme.of(context).cardColor,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Icon(Icons.library_books, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                  SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
+                                  Text("Homework", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                                ],
+                              ),
+                            )
                         ),
-                      )
-                    ],
-                  )
-                ],
-              )
+                      ),
+                    ),
+                  ],
+                ),
+                new GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => VirtualHardback(subject: subject,))).whenComplete(state.retrieveData),
+                    child: Container(
+                      child: Card(
+                        elevation: 3.0,
+                        color: Theme.of(context).cardColor,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Icon(Icons.folder_open, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                              SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
+                              Text("Hardback", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                            ],
+                          ),
+                        )
+                      ),
+                    )
+                  ),
+              ],
             ),
           ],
-        ),
-      )
+        )
+      ),
     );
   }
 }

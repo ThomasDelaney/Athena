@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/icon_settings.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'home_tile.dart';
 import 'recording_manager.dart';
@@ -34,8 +36,10 @@ class HomePageState extends State<HomePage> {
   List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
   FontData fontData;
+  AthenaIconData iconData;
 
-  bool loaded = false;
+  bool fontLoaded = false;
+  bool iconLoaded = false;
 
   @override
   void initState() {
@@ -46,13 +50,16 @@ class HomePageState extends State<HomePage> {
 
   @override
   void didChangeDependencies() {
+    receiveData();
     recorder.assignParent(this);
     super.didChangeDependencies();
   }
 
   void receiveData() async{
-    setState(() {
-      loaded = false;
+    setState(()  {
+      fontLoaded = false;
+      iconLoaded = false;
+      getCurrentIconData();
       getCurrentFontData();
     });
   }
@@ -68,30 +75,52 @@ class HomePageState extends State<HomePage> {
           children: <Widget>[
             //drawer header
             DrawerHeader(
-              child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: loaded ? fontData.font : "", color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black)),
+              child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black)),
               decoration: BoxDecoration(
                 color: Colors.red,
               ),
             ),
             //fonts option
             ListTile(
-              leading: Icon(Icons.font_download),
-              title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: loaded ? fontData.font : "")),
+              leading: Icon(
+                Icons.font_download,
+                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                color: iconLoaded ? iconData.color : Colors.red,
+              ),
+              title: Text('Fonts', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(receiveData);
               },
             ),
             ListTile(
-              leading: Icon(Icons.local_offer),
-              title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: loaded ? fontData.font : "")),
+              leading: Icon(
+                Icons.insert_emoticon,
+                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                color: iconLoaded ? iconData.color : Colors.red,
+              ),
+              title: Text('Icons', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(receiveData);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.local_offer,
+                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                color: iconLoaded ? iconData.color : Colors.red,
+              ),
+              title: Text('Tags', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
               },
             ),
             //sign out option
             ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: loaded ? fontData.font : "")),
+              leading: Icon(
+                Icons.exit_to_app,
+                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                color: iconLoaded ? iconData.color : Colors.red,),
+              title: Text('Sign Out', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
               onTap: () {
                 signOut();
               },
@@ -100,20 +129,20 @@ class HomePageState extends State<HomePage> {
         ),
       ),
       appBar: new AppBar(
-        title: new Text("Home", style: TextStyle(fontFamily: loaded ? fontData.font : ""),),
+        title: new Text("Home", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : ""),),
         //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
         actions: recorder.recording ? <Widget>[
           // action button
           IconButton(
             icon: Icon(Icons.close),
-            iconSize: 30.0,
+            iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
             onPressed: () {setState(() {recorder.cancelRecording();});},
           ),
         ] : <Widget>[
           // else display the mic button and settings button
           IconButton(
             icon: Icon(Icons.mic),
-            iconSize: 30.0,
+            iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
             onPressed: () {setState(() {recorder.recordAudio(context);});},
           ),
           Builder(
@@ -124,15 +153,24 @@ class HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: loaded ? new Stack(
+      body: fontLoaded && iconLoaded ? new Stack(
         children: <Widget>[
           new Center(
-            child: new Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, fontData: fontData, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
-                new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub(), fontData: fontData,),
-              ],
+            child: SingleChildScrollView(
+              child: new Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.center,
+                children: <Widget>[
+                  new Container(
+                    padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
+                    child: new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, fontData: fontData, iconData: iconData, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
+                  ),
+                  new Container(
+                    padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
+                    child: new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub(), fontData: fontData, iconData: iconData),
+                  )
+                ],
+              ),
             ),
           ),
           new Container(
@@ -162,8 +200,18 @@ class HomePageState extends State<HomePage> {
     FontData data = await requestManager.getFontData();
 
     setState(() {
-      loaded = true;
+      fontLoaded = true;
       fontData = new FontData(data.font, data.color, data.size);
+    });
+  }
+
+  void getCurrentIconData() async {
+
+    AthenaIconData data = await requestManager.getIconData();
+
+    setState(() {
+      iconLoaded = true;
+      iconData = new AthenaIconData(data.color, data.size);
     });
   }
 

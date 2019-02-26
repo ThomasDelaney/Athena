@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ThemeCheck
 {
   static bool colorCheck(Color color) {
-    return 1.05 / (color.computeLuminance() + 0.05) > 2.5;
+    return 1.05 / (color.computeLuminance() + 0.05) > 1.5;
   }
 
   static List<Color> colorBlindFriendlyColours() {
@@ -23,10 +23,24 @@ class ThemeCheck
     ];
   }
 
+  static Color errorColorOfColor(Color color){
+    HSLColor hslColor = HSLColor.fromColor(color);
+    HSLColor newHSLColour = new HSLColor.fromAHSL(hslColor.alpha, hslColor.hue, hslColor.saturation, hslColor.lightness / 1.15);
+    return newHSLColour.toColor();
+  }
+
   //scale factor based on orientation
   static double orientatedScaleFactor(BuildContext _context){
-    double scaleFactorLandscape = (MediaQuery.of(_context).size.height/MediaQuery.of(_context).size.width)*1.85;
-    double scaleFactorPortrait = (MediaQuery.of(_context).size.width/MediaQuery.of(_context).size.height)*1.85;
+
+    double ratioPortrait = (MediaQuery.of(_context).size.width / MediaQuery.of(_context).size.height) < 0.60 ? 800 : 450;
+    double ratioLandscape = (MediaQuery.of(_context).size.height / MediaQuery.of(_context).size.width) < 0.60 ? 800 : 450;
+
+    double portraitDifference = (MediaQuery.of(_context).size.height - MediaQuery.of(_context).size.width)/ratioPortrait;
+    double landScapeDifference = (MediaQuery.of(_context).size.width - MediaQuery.of(_context).size.height)/ratioLandscape;
+
+    double scaleFactorLandscape = landScapeDifference*MediaQuery.of(_context).size.width / MediaQuery.of(_context).size.height;
+    double scaleFactorPortrait = portraitDifference*MediaQuery.of(_context).size.height / MediaQuery.of(_context).size.width;
+
     return (MediaQuery.of(_context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
   }
 }

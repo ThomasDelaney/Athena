@@ -204,7 +204,7 @@ class _RegisterPageState extends State<RegisterPage> {
           title: new Text(widget.pageTitle),
         ),
         body: new Center(
-          child: new Container(
+          child: new SingleChildScrollView(
               child: pageStack
             ),
         )

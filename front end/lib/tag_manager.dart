@@ -1,3 +1,8 @@
+import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'recording_manager.dart';
@@ -26,7 +31,22 @@ class _TagManagerState extends State<TagManager> {
 
   bool tagsLoaded = false;
   bool submitting = false;
-  String font = "";
+
+  bool fontLoaded = false;
+  FontData fontData;
+
+  //get current font from shared preferences if present
+  void getFontData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState((){
+        fontLoaded = true;
+        fontData = new FontData(prefs.getString("font"), Color(prefs.getInt("fontColour")), prefs.getDouble("fontSize"));
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -34,10 +54,14 @@ class _TagManagerState extends State<TagManager> {
     super.initState();
   }
 
-  void retrieveData() {
+  void retrieveData() async {
+
+    fontLoaded = false;
+    await getFontData();
+
     tagsLoaded = false;
     tagList.clear();
-    getTags();
+    await getTags();
   }
 
   @override
@@ -58,7 +82,7 @@ class _TagManagerState extends State<TagManager> {
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        new Text("Add Tags By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                        new Text("Add Tags By Using the", textAlign: TextAlign.center, style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color), ),
                         new SizedBox(height: 10.0,),
                         new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
                       ]
@@ -95,7 +119,7 @@ class _TagManagerState extends State<TagManager> {
                         ),
                         title: Text(
                           tagList[position].tag,
-                          style: TextStyle(fontSize: 24.0, fontFamily: font),
+                          style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color),
                         ),
                         trailing: GestureDetector(
                             child: Icon(Icons.delete, size: 32.0, color: Color.fromRGBO(70, 68, 71, 1)),
@@ -123,7 +147,12 @@ class _TagManagerState extends State<TagManager> {
                   //drawer header
                   DrawerHeader(
                     child: Text('Settings',
-                        style: TextStyle(fontSize: 25.0, fontFamily: font)),
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
+                        )
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red,
                     ),
@@ -132,7 +161,7 @@ class _TagManagerState extends State<TagManager> {
                   ListTile(
                     leading: Icon(Icons.font_download),
                     title: Text('Fonts',
-                        style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                        style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                     onTap: () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) => FontSettings()));
@@ -142,7 +171,7 @@ class _TagManagerState extends State<TagManager> {
                   ListTile(
                     leading: Icon(Icons.exit_to_app),
                     title: Text('Sign Out',
-                        style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                        style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                     onTap: () {
                       //signOut();
                     },
@@ -151,7 +180,7 @@ class _TagManagerState extends State<TagManager> {
               ),
             ),
             appBar: new AppBar(
-              title: new Text("Tags", style: TextStyle(fontFamily: font),),
+              title: new Text("Tags", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : ""),),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[
                 // action button
@@ -165,6 +194,11 @@ class _TagManagerState extends State<TagManager> {
                   },
                 ),
               ] : <Widget>[
+                IconButton(
+                    icon: Icon(Icons.home),
+                    iconSize: 30.0,
+                    onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                ),
                 IconButton(
                   icon: Icon(Icons.add_circle),
                   iconSize: 30.0,
@@ -238,18 +272,18 @@ class _TagManagerState extends State<TagManager> {
 
     //if null, then the request was a success, retrieve the information
     if (response == "success") {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Deleted!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Deleted!', style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font))));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
     else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
+        content: new Text("An error has occured please try again", style: TextStyle(fontSize: 18.0*fontData.size, fontFamily: fontData.font),),
         actions: <Widget>[
           new FlatButton(onPressed: () {
-            Navigator.pop(context); /*submit(false);*/
-          }, child: new Text("OK"))
+            Navigator.pop(context);
+          }, child: new Text("OK", style: TextStyle(fontSize: 18.0*fontData.size, fontFamily: fontData.font),))
         ],
       );
 
@@ -262,12 +296,12 @@ class _TagManagerState extends State<TagManager> {
   void deleteTagDialog(Tag tag) {
     AlertDialog areYouSure = new AlertDialog(
       content: new Text(
-        "Do you want to DELETE this TAG? All files with this Tag will have no Tag", /*style: TextStyle(fontFamily: font),*/),
+        "Do you want to DELETE this TAG? All files with this Tag will have no Tag", style: TextStyle(fontSize: 18.0*fontData.size, fontFamily: fontData.font),),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
         }, child: new Text("NO", style: TextStyle(
-          fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          fontSize: 18.0*fontData.size, fontFamily: fontData.font, fontWeight: FontWeight.bold,),)),
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
@@ -275,7 +309,7 @@ class _TagManagerState extends State<TagManager> {
           submit(false);
         },
             child: new Text("YES",
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+              style: TextStyle(fontSize: 18.0*fontData.size, fontFamily: fontData.font, fontWeight: FontWeight.bold,),)),
       ],
     );
 

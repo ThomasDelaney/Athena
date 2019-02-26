@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/add_result.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/font_settings.dart';
+import 'package:my_school_life_prototype/home_page.dart';
+import 'package:my_school_life_prototype/icon_settings.dart';
 import 'package:my_school_life_prototype/login_page.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
 import 'package:my_school_life_prototype/request_manager.dart';
 import 'package:my_school_life_prototype/subject.dart';
+import 'package:my_school_life_prototype/tag_manager.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'test_result.dart';
 
@@ -34,9 +40,47 @@ class _TestResultsState extends State<TestResults> {
   List<TestResult> resultsList = new List<TestResult>();
   bool resultsLoaded = false;
 
+  bool fontLoaded = false;
+  FontData fontData;
+
+  AthenaIconData iconData;
+  bool iconLoaded = false;
+
+  //get current font from shared preferences if present
+  void getFontData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState((){
+        fontLoaded = true;
+        fontData = new FontData(prefs.getString("font"), Color(prefs.getInt("fontColour")), prefs.getDouble("fontSize"));
+      });
+    }
+  }
+
+  //get current icon settings from shared preferences if present
+  void getIconData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        iconLoaded = true;
+        iconData = new AthenaIconData(
+            Color(prefs.getInt("iconColour")),
+            prefs.getDouble("iconSize"));
+      });
+    }
+  }
+
   void retrieveData() async {
+    fontLoaded = false;
+    iconLoaded = false;
     resultsList.clear();
     resultsLoaded = false;
+    await getIconData();
+    await getFontData();
     await getTestResults();
   }
 
@@ -66,9 +110,9 @@ class _TestResultsState extends State<TestResults> {
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new Text("Add Test Results By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
+                          new Text("Add Test Results By Using the", textAlign: TextAlign.center, style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color,), ),
                           new SizedBox(height: 10.0,),
-                          new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
+                          new Icon(Icons.add_circle, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: Colors.grey,),
                         ]
                     ),
                   ),
@@ -83,46 +127,56 @@ class _TestResultsState extends State<TestResults> {
         itemCount: resultsList.length,
         itemBuilder: (context, position) {
           return GestureDetector(
-              onLongPress: () => {},
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddResult(currentResult: resultsList[position], subject: widget.subject, fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0)))).whenComplete(retrieveData),
               child: Column(
                 children: <Widget>[
-                  SizedBox(height: 10.0),
+                  SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)),
                   Card(
-                      margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                      elevation: 3.0,
-                      child: new ListTile(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddResult(currentResult: resultsList[position], subject: widget.subject,))).whenComplete(retrieveData),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-                        leading: Container(
-                          padding: EdgeInsets.only(right: 12.0),
-                          decoration: new BoxDecoration(
-                              border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
-                          ),
-                          child: Icon(Icons.school, color: Color(int.tryParse(widget.subject.colour)), size: 32.0,),
-                        ),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                resultsList[position].title,
-                                style: TextStyle(fontSize: 24.0, fontFamily: font),
+                    margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                    elevation: 3.0,
+                    child: new Container(
+                      padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
+                      child: new Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: new ConstrainedBox(
+                              constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+                              child: new Wrap(
+                                alignment: WrapAlignment.start,
+                                runAlignment: WrapAlignment.start,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: <Widget>[
+                                  Icon(Icons.school, color: Color(int.tryParse(widget.subject.colour)), size: 32.0*iconData.size,),
+                                  new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context),),
+                                  new Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        resultsList[position].title,
+                                        style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color),
+                                      ),
+                                      SizedBox(height: 5.0*ThemeCheck.orientatedScaleFactor(context)),
+                                      Container(
+                                        child: Text(
+                                          resultsList[position].score.toString()+"%",
+                                          style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color, fontWeight: FontWeight.bold),
+                                        ),
+                                      )
+                                    ],
+                                  )
+                                ],
                               ),
                             ),
-                            Container(
-                              width: MediaQuery.of(context).size.width/3.5,
-                              child: Text(
-                                resultsList[position].score.toString()+"%",
-                                style: TextStyle(fontSize: 24.0, fontFamily: font, fontWeight: FontWeight.bold),
-                              ),
-                            )
-                          ],
-                        ),
-                        trailing: GestureDetector(
-                          child: Icon(Icons.delete, size: 32.0, color: Color.fromRGBO(70, 68, 71, 1)),
-                          onTap: () => deleteTestResultDialog(resultsList[position])
                           ),
-                      )
+                          IconButton(
+                              icon: Icon(Icons.delete, color: ThemeCheck.errorColorOfColor(iconData.color)),
+                              iconSize: 32*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                              onPressed: () => deleteTestResultDialog(resultsList[position])
+                          )
+                        ],
+                      ),
+                    ),
                   )
                 ],
               )
@@ -136,14 +190,21 @@ class _TestResultsState extends State<TestResults> {
         Scaffold(
             key: _scaffoldKey,
             //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-            endDrawer: new Drawer(
+          endDrawer: Container(
+            width: MediaQuery.of(context).size.width/1.25,
+            child: new Drawer(
               child: ListView(
                 //Remove any padding from the ListView.
                 padding: EdgeInsets.zero,
                 children: <Widget>[
                   //drawer header
                   DrawerHeader(
-                    child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font)),
+                    child: Text('Settings', style: TextStyle(
+                        fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
+                        fontFamily: fontLoaded ? fontData.font : "",
+                        color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
+                      )
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red,
                     ),
@@ -151,15 +212,29 @@ class _TestResultsState extends State<TestResults> {
                   //fonts option
                   ListTile(
                     leading: Icon(Icons.font_download),
-                    title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                    title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.insert_emoticon),
+                    title: Text('Icons', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.local_offer),
+                    title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
                     },
                   ),
                   //sign out option
                   ListTile(
                     leading: Icon(Icons.exit_to_app),
-                    title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: font)),
+                    title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
                     onTap: () {
                       signOut();
                     },
@@ -167,9 +242,10 @@ class _TestResultsState extends State<TestResults> {
                 ],
               ),
             ),
+          ),
             appBar: new AppBar(
               backgroundColor: Color(int.tryParse(widget.subject.colour)),
-              title: Text("Test Results", style: TextStyle(fontFamily: font)),
+              title: Text("Test Results", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[
                 // action button
@@ -180,9 +256,14 @@ class _TestResultsState extends State<TestResults> {
                 ),
               ] : <Widget>[
                 IconButton(
+                    icon: Icon(Icons.home),
+                    iconSize: 30.0,
+                    onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                ),
+                IconButton(
                   icon: Icon(Icons.add_circle),
                   iconSize: 30.0,
-                  onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddResult(subject: widget.subject,))).whenComplete(retrieveData);},
+                  onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddResult(subject: widget.subject, fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0)))).whenComplete(retrieveData);},
                 ),
                 // else display the mic button and settings button
                 IconButton(
@@ -236,9 +317,9 @@ class _TestResultsState extends State<TestResults> {
   void signOut()
   {
     AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: font)),
+      content: new Text("You are about to be Signed Out", style: TextStyle(fontSize: 18.0*fontData.size, fontFamily: fontData.font)),
       actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: font)))
+        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontSize: 18.0*fontData.size, fontFamily: fontData.font)))
       ],
     );
 
@@ -270,7 +351,7 @@ class _TestResultsState extends State<TestResults> {
 
     //if null, then the request was a success, retrieve the information
     if (response == "success") {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Test Result Deleted!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Test Result Deleted!', style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font),)));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
@@ -280,7 +361,7 @@ class _TestResultsState extends State<TestResults> {
         content: new Text("An error has occured please try again"),
         actions: <Widget>[
           new FlatButton(onPressed: () {
-            Navigator.pop(context); /*submit(false);*/
+            Navigator.pop(context);
           }, child: new Text("OK"))
         ],
       );
@@ -293,12 +374,12 @@ class _TestResultsState extends State<TestResults> {
 
   void deleteTestResultDialog(TestResult result) {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to DELETE this Test Result?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to DELETE this Test Result?", style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font),),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
         }, child: new Text("NO", style: TextStyle(
-          fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          fontSize: 18*fontData.size, fontFamily: fontData.font,),)),
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
@@ -306,7 +387,7 @@ class _TestResultsState extends State<TestResults> {
           submit(false);
         },
             child: new Text("YES",
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+              style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font,),)),
       ],
     );
 

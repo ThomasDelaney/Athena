@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
 import 'package:my_school_life_prototype/class_material.dart';
 import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/homework.dart';
@@ -15,7 +16,7 @@ import 'tag.dart';
 class RequestManager
 {
 
-  static final url = "https://glassy-acolyte-228916.appspot.com";
+  static final url = "https://moonlit-caster-232518.appspot.com";
   static final RequestManager singleton = new RequestManager._internal();
 
   factory RequestManager() {
@@ -57,6 +58,8 @@ class RequestManager
   final String putMaterialURL = url+"/putMaterial";
   final String getMaterialsURL = url+"/getMaterials";
   final String deleteMaterialURL = url+"/deleteMaterial";
+  final String putIconUrl = url+"/putIconData";
+  final String getIconUrl = url+"/getIconData";
 
   Dio dio = new Dio();
 
@@ -117,7 +120,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
@@ -134,7 +136,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -147,7 +148,6 @@ class RequestManager
     }
   }
 
-
   //method to submit the new font
   Future<String> putFontData(FontData fontData) async
   {
@@ -159,7 +159,7 @@ class RequestManager
       "refreshToken": await prefs.getString("refreshToken"),
       "font": fontData.font,
       "fontColour": fontData.color.value,
-      "fontSize": fontData.size
+      "fontSize": double.tryParse(fontData.size.toStringAsFixed(1))
     });
 
     try {
@@ -217,11 +217,75 @@ class RequestManager
     return data;
   }
 
-  dynamic putSubject(Map jsonMap) async
+  //method to submit the new font
+  Future<String> putIconData(AthenaIconData iconData) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "iconColour": iconData.color.value,
+      "iconSize": double.tryParse(iconData.size.toStringAsFixed(1))
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putIconUrl, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        await prefs.setInt("iconColour", iconData.color.value);
+        await prefs.setDouble("iconSize", iconData.size);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<AthenaIconData> getIconData() async
+  {
+    AthenaIconData data;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getIconUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['data']?.values != null) {
+
+      final values = response.data['data'];
+
+      data = new AthenaIconData(
+          Color(int.tryParse(values['iconColour'])),
+          double.tryParse(values['iconSize'])
+      );
+    }else{
+      data = new AthenaIconData(
+          Colors.black, 24.0
+      );
+    }
+
+    await prefs.setInt("iconColour", data.color.value);
+    await prefs.setDouble("iconSize", data.size);
+
+    return data;
+  }
+
+  dynamic putSubject(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -239,7 +303,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -256,7 +319,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
@@ -272,7 +334,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -309,7 +370,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -326,7 +386,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -343,7 +402,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": tag.id,
@@ -359,7 +417,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -435,7 +492,7 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
+    //create form data for the request, with the new note
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -454,7 +511,7 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      //else store the new refresh token and note in shared preferences, and display snackbar the note has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -471,7 +528,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -488,7 +544,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -505,7 +560,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -524,7 +578,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -554,7 +607,6 @@ class RequestManager
       if(response.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", response.data['refreshToken']);
 
@@ -575,7 +627,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
@@ -591,7 +642,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -668,7 +718,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -698,7 +747,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "refreshToken": await prefs.getString("refreshToken"),
       "email": jsonMap['email'],
@@ -758,7 +806,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -779,7 +826,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -796,7 +842,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
@@ -812,7 +857,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -829,7 +873,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -847,7 +890,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -884,7 +926,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
@@ -900,7 +941,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -917,7 +957,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -935,7 +974,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -972,7 +1010,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
@@ -988,7 +1025,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -1046,7 +1082,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";
@@ -1062,7 +1097,6 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": id,
@@ -1079,7 +1113,6 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         return "success";

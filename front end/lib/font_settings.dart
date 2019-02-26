@@ -2,16 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 import 'request_manager.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart' as rootBundle;
-import 'dart:typed_data';
 
 //Widget that displays the settings that allow the user to change the font used in the application
 class FontSettings extends StatefulWidget {
@@ -103,7 +99,7 @@ class _FontSettingsState extends State<FontSettings> {
               ),
               appBar: new AppBar(
                 backgroundColor: Theme.of(context).accentColor,
-                title: Text("Font Settings", style: TextStyle(fontFamily: loaded ? oldData.font : "")),
+                title: Text("Font Settings", style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context), fontFamily: loaded ? oldData.font : "")),
                 //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
                 actions: recorder.recording ? <Widget>[
                   // action button
@@ -113,6 +109,11 @@ class _FontSettingsState extends State<FontSettings> {
                     onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
                   ),
                 ] : <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.home),
+                      iconSize: 30.0,
+                      onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
                   // else display the mic button and settings button
                   IconButton(
                     icon: Icon(Icons.mic),
@@ -165,18 +166,18 @@ class _FontSettingsState extends State<FontSettings> {
                                 Flexible(
                                   child: new Slider(
                                     activeColor: Theme.of(context).accentColor,
-                                    divisions: 26,
-                                    value: currentData.size != null ? currentData.size : 12.0,
-                                    min: 12.0,
+                                    divisions: 20,
+                                    value: currentData.size != null ? currentData.size : 1.0,
+                                    min: 0.5,
                                     onChanged: (newVal) {
                                       setState(() {
                                         currentData.size = newVal;
                                       });
                                     },
-                                    max: 64,
+                                    max: 2.5,
                                   ),
                                 ),
-                                new Text(currentData.size.round().toString(), style: TextStyle(fontSize: 18.0)),
+                                new Text(currentData.size.toStringAsFixed(1), style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size, fontFamily: oldData.font, color: oldData.color)),
                               ],
                             ),
                           ),
@@ -191,19 +192,21 @@ class _FontSettingsState extends State<FontSettings> {
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
-                                        return Center(
-                                          child: Container(
-                                              height: MediaQuery.of(context).size.height*0.8,
-                                              width: MediaQuery.of(context).size.width*0.985,
-                                              child: Card(
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                  children: <Widget>[
-                                                    Text('Select a Colour for the Font', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-                                                    Container(
+                                        return Container(
+                                            height: MediaQuery.of(context).size.height*0.8,
+                                            width: MediaQuery.of(context).size.width*0.985,
+                                            child: Card(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                children: <Widget>[
+                                                  new SizedBox(height: 20.0,),
+                                                  Text('Select a Colour for the Font', style: TextStyle(fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), color: oldData.color, fontFamily: oldData.font, fontWeight: FontWeight.bold)),
+                                                  new SizedBox(height: 20.0,),
+                                                  Flexible(
+                                                    child: Container(
                                                       width: MediaQuery.of(context).size.width,
-                                                      height: MediaQuery.of(context).size.height * 0.65,
                                                       child: Swiper(
+                                                        outer: true,
                                                         viewportFraction: 0.99999,
                                                         scale: 0.9,
                                                         pagination: new SwiperPagination(
@@ -215,12 +218,13 @@ class _FontSettingsState extends State<FontSettings> {
                                                         itemBuilder: (BuildContext context, int index){
                                                           if (index == 0) {
                                                             return Column(
+                                                              mainAxisSize: MainAxisSize.min,
                                                               children: <Widget>[
-                                                                Text("Basic Colours", style: TextStyle(fontSize: 20.0)),
+                                                                Text("Basic Colours", style: TextStyle(fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), color: oldData.color, fontFamily: oldData.font)),
                                                                 new SizedBox(height: 20.0,),
-                                                                SingleChildScrollView(
+                                                                Flexible(
                                                                     child: Container(
-                                                                      height: MediaQuery.of(context).size.height * 0.50,
+                                                                      height: MediaQuery.of(context).size.height,
                                                                       child: BlockPicker(
                                                                         pickerColor: currentData.color,
                                                                         onColorChanged: changeColorAndPopout,
@@ -232,15 +236,19 @@ class _FontSettingsState extends State<FontSettings> {
                                                           }
                                                           else {
                                                             return Column(
+                                                              mainAxisSize: MainAxisSize.min,
                                                               children: <Widget>[
-                                                                Text("Colourblind Friendly Colours", style: TextStyle(fontSize: 20.0)),
+                                                                Text("Colourblind Friendly Colours", style: TextStyle(fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), color: oldData.color, fontFamily: oldData.font)),
                                                                 new SizedBox(height: 20.0,),
-                                                                SingleChildScrollView(
-                                                                  child: BlockPicker(
-                                                                    availableColors: ThemeCheck.colorBlindFriendlyColours(),
-                                                                    pickerColor: currentData.color,
-                                                                    onColorChanged: changeColorAndPopout,
-                                                                  ),
+                                                                Flexible(
+                                                                  child: Container(
+                                                                    height: MediaQuery.of(context).size.height,
+                                                                    child: BlockPicker(
+                                                                      availableColors: ThemeCheck.colorBlindFriendlyColours(),
+                                                                      pickerColor: currentData.color,
+                                                                      onColorChanged: changeColorAndPopout,
+                                                                    ),
+                                                                  )
                                                                 )
                                                               ],
                                                             );
@@ -248,13 +256,13 @@ class _FontSettingsState extends State<FontSettings> {
                                                         },
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
-                                              )
-                                          ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
                                         );},
                                     );},
-                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Font Colour', style: TextStyle(fontSize: 24.0))),
+                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Font Colour', style: TextStyle(fontSize: 24.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: oldData.font))),
                                   color: currentData.color,
 
                                   textColor: ThemeCheck.colorCheck(currentData.color) ? Colors.white : Colors.black,
@@ -269,7 +277,7 @@ class _FontSettingsState extends State<FontSettings> {
                                   style: TextStyle(
                                       fontFamily: this.currentData.font,
                                       color: currentData.color != null ? currentData.color : Colors.black,
-                                      fontSize: currentData.size != null ? currentData.size : 35.0
+                                      fontSize: currentData.size != null ? 24.0*currentData.size : 35.0
                                   ))
                           ),
                           SizedBox(height: 20.0),

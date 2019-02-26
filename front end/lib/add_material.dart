@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
+import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/material_viewer.dart';
 import 'package:my_school_life_prototype/class_material.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
@@ -13,8 +15,10 @@ class AddMaterial extends StatefulWidget {
 
   final Subject subject;
   final ClassMaterial currentMaterial;
+  final FontData fontData;
+  final AthenaIconData iconData;
 
-  AddMaterial({Key key, this.subject, this.currentMaterial}) : super(key: key);
+  AddMaterial({Key key, this.subject, this.currentMaterial, this.fontData, this.iconData}) : super(key: key);
 
   @override
   _AddMaterialState createState() => _AddMaterialState();
@@ -35,10 +39,8 @@ class _AddMaterialState extends State<AddMaterial> {
   Widget materialImage;
   String fileName = "";
 
-  double tileSize = 150;
+  double tileSize = 175;
   bool fileChanged = false;
-
-  String font = "";
 
   bool isFileEdited() {
     if (widget.currentMaterial == null) {
@@ -77,20 +79,24 @@ class _AddMaterialState extends State<AddMaterial> {
 
           materialImage = GestureDetector(
               onTap: () => getImage(),
-              child: new SizedBox(
-                width: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                height: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                child: new Card(
-                  elevation: 3,
+              child: new Card(
+                elevation: 3,
+                child: new Container(
+                  padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
-                        new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                        new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(
+                            fontFamily: widget.fontData.font,
+                            color: widget.fontData.color,
+                            fontSize: widget.fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size),
+                        ),
+                        new SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context),),
+                        new Icon(Icons.cloud_upload, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size, color: widget.iconData.color,)
                       ]
                   ),
                 ),
-              )
+              ),
           );
         }
         else{
@@ -122,18 +128,22 @@ class _AddMaterialState extends State<AddMaterial> {
     else{
       materialImage = GestureDetector(
           onTap: () => getImage(),
-          child: new SizedBox(
-            width: tileSize * ThemeCheck.orientatedScaleFactor(context),
-            height: tileSize * ThemeCheck.orientatedScaleFactor(context),
-            child: new Card(
-              elevation: 3,
+          child: new Card(
+            elevation: 3,
+            child: Container(
+              padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
               child: new Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
-                    new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                    new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(
+                        fontFamily: widget.fontData.font,
+                        color: widget.fontData.color,
+                        fontSize: widget.fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size),
+                    ),
+                    new SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context),),
+                    new Icon(Icons.cloud_upload, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size, color: widget.iconData.color)
                   ]
-              ),
+              ) ,
             ),
           )
       );
@@ -151,187 +161,115 @@ class _AddMaterialState extends State<AddMaterial> {
             Scaffold(
               resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
-                title: new Text("Add a New Material"),
+                iconTheme: IconThemeData(
+                  color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+                ),
+                backgroundColor: Color(int.tryParse(widget.subject.colour)),
+                title: new Text("Add a New Material", style: TextStyle(
+                    fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
+                    fontFamily: widget.fontData.font,
+                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+                  )
+                ),
               ),
-              body: new Column(
-                children: <Widget>[
-                  SizedBox(height: 20.0),
-                  new Card(
-                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      elevation: 3.0,
-                      child: MediaQuery.of(context).orientation == Orientation.portrait ?
-                      new Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          new Container(
-                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: TextFormField(
-                              focusNode: materialNameFocusNode,
-                              keyboardType: TextInputType.text,
-                              autofocus: false,
-                              controller: materialNameController,
-                              style: TextStyle(fontSize: 24.0),
-                              decoration: InputDecoration(
-                                  hintText: "Material Name",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
-                                  border: UnderlineInputBorder()
+              body: SingleChildScrollView(
+                child: new Column(
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    new Card(
+                        margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                        elevation: 3.0,
+                        child: new Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            new Container(
+                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                              child: TextFormField(
+                                focusNode: materialNameFocusNode,
+                                keyboardType: TextInputType.text,
+                                autofocus: false,
+                                controller: materialNameController,
+                                style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                decoration: InputDecoration(
+                                    hintText: "Material Name",
+                                    labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
+                                    border: UnderlineInputBorder()
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 20.0),
-                          new Container(
-                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: new Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  new IconButton(
-                                    color: Color(int.tryParse(widget.subject.colour)),
-                                    icon: Icon(Icons.photo_library, size: 35.0),
-                                    onPressed: () => getImage(),
-                                  ),
-                                  new IconButton(
-                                    color: Color(int.tryParse(widget.subject.colour)),
-                                    icon: Icon(Icons.camera_alt, size: 35.0),
-                                    onPressed: () => getCameraImage(),
-                                  ),
-                                  fileName != "" ? new IconButton(
-                                    color: Color(int.tryParse(widget.subject.colour)),
-                                    icon: Icon(Icons.close, size: 35.0),
-                                    onPressed: () => setState((){
-                                      fileChanged = true;
-                                      fileName = "";
-                                      materialImage = GestureDetector(
-                                        onTap: () => getImage(),
-                                        child: new SizedBox(
-                                          width: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                                          height: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                                          child: new Card(
-                                            elevation: 3,
-                                            child: new Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: <Widget>[
-                                                  new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
-                                                  new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
-                                                ]
-                                            ),
-                                          ),
-                                        )
-                                      );
-                                    }),
-                                  ) : new Container()
-                                ]
-                            )
-                          ),
-                          new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: materialImage
-                          ),
-                          new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: ButtonTheme(
-                                height: 50.0,
-                                child: RaisedButton(
-                                  elevation: 3.0,
-                                  onPressed: showAreYouSureDialog,
-                                  child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
-                                  color: Theme.of(context).errorColor,
-
-                                  textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
-                                ),
-                              )
-                          )
-                        ],
-                      ) :
-                      new Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          new Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              Flexible(
-                                child: new Container(
-                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                  child: TextFormField(
-                                    focusNode: materialNameFocusNode,
-                                    keyboardType: TextInputType.text,
-                                    autofocus: false,
-                                    controller: materialNameController,
-                                    style: TextStyle(fontSize: 24.0),
-                                    decoration: InputDecoration(
-                                        hintText: "Material Name",
-                                        labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
-                                        border: UnderlineInputBorder()
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              new Container(
-                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                  child: new Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        new IconButton(
-                                          color: Color(int.tryParse(widget.subject.colour)),
-                                          icon: Icon(Icons.photo_library, size: 35.0),
-                                          onPressed: () => getImage(),
-                                        ),
-                                        new IconButton(
-                                          color: Color(int.tryParse(widget.subject.colour)),
-                                          icon: Icon(Icons.camera_alt, size: 35.0),
-                                          onPressed: () => getCameraImage(),
-                                        ),
-                                        fileName != "" ? new IconButton(
-                                          color: Color(int.tryParse(widget.subject.colour)),
-                                          icon: Icon(Icons.close, size: 35.0),
-                                          onPressed: () => setState((){
-                                            fileChanged = true;
-                                            fileName = "";
-                                            materialImage = GestureDetector(
-                                                onTap: () => getImage(),
-                                                child: new SizedBox(
-                                                  width: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                                                  height: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                                                  child: new Card(
-                                                    elevation: 3,
-                                                    child: new Column(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        children: <Widget>[
-                                                          new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
-                                                          new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
-                                                        ]
-                                                    ),
+                            SizedBox(height: 20.0),
+                            new Container(
+                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                child: new Wrap(
+                                    //mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      new IconButton(
+                                        color: Color(int.tryParse(widget.subject.colour)),
+                                        iconSize: 35.0*widget.iconData.size,
+                                        icon: Icon(Icons.photo_library),
+                                        onPressed: () => getImage(),
+                                      ),
+                                      new IconButton(
+                                        color: Color(int.tryParse(widget.subject.colour)),
+                                        iconSize: 35.0*widget.iconData.size,
+                                        icon: Icon(Icons.camera_alt),
+                                        onPressed: () => getCameraImage(),
+                                      ),
+                                      fileName != "" ? new IconButton(
+                                        color: Color(int.tryParse(widget.subject.colour)),
+                                        iconSize: 35.0*widget.iconData.size,
+                                        icon: Icon(Icons.close),
+                                        onPressed: () => setState((){
+                                          fileChanged = true;
+                                          fileName = "";
+                                          materialImage = GestureDetector(
+                                              onTap: () => getImage(),
+                                              child: new Card(
+                                                elevation: 3,
+                                                child: Container(
+                                                  padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
+                                                  child: new Column(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: <Widget>[
+                                                        new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(
+                                                            fontFamily: widget.fontData.font,
+                                                            color: widget.fontData.color,
+                                                            fontSize: widget.fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size),
+                                                        ),
+                                                        new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                                                      ]
                                                   ),
-                                                )
-                                            );
-                                          }),
-                                        ) : new Container()
-                                      ]
-                                  )
-                              ),
-                              new Container(
+                                                ),
+                                              )
+                                          );
+                                        }),
+                                      ) : new Container()
+                                    ]
+                                )
+                            ),
+                            new Container(
                                 margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                                 child: materialImage
-                              )
-                            ],
-                          ),
-                          new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: ButtonTheme(
-                                height: 50.0,
-                                child: RaisedButton(
-                                  elevation: 3.0,
-                                  onPressed: showAreYouSureDialog,
-                                  child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
-                                  color: Theme.of(context).errorColor,
+                            ),
+                            new Container(
+                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                child: ButtonTheme(
+                                  height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                  child: RaisedButton(
+                                    elevation: 3.0,
+                                    onPressed: showAreYouSureDialog,
+                                    child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                                    color: Color(int.tryParse(widget.subject.colour)),
 
-                                  textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
-                                ),
-                              )
-                          )
-                        ],
-                      )
-                  )
-                ],
+                                    textColor: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black,
+                                  ),
+                                )
+                            )
+                          ],
+                        )
+                    )
+                  ],
+                ),
               ),
             ),
             submitting ? new Stack(
@@ -408,9 +346,9 @@ class _AddMaterialState extends State<AddMaterial> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Material?", /*style: TextStyle(fontFamily: font),*/),
+        content: new Text("Do you want to SAVE this Material?", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
           new FlatButton(onPressed: () async {
             if (materialNameController.text == "") {
               Navigator.pop(context, false);
@@ -423,7 +361,7 @@ class _AddMaterialState extends State<AddMaterial> {
               submit(false);
               Navigator.pop(context, true);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
         ],
       );
 
@@ -436,9 +374,13 @@ class _AddMaterialState extends State<AddMaterial> {
 
   void showAreYouSureDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to SAVE this Material?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to SAVE this Material?", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font
+        ),
+      ),
       actions: <Widget>[
-        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
         new FlatButton(onPressed: () async {
           if (materialNameController.text == "") {
             Navigator.pop(context, false);
@@ -451,7 +393,7 @@ class _AddMaterialState extends State<AddMaterial> {
             submit(false);
             Navigator.pop(context);
           }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
       ],
     );
 
@@ -487,9 +429,9 @@ class _AddMaterialState extends State<AddMaterial> {
 
   void showYouMustHaveMaterialNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("The Material must have a Name!", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("The Material must have a Name!", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
       ],
     );
 
