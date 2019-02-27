@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/athena_icon_data.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
 import 'package:my_school_life_prototype/request_manager.dart';
 import 'package:my_school_life_prototype/subject.dart';
@@ -75,6 +76,12 @@ class _AddHomeworkState extends State<AddHomework> {
             Scaffold(
               resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
+                actions: <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.home),
+                      onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
+                ],
                 iconTheme: IconThemeData(
                     color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
                 ),

@@ -97,12 +97,10 @@ class _AddTimeslotState extends State<AddTimeslot> {
                   actions: <Widget>[
                     IconButton(
                         icon: Icon(Icons.home),
-                        iconSize: 30.0,
                         onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                     ),
                     widget.currentTimeslot != null ? IconButton(
                       icon: Icon(Icons.delete),
-                      iconSize: 30.0,
                       onPressed: deleteTimeslotDialog,
                     ): new Container()
                   ]

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
+import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/theme_check.dart';
 import 'subject_file.dart';
+import 'package:marquee/marquee.dart';
 
 class AudioManager extends StatefulWidget {
-  AudioManager({Key key, this.subjectFile, this.audioPlayer}) : super(key: key);
+  AudioManager({Key key, this.subjectFile, this.audioPlayer, this.fontData, this.iconData}) : super(key: key);
 
   final SubjectFile subjectFile;
   final AudioPlayer audioPlayer;
+  final FontData fontData;
+  final AthenaIconData iconData;
 
   @override
   _AudioManagerState createState() => _AudioManagerState();
@@ -104,22 +110,6 @@ class _AudioManagerState extends State<AudioManager> {
     _audioPlayer.play(widget.subjectFile.url);
 
     init = true;
-
-    playButton = IconButton(
-      iconSize: 100.0,
-      color: Colors.red,
-      icon: Icon(Icons.play_arrow),
-      //if the stop button is pressed then start the audio
-      onPressed: () => playAudio(),
-    );
-
-    stopButton = IconButton(
-      iconSize: 100.0,
-      color: Colors.red,
-      icon: Icon(Icons.stop),
-      //if the stop button is pressed then stop the audio
-      onPressed: () => stopAudio(),
-    );
   }
 
   String visualTimerFromTime(int timeInMilliseconds)
@@ -136,49 +126,165 @@ class _AudioManagerState extends State<AudioManager> {
   @override
   Widget build(BuildContext context) {
 
-    double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+    playButton = IconButton(
+      padding: EdgeInsets.zero,
+      iconSize: 100.0*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+      color: widget.iconData.color,
+      icon: Icon(Icons.play_arrow),
+      //if the stop button is pressed then start the audio
+      onPressed: () => playAudio(),
+    );
+
+    stopButton = IconButton(
+      padding: EdgeInsets.zero,
+      iconSize: 100.0*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+      color: widget.iconData.color,
+      icon: Icon(Icons.stop),
+      //if the stop button is pressed then stop the audio
+      onPressed: () => stopAudio(),
+    );
+
+    double nameHeight = widget.fontData.size < 1.5 ? 135 : 75;
 
     return Container(
         child: Center(
-            child: SizedBox(
-                width: MediaQuery.of(context).size.width ,
-                height: MediaQuery.of(context).size.height * (0.70*scaleFactor),
-                child: Card (
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      new Text(widget.subjectFile.fileName, textAlign: TextAlign.left, style: TextStyle(fontSize: 24.0), ),
-                      new SizedBox(height: 50.0,),
-                      playing ? stopButton : playButton,
-                      new Container(
-                        padding: EdgeInsets.fromLTRB(0.0, MediaQuery.of(context).size.width * 0.11, 0.0, 0.0),
-                        child: new Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            new SizedBox(width: MediaQuery.of(context).size.width * 0.11, child: new Text(visualTimerFromTime(currentProgress), textAlign: TextAlign.center, textScaleFactor: 1.25,)),
-                            new SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.70,
-                                child: Slider(
-                                  activeColor: Colors.red,
-                                  value:  maxSize != null ? ((currentProgress/maxSize) * 100.0) / 100.0 : 0.0,
-                                  onChanged: (double value) {
-                                    setState(() {
-                                      currentProgress = (maxSize*value).toInt();
-                                      _audioPlayer.seek(Duration(milliseconds: (maxSize*value).toInt()));
-                                    });
-                                  }
-                                )
+            child: Container(
+              width: MediaQuery.of(context).size.width ,
+              height: MediaQuery.of(context).size.height,
+              child: Card (
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    new Container(
+                      height: (nameHeight*(ThemeCheck.orientatedScaleFactor(context)*(widget.fontData.size/2))) ,
+                      padding: EdgeInsets.fromLTRB(10.0*ThemeCheck.orientatedScaleFactor(context), 0.0, 10.0*ThemeCheck.orientatedScaleFactor(context), 0.0),
+                      child: new Marquee(
+                        text: widget.subjectFile.fileName,
+                        style: TextStyle(
+                            color: widget.fontData.color,
+                            fontFamily: widget.fontData.font,
+                            fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size
+                        ),
+                        scrollAxis: Axis.horizontal,
+                        velocity: 50.0,
+                        pauseAfterRound: Duration(seconds: 2),
+                        blankSpace: 20.0,
+                        startPadding: 10.0*ThemeCheck.orientatedScaleFactor(context),
+                      )
+                    ),
+                    MediaQuery.of(context).orientation == Orientation.portrait ?
+                    new Column(
+                      children: <Widget>[
+                        playing ? stopButton : playButton,
+                        new Container(
+                            padding: EdgeInsets.fromLTRB(
+                                10.0*ThemeCheck.orientatedScaleFactor(context),
+                                25.0*ThemeCheck.orientatedScaleFactor(context),
+                                10.0*ThemeCheck.orientatedScaleFactor(context),
+                                0.0
                             ),
-                            maxSize != null ? new SizedBox(width: MediaQuery.of(context).size.width * 0.11, child:
-                              new Text(visualTimerFromTime(maxSize), textAlign: TextAlign.center, textScaleFactor: 1.25)) :
-                                new Container(child: new SizedBox(width: 15.0, height: 15.0, child: new CircularProgressIndicator(),),)
-                          ],
+                            child: new Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                new SizedBox(
+                                    child: new Text(
+                                        visualTimerFromTime(currentProgress),
+                                        style: TextStyle(
+                                            fontSize: 18*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                            color: widget.fontData.color,
+                                            fontFamily: widget.fontData.font
+                                        ),
+                                        textAlign: TextAlign.center
+                                    )
+                                ),
+                                new Flexible(
+                                    child: Slider(
+                                        activeColor: Colors.red,
+                                        value:  maxSize != null ? ((currentProgress/maxSize) * 100.0) / 100.0 : 0.0,
+                                        onChanged: (double value) {
+                                          setState(() {
+                                            currentProgress = (maxSize*value).toInt();
+                                            _audioPlayer.seek(Duration(milliseconds: (maxSize*value).toInt()));
+                                          });
+                                        }
+                                    )
+                                ),
+                                maxSize != null ? new SizedBox(
+                                    child: new Text(
+                                      visualTimerFromTime(maxSize),
+                                      style: TextStyle(
+                                          fontSize: 18*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                          color: widget.fontData.color,
+                                          fontFamily: widget.fontData.font
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    )
+                                ):
+                                new Container(child: new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context), height: 15.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(),),)
+                              ],
+                            )
                         )
-                      ),
-                    ],
-                  ),
+                      ],
+                    ):
+                    new Row(
+                      children: <Widget>[
+                        playing ? stopButton : playButton,
+                        new Flexible(
+                            child: new Container(
+                                padding: EdgeInsets.fromLTRB(
+                                    10.0*ThemeCheck.orientatedScaleFactor(context),
+                                    0.0*ThemeCheck.orientatedScaleFactor(context),
+                                    10.0*ThemeCheck.orientatedScaleFactor(context),
+                                    0.0
+                                ),
+                                child: new Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    new SizedBox(
+                                        child: new Text(
+                                            visualTimerFromTime(currentProgress),
+                                            style: TextStyle(
+                                                fontSize: 18*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                                color: widget.fontData.color,
+                                                fontFamily: widget.fontData.font
+                                            ),
+                                            textAlign: TextAlign.center
+                                        )
+                                    ),
+                                    new Flexible(
+                                        child: Slider(
+                                            activeColor: Colors.red,
+                                            value:  maxSize != null ? ((currentProgress/maxSize) * 100.0) / 100.0 : 0.0,
+                                            onChanged: (double value) {
+                                              setState(() {
+                                                currentProgress = (maxSize*value).toInt();
+                                                _audioPlayer.seek(Duration(milliseconds: (maxSize*value).toInt()));
+                                              });
+                                            }
+                                        )
+                                    ),
+                                    maxSize != null ? new SizedBox(
+                                        child: new Text(
+                                          visualTimerFromTime(maxSize),
+                                          style: TextStyle(
+                                              fontSize: 18*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                              color: widget.fontData.color,
+                                              fontFamily: widget.fontData.font
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        )
+                                    ):
+                                    new Container(child: new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context), height: 15.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(),),)
+                                  ],
+                                )
+                            )
+                        )
+                      ],
+                    )
+                  ],
                 ),
-            ),
+              ),
+          ),
         )
     );
   }

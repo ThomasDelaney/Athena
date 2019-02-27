@@ -81,7 +81,6 @@ class _AddTagState extends State<AddTag> {
                 actions: <Widget>[
                   IconButton(
                       icon: Icon(Icons.home),
-                      iconSize: 30.0,
                       onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                   ),
                 ],

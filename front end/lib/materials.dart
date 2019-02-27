@@ -259,24 +259,20 @@ class _MaterialsState extends State<Materials> {
               // action button
               IconButton(
                 icon: Icon(Icons.close),
-                iconSize: 30.0,
                 onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
               ),
             ] : <Widget>[
               IconButton(
                   icon: Icon(Icons.home),
-                  iconSize: 30.0,
                   onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
               ),
               IconButton(
                 icon: Icon(Icons.add_circle),
-                iconSize: 30.0,
                 onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddMaterial(subject: widget.subject, fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0), iconData: iconLoaded ? iconData : new AthenaIconData(Colors.grey, 35.0),))).whenComplete(retrieveData);},
               ),
               // else display the mic button and settings button
               IconButton(
                 icon: Icon(Icons.mic),
-                iconSize: 30.0,
                 onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
               ),
               Builder(

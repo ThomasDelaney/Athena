@@ -32,8 +32,8 @@ class ThemeCheck
   //scale factor based on orientation
   static double orientatedScaleFactor(BuildContext _context){
 
-    double ratioPortrait = (MediaQuery.of(_context).size.width / MediaQuery.of(_context).size.height) < 0.60 ? 800 : 450;
-    double ratioLandscape = (MediaQuery.of(_context).size.height / MediaQuery.of(_context).size.width) < 0.60 ? 800 : 450;
+    double ratioPortrait = (MediaQuery.of(_context).size.width / MediaQuery.of(_context).size.height) < 0.60 ? 800 : 500;
+    double ratioLandscape = (MediaQuery.of(_context).size.height / MediaQuery.of(_context).size.width) < 0.60 ? 800 : 500;
 
     double portraitDifference = (MediaQuery.of(_context).size.height - MediaQuery.of(_context).size.width)/ratioPortrait;
     double landScapeDifference = (MediaQuery.of(_context).size.width - MediaQuery.of(_context).size.height)/ratioLandscape;

@@ -105,19 +105,16 @@ class _FontSettingsState extends State<FontSettings> {
                   // action button
                   IconButton(
                     icon: Icon(Icons.close),
-                    iconSize: 30.0,
                     onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
                   ),
                 ] : <Widget>[
                   IconButton(
                       icon: Icon(Icons.home),
-                      iconSize: 30.0,
                       onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                   ),
                   // else display the mic button and settings button
                   IconButton(
                     icon: Icon(Icons.mic),
-                    iconSize: 30.0,
                     onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
                   ),
                   Builder(
@@ -196,68 +193,97 @@ class _FontSettingsState extends State<FontSettings> {
                                             height: MediaQuery.of(context).size.height*0.8,
                                             width: MediaQuery.of(context).size.width*0.985,
                                             child: Card(
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                children: <Widget>[
-                                                  new SizedBox(height: 20.0,),
-                                                  Text('Select a Colour for the Font', style: TextStyle(fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), color: oldData.color, fontFamily: oldData.font, fontWeight: FontWeight.bold)),
-                                                  new SizedBox(height: 20.0,),
-                                                  Flexible(
-                                                    child: Container(
-                                                      width: MediaQuery.of(context).size.width,
-                                                      child: Swiper(
-                                                        outer: true,
-                                                        viewportFraction: 0.99999,
-                                                        scale: 0.9,
-                                                        pagination: new SwiperPagination(
-                                                          builder: SwiperPagination.dots,
-                                                        ),
-                                                        scrollDirection: Axis.horizontal,
-                                                        control: SwiperControl(color: Theme.of(context).accentColor),
-                                                        itemCount: 2,
-                                                        itemBuilder: (BuildContext context, int index){
-                                                          if (index == 0) {
-                                                            return Column(
-                                                              mainAxisSize: MainAxisSize.min,
-                                                              children: <Widget>[
-                                                                Text("Basic Colours", style: TextStyle(fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), color: oldData.color, fontFamily: oldData.font)),
-                                                                new SizedBox(height: 20.0,),
-                                                                Flexible(
-                                                                    child: Container(
-                                                                      height: MediaQuery.of(context).size.height,
-                                                                      child: BlockPicker(
-                                                                        pickerColor: currentData.color,
-                                                                        onColorChanged: changeColorAndPopout,
-                                                                      ),
-                                                                    )
-                                                                )
-                                                              ],
-                                                            );
-                                                          }
-                                                          else {
-                                                            return Column(
-                                                              mainAxisSize: MainAxisSize.min,
-                                                              children: <Widget>[
-                                                                Text("Colourblind Friendly Colours", style: TextStyle(fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), color: oldData.color, fontFamily: oldData.font)),
-                                                                new SizedBox(height: 20.0,),
-                                                                Flexible(
-                                                                  child: Container(
-                                                                    height: MediaQuery.of(context).size.height,
-                                                                    child: BlockPicker(
-                                                                      availableColors: ThemeCheck.colorBlindFriendlyColours(),
-                                                                      pickerColor: currentData.color,
-                                                                      onColorChanged: changeColorAndPopout,
-                                                                    ),
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 30.0*ThemeCheck.orientatedScaleFactor(context)),
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                  children: <Widget>[
+                                                    new SizedBox(height: 20.0,),
+                                                    Text(
+                                                        'Select a Colour for the Font',
+                                                        style: TextStyle(
+                                                            fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                            color: oldData.color,
+                                                            fontFamily: oldData.font,
+                                                            fontWeight: FontWeight.bold
+                                                        )
+                                                    ),
+                                                    new SizedBox(height: 20.0,),
+                                                    Flexible(
+                                                      child: Container(
+                                                        width: MediaQuery.of(context).size.width,
+                                                        child: Swiper(
+                                                          outer: true,
+                                                          viewportFraction: 0.99999,
+                                                          scale: 0.9,
+                                                          pagination: new SwiperPagination(
+                                                            builder: SwiperPagination.dots,
+                                                          ),
+                                                          scrollDirection: Axis.horizontal,
+                                                          control: SwiperControl(
+                                                              color: Theme.of(context).accentColor,
+                                                              padding: EdgeInsets.zero,
+                                                              size: 24*ThemeCheck.orientatedScaleFactor(context)
+                                                          ),
+                                                          itemCount: 2,
+                                                          itemBuilder: (BuildContext context, int index){
+                                                            if (index == 0) {
+                                                              return Column(
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                children: <Widget>[
+                                                                  Text(
+                                                                      "Basic Colours",
+                                                                      style: TextStyle(
+                                                                          fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                                          color: oldData.color,
+                                                                          fontFamily: oldData.font
+                                                                      )
+                                                                  ),
+                                                                  new SizedBox(height: 20.0,),
+                                                                  Flexible(
+                                                                      child: Container(
+                                                                        height: MediaQuery.of(context).size.height,
+                                                                        child: BlockPicker(
+                                                                          pickerColor: currentData.color,
+                                                                          onColorChanged: changeColorAndPopout,
+                                                                        ),
+                                                                      )
                                                                   )
-                                                                )
-                                                              ],
-                                                            );
-                                                          }
-                                                        },
+                                                                ],
+                                                              );
+                                                            }
+                                                            else {
+                                                              return Column(
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                children: <Widget>[
+                                                                  Text(
+                                                                      "Colourblind Friendly Colours",
+                                                                      style: TextStyle(
+                                                                          fontSize: 20.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                                          color: oldData.color,
+                                                                          fontFamily: oldData.font
+                                                                      )
+                                                                  ),
+                                                                  new SizedBox(height: 20.0,),
+                                                                  Flexible(
+                                                                      child: Container(
+                                                                        height: MediaQuery.of(context).size.height,
+                                                                        child: BlockPicker(
+                                                                          availableColors: ThemeCheck.colorBlindFriendlyColours(),
+                                                                          pickerColor: currentData.color,
+                                                                          onColorChanged: changeColorAndPopout,
+                                                                        ),
+                                                                      )
+                                                                  )
+                                                                ],
+                                                              );
+                                                            }
+                                                          },
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
                                             )
                                         );},

@@ -246,19 +246,16 @@ class _ProgressState extends State<Progress> {
               // action button
               IconButton(
                 icon: Icon(Icons.close),
-                iconSize: 30.0,
                 onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
               ),
             ] : <Widget>[
               IconButton(
                   icon: Icon(Icons.home),
-                  iconSize: 30.0,
                   onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
               ),
               // else display the mic button and settings button
               IconButton(
                 icon: Icon(Icons.mic),
-                iconSize: 30.0,
                 onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
               ),
               Builder(

@@ -186,7 +186,6 @@ class _TagManagerState extends State<TagManager> {
                 // action button
                 IconButton(
                   icon: Icon(Icons.close),
-                  iconSize: 30.0,
                   onPressed: () {
                     setState(() {
                       recorder.cancelRecording();
@@ -196,12 +195,10 @@ class _TagManagerState extends State<TagManager> {
               ] : <Widget>[
                 IconButton(
                     icon: Icon(Icons.home),
-                    iconSize: 30.0,
                     onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                 ),
                 IconButton(
                   icon: Icon(Icons.add_circle),
-                  iconSize: 30.0,
                   onPressed: () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddTag()))
                       .whenComplete(retrieveData),
@@ -209,7 +206,6 @@ class _TagManagerState extends State<TagManager> {
                 // else display the mic button and settings button
                 IconButton(
                   icon: Icon(Icons.mic),
-                  iconSize: 30.0,
                   onPressed: () {
                     setState(() {
                       recorder.recordAudio(context);

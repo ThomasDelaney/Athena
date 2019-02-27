@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:my_school_life_prototype/athena_icon_data.dart';
+import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/media_file_tag_picker_dialog.dart';
 import 'package:my_school_life_prototype/request_manager.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:photo_view/photo_view.dart';
@@ -16,7 +19,7 @@ import 'subject.dart';
 //Widget that displays an interactive file list
 class FileViewer extends StatefulWidget
 {
-  FileViewer({Key key, this.list, this.i, this.subject, this.fromTagMap}) : super(key: key);
+  FileViewer({Key key, this.list, this.i, this.subject, this.fromTagMap, this.fontData, this.iconData}) : super(key: key);
 
   //list of file URLS
   final List<SubjectFile> list;
@@ -25,14 +28,18 @@ class FileViewer extends StatefulWidget
 
   final Subject subject;
 
+  final FontData fontData;
+
+  final AthenaIconData iconData;
+
   //current selected index (passed in from page in which it was invoked)
   final int i;
 
   @override
-  _FileViewerState createState() => _FileViewerState();
+  FileViewerState createState() => FileViewerState();
 }
 
-class _FileViewerState extends State<FileViewer>
+class FileViewerState extends State<FileViewer>
 {
 
   RequestManager requestManager = RequestManager.singleton;
@@ -80,13 +87,11 @@ class _FileViewerState extends State<FileViewer>
                 actions: <Widget>[
                   IconButton(
                     icon: Icon(Icons.local_offer),
-                    iconSize: 30.0,
                     color: Colors.white,
                     onPressed: () => showTagDialog(false, null),
                   ),
                   IconButton(
                     icon: Icon(Icons.delete),
-                    iconSize: 30.0,
                     color: Colors.white,
                     onPressed: deleteFileDialog,
                   ),
@@ -118,6 +123,8 @@ class _FileViewerState extends State<FileViewer>
                       : FileTypeManger.getFileTypeFromURL(
                         widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "audio" ?
                         new AudioManager(
+                          iconData: widget.iconData,
+                          fontData: widget.fontData,
                           subjectFile: widget.fromTagMap == null ? widget.list[index] : widget.fromTagMap.values.elementAt(index),
                           audioPlayer: new AudioPlayer(),
                         ) : new Container();
@@ -184,53 +191,13 @@ class _FileViewerState extends State<FileViewer>
       tagValues = currentTags;
     }
 
-    AlertDialog tagDialog = new AlertDialog(
-      content: new Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new Row(
-            children: <Widget>[
-              new Text("Current Tag is: ", style: TextStyle(fontSize: 20.0)),
-              new Text(previousTag, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          new SizedBox(height: 20.0,),
-          new DropdownButton<String>(
-            //initial value
-            value: currentTag,
-            hint: new Text("Choose a Tag", style: TextStyle(fontSize: 20.0)),
-            items: tagValues.map((String tag) {
-              return new DropdownMenuItem<String>(
-                value: tag,
-                child: new Text(tag,  style: TextStyle(fontSize: 20.0)),
-              );
-            }).toList(),
-            //when the font is changed in the dropdown, change the current font state
-            onChanged: (String val){
-              if (this.mounted) {
-                setState(() {
-                  tagChanged = true;
-                  currentTag = val;
-                  Navigator.pop(context);
-                  showTagDialog(true, tagValues);
-                });
-              }
-            },
-          ),
-        ],
-      ),
-      actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("Close", style: TextStyle(fontSize: 18.0),)),
-        new FlatButton(onPressed: () async {
-          submit(true);
-          Navigator.pop(context);
-          await addTagToFile();
-          submit(false);
-        }, child: new Text("Add Tag", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: true, builder: (_) => tagDialog);
+    showDialog(context: context, barrierDismissible: true, builder: (_) => new MediaFileTagPickerDialog(
+      fontData: widget.fontData,
+      previousTag: previousTag,
+      parent: this,
+      tagValues: tagValues,
+      currentTag: currentTag,
+    ));
   }
 
   void addTagToFile() async {
@@ -260,6 +227,41 @@ class _FileViewerState extends State<FileViewer>
 
       showDialog(context: context, barrierDismissible: false, builder: (_) => responseDialog);
     }
+  }
+
+  void showTagList(List<String> tagValues){
+    AlertDialog tags = new AlertDialog(
+      content: new Container(
+        width: MediaQuery.of(context).size.width,
+        child: new ListView.builder(
+            shrinkWrap: true,
+            itemCount: tagValues.length,
+            itemBuilder: (BuildContext ctxt, int index) {
+              return new RadioListTile<String>(
+                value: tagValues[index],
+                groupValue: currentTag == "" ? null : currentTag,
+                title: Text(
+                  tagValues[index], style: TextStyle(
+                    fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                    fontFamily: widget.fontData.font,
+                    color: widget.fontData.color
+                ),
+                ),
+                onChanged: (String value) {
+                  setState(() {
+                    currentTag = value;
+                    Navigator.pop(context); //pop this dialog
+                    Navigator.pop(context); //pop context of previous dialog
+                    showTagDialog(true, tagValues);
+                  });
+                },
+              );
+            }
+        ),
+      ),
+    );
+
+    showDialog(context: context, barrierDismissible: false, builder: (_) => tags, );
   }
 
   void deleteFileDialog() {

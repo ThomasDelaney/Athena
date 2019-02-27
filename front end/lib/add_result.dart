@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
 import 'package:my_school_life_prototype/request_manager.dart';
 import 'package:my_school_life_prototype/subject.dart';
@@ -78,6 +79,12 @@ class _AddResultState extends State<AddResult> {
                     color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
                 ),
                 title: new Text("Add a New Test Result", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black)),
+                actions: <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.home),
+                      onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
+                ],
               ),
               body: new SingleChildScrollView(
                 child: new Column(

@@ -135,14 +135,12 @@ class HomePageState extends State<HomePage> {
           // action button
           IconButton(
             icon: Icon(Icons.close),
-            iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
             onPressed: () {setState(() {recorder.cancelRecording();});},
           ),
         ] : <Widget>[
           // else display the mic button and settings button
           IconButton(
             icon: Icon(Icons.mic),
-            iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
             onPressed: () {setState(() {recorder.recordAudio(context);});},
           ),
           Builder(

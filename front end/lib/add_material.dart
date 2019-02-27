@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/athena_icon_data.dart';
 import 'package:my_school_life_prototype/font_data.dart';
+import 'package:my_school_life_prototype/home_page.dart';
 import 'package:my_school_life_prototype/material_viewer.dart';
 import 'package:my_school_life_prototype/class_material.dart';
 import 'package:my_school_life_prototype/recording_manager.dart';
@@ -164,6 +165,12 @@ class _AddMaterialState extends State<AddMaterial> {
                 iconTheme: IconThemeData(
                   color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
                 ),
+                actions: <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.home),
+                      onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
+                ],
                 backgroundColor: Color(int.tryParse(widget.subject.colour)),
                 title: new Text("Add a New Material", style: TextStyle(
                     fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
@@ -201,7 +208,6 @@ class _AddMaterialState extends State<AddMaterial> {
                             new Container(
                                 margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                                 child: new Wrap(
-                                    //mainAxisSize: MainAxisSize.min,
                                     children: <Widget>[
                                       new IconButton(
                                         color: Color(int.tryParse(widget.subject.colour)),

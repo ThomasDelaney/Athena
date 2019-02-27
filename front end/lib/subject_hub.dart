@@ -213,7 +213,6 @@ class SubjectHubState extends State<SubjectHub> {
                 // action button
                 IconButton(
                   icon: Icon(Icons.close),
-                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                   onPressed: () {
                     setState(() {
                       recorder.cancelRecording();
@@ -223,12 +222,10 @@ class SubjectHubState extends State<SubjectHub> {
               ] : <Widget>[
                 IconButton(
                   icon: Icon(Icons.home),
-                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                   onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                 ),
                 IconButton(
                   icon: Icon(Icons.add_circle),
-                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                   onPressed: () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddSubject(fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),)))
                       .whenComplete(retrieveData),
@@ -236,7 +233,6 @@ class SubjectHubState extends State<SubjectHub> {
                 // else display the mic button and settings button
                 IconButton(
                   icon: Icon(Icons.mic),
-                  iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                   onPressed: () {
                     setState(() {
                       recorder.recordAudio(context);

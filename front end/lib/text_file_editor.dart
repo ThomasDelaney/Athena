@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:my_school_life_prototype/font_data.dart';
 import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/tag_picker_dialog.dart';
+import 'package:my_school_life_prototype/text_file_tag_picker_dialog.dart';
 import 'package:my_school_life_prototype/theme_check.dart';
 import 'package:zefyr/zefyr.dart';
 import 'request_manager.dart';
@@ -110,7 +110,7 @@ class TextFileEditorState extends State<TextFileEditor> {
                     actions: <Widget>[
                       IconButton(
                           icon: Icon(Icons.home),
-                          iconSize: 30.0,
+                          iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                           onPressed: () async {
 
                             if(await exitCheck() == null){
@@ -120,12 +120,12 @@ class TextFileEditorState extends State<TextFileEditor> {
                       ),
                       IconButton(
                         icon: Icon(Icons.local_offer),
-                        iconSize: 30.0,
+                        iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                         onPressed: () => showTagDialog(false, null),
                       ),
                       IconButton(
                         icon: Icon(Icons.check),
-                        iconSize: 30.0,
+                        iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
                         onPressed: showAreYouSureDialog,
                       )
                     ]
@@ -347,7 +347,7 @@ class TextFileEditorState extends State<TextFileEditor> {
       tagValues = currentTags;
     }
 
-    showDialog(context: context, barrierDismissible: true, builder: (_) => new TagPickerDialog(
+    showDialog(context: context, barrierDismissible: true, builder: (_) => new TextFileTagPickerDialog(
         fontData: widget.fontData,
         previousTag: previousTag,
         parent: this,

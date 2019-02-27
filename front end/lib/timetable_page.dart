@@ -177,7 +177,6 @@ class _TimetablePageState extends State<TimetablePage> {
                     // action button
                     IconButton(
                       icon: Icon(Icons.close),
-                      iconSize: 30.0,
                       onPressed: () {
                         setState(() {
                           recorder.cancelRecording();
@@ -188,12 +187,10 @@ class _TimetablePageState extends State<TimetablePage> {
                     // else display the mic button and settings button
                     IconButton(
                         icon: Icon(Icons.home),
-                        iconSize: 30.0,
                         onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                     ),
                     IconButton(
                       icon: Icon(Icons.mic),
-                      iconSize: 30.0,
                       onPressed: () {
                         setState(() {
                           recorder.recordAudio(context);
