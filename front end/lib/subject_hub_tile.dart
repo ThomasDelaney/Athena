@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/homework_page.dart';
-import 'package:my_school_life_prototype/materials.dart';
-import 'package:my_school_life_prototype/progress.dart';
-import 'package:my_school_life_prototype/test_results.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/homework_page.dart';
+import 'package:Athena/materials.dart';
+import 'package:Athena/progress.dart';
+import 'package:Athena/test_results.dart';
 import 'subject.dart';
 import 'add_subject.dart';
 import 'virtual_hardback.dart';
@@ -14,7 +14,7 @@ import 'theme_check.dart';
 
 class SubjectHubTile extends StatelessWidget {
 
-  SubjectHubTile({Key key, this.subject, this.state, this.fontData, this.iconData}) : super(key: key);
+  SubjectHubTile({Key key, this.subject, this.state, this.fontData, this.iconData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
 
   final SubjectHubState state;
 
@@ -22,6 +22,9 @@ class SubjectHubTile extends StatelessWidget {
 
   final FontData fontData;
   final AthenaIconData iconData;
+  final Color cardColour;
+  final Color themeColour;
+  final Color backgroundColour;
 
   final RequestManager requestManager = RequestManager.singleton;
 
@@ -52,7 +55,7 @@ class SubjectHubTile extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 32.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
                         fontFamily: fontData.font,
-                        color: Colors.white,
+                        color: cardColour,
                         fontWeight: FontWeight.bold
                     )
                   ),
@@ -62,13 +65,13 @@ class SubjectHubTile extends StatelessWidget {
                       IconButton(
                           icon: Icon(Icons.edit),
                           iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                          color: Colors.white,
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject, fontData: fontData,))).whenComplete(state.retrieveData)
+                          color: cardColour,
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject, fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour, themeColour: themeColour))).whenComplete(state.retrieveData)
                       ),
                       IconButton(
                           icon: Icon(Icons.delete),
                           iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                          color: Colors.white,
+                          color: cardColour,
                           onPressed: () => state.deleteSubjectDialog(subject.id, subject.name)
                       ),
                     ],
@@ -84,8 +87,8 @@ class SubjectHubTile extends StatelessWidget {
                     GestureDetector(
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject,))).whenComplete(state.retrieveData),
                       child: Card(
+                          color: cardColour,
                           elevation: 3.0,
-                          color: Theme.of(context).cardColor,
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
                             child: Row(
@@ -103,7 +106,7 @@ class SubjectHubTile extends StatelessWidget {
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: subject,))).whenComplete(state.retrieveData),
                         child: Card(
                             elevation: 3.0,
-                            color: Theme.of(context).cardColor,
+                            color: cardColour,
                             child: Container(
                               padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
                               child: Row(
@@ -125,7 +128,7 @@ class SubjectHubTile extends StatelessWidget {
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: subject,))).whenComplete(state.retrieveData),
                       child: Card(
                           elevation: 3.0,
-                          color: Theme.of(context).cardColor,
+                          color: cardColour,
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
                             child: Row(
@@ -144,7 +147,7 @@ class SubjectHubTile extends StatelessWidget {
                       child: Container(
                         child: Card(
                             elevation: 3.0,
-                            color: Theme.of(context).cardColor,
+                            color: cardColour,
                             child: Container(
                               padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
                               child: Row(
@@ -166,7 +169,7 @@ class SubjectHubTile extends StatelessWidget {
                     child: Container(
                       child: Card(
                         elevation: 3.0,
-                        color: Theme.of(context).cardColor,
+                          color: cardColour,
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 7*ThemeCheck.orientatedScaleFactor(context)*fontData.size, vertical: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size),
                           child: Row(

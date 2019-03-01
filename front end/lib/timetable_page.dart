@@ -1,14 +1,18 @@
+import 'package:Athena/background_settings.dart';
+import 'package:Athena/card_settings.dart';
+import 'package:Athena/sign_out.dart';
+import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/add_timeslot.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/font_settings.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/icon_settings.dart';
-import 'package:my_school_life_prototype/materials.dart';
-import 'package:my_school_life_prototype/subject.dart';
-import 'package:my_school_life_prototype/tag_manager.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/add_timeslot.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/font_settings.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/icon_settings.dart';
+import 'package:Athena/materials.dart';
+import 'package:Athena/subject.dart';
+import 'package:Athena/tag_manager.dart';
+import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'timetable_slot.dart';
 import 'request_manager.dart';
@@ -50,6 +54,14 @@ class _TimetablePageState extends State<TimetablePage> {
   bool iconLoaded = false;
   AthenaIconData iconData;
 
+  bool cardColourLoaded = false;
+  bool backgroundColourLoaded = false;
+  bool themeColourLoaded = false;
+
+  Color themeColour;
+  Color backgroundColour;
+  Color cardColour;
+
   //get current font from shared preferences if present
   void getFontData() async
   {
@@ -61,6 +73,43 @@ class _TimetablePageState extends State<TimetablePage> {
         fontData = new FontData(
             prefs.getString("font"), Color(prefs.getInt("fontColour")),
             prefs.getDouble("fontSize"));
+      });
+    }
+  }
+
+  //get current font from shared preferences if present
+  void getCardColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        cardColourLoaded = true;
+        cardColour = Color(prefs.getInt("cardColour"));
+      });
+    }
+  }
+
+  void getBackgroundColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        backgroundColourLoaded = true;
+        backgroundColour = Color(prefs.getInt("backgroundColour"));
+      });
+    }
+  }
+
+  void getThemeColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        themeColourLoaded = true;
+        themeColour = Color(prefs.getInt("themeColour"));
       });
     }
   }
@@ -93,6 +142,15 @@ class _TimetablePageState extends State<TimetablePage> {
     slotsLoaded = false;
     fontLoaded = false;
     timeslots.clear();
+
+    getBackgroundColour();
+    getThemeColour();
+    getCardColour();
+
+    cardColourLoaded = false;
+    backgroundColourLoaded = false;
+    themeColourLoaded = false;
+
     getIconData();
     getTimeslots();
     getFontData();
@@ -108,6 +166,7 @@ class _TimetablePageState extends State<TimetablePage> {
   Widget build(BuildContext context)
   {
     return Container(
+      color: themeColour,
       //tab controller widget allows you to tab between the different days
       child: DefaultTabController(
         //start the user on the initial day
@@ -117,61 +176,156 @@ class _TimetablePageState extends State<TimetablePage> {
           children: <Widget>[
             Scaffold(
                 key: _scaffoldKey,
-                endDrawer: Container(
-                  width: MediaQuery.of(context).size.width/1.25,
-                  child: new Drawer(
+                backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
+                endDrawer: new Drawer(
+                  child: new Container(
+                    color: cardColour,
                     child: ListView(
                       //Remove any padding from the ListView.
                       padding: EdgeInsets.zero,
                       children: <Widget>[
                         //drawer header
                         DrawerHeader(
-                          child: Text('Settings', style: TextStyle(
-                            fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
-                            fontFamily: fontLoaded ? fontData.font : "",
-                            color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
-                          )
-                          ),
+                          child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: themeColour,
                           ),
                         ),
                         //fonts option
                         ListTile(
-                          leading: Icon(Icons.font_download),
-                          title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                          leading: Icon(
+                            Icons.font_download,
+                            size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                            color: iconLoaded ? iconData.color : Colors.red,
+                          ),
+                          title: Text(
+                              'Fonts',
+                              style: TextStyle(
+                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                                fontFamily: fontLoaded ? fontData.font : "",
+                                color: fontLoaded ? fontData.color : Colors.black,
+                              )
+                          ),
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
                           },
                         ),
                         ListTile(
-                          leading: Icon(Icons.insert_emoticon),
-                          title: Text('Icons', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                          leading: Icon(
+                            Icons.insert_emoticon,
+                            size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                            color: iconLoaded ? iconData.color : Colors.red,
+                          ),
+                          title: Text(
+                              'Icons',
+                              style: TextStyle(
+                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                                fontFamily: fontLoaded ? fontData.font : "",
+                                color: fontLoaded ? fontData.color : Colors.black,
+                              )
+                          ),
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
                           },
                         ),
                         ListTile(
-                          leading: Icon(Icons.local_offer),
-                          title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                          leading: Icon(
+                            Icons.color_lens,
+                            size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                            color: iconLoaded ? iconData.color : Colors.red,
+                          ),
+                          title: Text(
+                              'Theme Colour',
+                              style: TextStyle(
+                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                                fontFamily: fontLoaded ? fontData.font : "",
+                                color: fontLoaded ? fontData.color : Colors.black,
+                              )
+                          ),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(
+                            Icons.format_paint,
+                            size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                            color: iconLoaded ? iconData.color : Colors.red,
+                          ),
+                          title: Text(
+                              'Background Colour',
+                              style: TextStyle(
+                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                                fontFamily: fontLoaded ? fontData.font : "",
+                                color: fontLoaded ? fontData.color : Colors.black,
+                              )
+                          ),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: fontData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(
+                            Icons.colorize,
+                            size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                            color: iconLoaded ? iconData.color : Colors.red,
+                          ),
+                          title: Text(
+                              'Card Colour',
+                              style: TextStyle(
+                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                                fontFamily: fontLoaded ? fontData.font : "",
+                                color: fontLoaded ? fontData.color : Colors.black,
+                              )
+                          ),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(retrieveData);
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(
+                            Icons.local_offer,
+                            size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                            color: iconLoaded ? iconData.color : Colors.red,
+                          ),
+                          title: Text(
+                              'Tags',
+                              style: TextStyle(
+                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                                fontFamily: fontLoaded ? fontData.font : "",
+                                color: fontLoaded ? fontData.color : Colors.black,
+                              )
+                          ),
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
                           },
                         ),
                         //sign out option
                         ListTile(
-                          leading: Icon(Icons.exit_to_app),
-                          title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                          onTap: () {
-                            //signOut();
-                          },
+                          leading: Icon(
+                            Icons.exit_to_app,
+                            size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                            color: iconLoaded ? iconData.color : Colors.red,),
+                          title: Text(
+                              'Sign Out',
+                              style: TextStyle(
+                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                                fontFamily: fontLoaded ? fontData.font : "",
+                                color: fontLoaded ? fontData.color : Colors.black,
+                              )
+                          ),
+                          onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
                         ),
                       ],
                     ),
                   ),
                 ),
                 appBar: AppBar(
-                  title: Text('Timetables', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
+                  iconTheme: IconThemeData(
+                      color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
+                  ),
+                  backgroundColor: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
+                  title: Text('Timetables', style: TextStyle(fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
                   //tab bar implements the drawing and navigation between tabs
                   actions: recorder.recording ? <Widget>[
                     // action button
@@ -206,6 +360,17 @@ class _TimetablePageState extends State<TimetablePage> {
                     ),
                   ],
                   bottom: TabBar(
+                    indicatorWeight: 5*ThemeCheck.orientatedScaleFactor(context),
+                    unselectedLabelStyle: TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontFamily: fontLoaded ? fontData.font : ""
+                    ),
+                    indicatorColor: themeColourLoaded ? ThemeCheck.lightColorOfColor(themeColour) : ThemeCheck.colorCheck(Color.fromRGBO(113, 180, 227, 1)),
+                    labelColor: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : ThemeCheck.colorCheck(Color.fromRGBO(113, 180, 227, 1)),
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: fontLoaded ? fontData.font : ""
+                    ),
                     isScrollable: true,
                     labelPadding: EdgeInsets.fromLTRB(12.5, 0.0, 12.5, 0.0),
                     tabs: weekdays.map((String day) {
@@ -222,10 +387,36 @@ class _TimetablePageState extends State<TimetablePage> {
                       child: TabBarView(
                         children: weekdays.map((String day) {
                           return Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: slotsLoaded ? TimeslotCard(fontData: fontData, iconData: iconData, subjectList: timeslots[day], day: day, pageState: this) :
+                              padding: slotsLoaded ? EdgeInsets.all(16.0) : EdgeInsets.zero,
+                              child: slotsLoaded ? TimeslotCard(
+                                  fontData: fontData,
+                                  iconData: iconData,
+                                  cardColour: cardColour,
+                                  themeColour: themeColour,
+                                  backgroundColour: backgroundColour,
+                                  subjectList: timeslots[day],
+                                  day: day,
+                                  pageState: this
+                              ) :
                               new Center(
-                                child: SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+                                child: new Stack(
+                                    alignment: Alignment.center,
+                                    children: <Widget>[
+                                      new Container(
+                                          margin: MediaQuery.of(context).viewInsets,
+                                          child: new Stack(
+                                              alignment: Alignment.center,
+                                              children: <Widget>[
+                                                new Container(
+                                                  child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                                                ),
+                                                new ModalBarrier(color: Colors.black54, dismissible: false,),
+                                              ]
+                                          )
+                                      ),
+                                      new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
+                                    ]
+                                ),
                               )
                           );
                         }).toList(),
@@ -249,7 +440,7 @@ class _TimetablePageState extends State<TimetablePage> {
               alignment: Alignment.center,
               children: <Widget>[
                 new Container(
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ) : new Container()
           ],
@@ -268,10 +459,14 @@ class _TimetablePageState extends State<TimetablePage> {
 
 //widget for a timeslot card, for this prototype implementation however, it is just all the dummy timeslots
 class TimeslotCard extends StatelessWidget {
-  const TimeslotCard({Key key, this.fontData, this.iconData, this.subjectList, this.day, this.pageState}) : super(key: key);
+  const TimeslotCard({Key key, this.fontData, this.iconData, this.subjectList, this.day, this.pageState, this.themeColour, this.cardColour, this.backgroundColour}) : super(key: key);
 
   final FontData fontData;
   final AthenaIconData iconData;
+
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
 
   final List<TimetableSlot> subjectList;
 
@@ -291,7 +486,13 @@ class TimeslotCard extends StatelessWidget {
             icon: Icon(Icons.add_circle),
             iconSize: 42.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
             color: iconData.color,
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTimeslot(day: day, fontData: fontData))).whenComplete(() => pageState.retrieveData()),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTimeslot(
+                day: day,
+                fontData: fontData,
+                backgroundColour: backgroundColour,
+                themeColour: themeColour,
+                cardColour: cardColour,
+            ))).whenComplete(() => pageState.retrieveData()),
           )
         ],
       );
@@ -308,12 +509,16 @@ class TimeslotCard extends StatelessWidget {
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTimeslot(
                       day: day, currentTimeslot: subjectList[position],
                       lastTime: subjectList.length == 1 ? null : position == 0 ? subjectList[position].time : subjectList[position-1].time,
-                      fontData: fontData
+                      fontData: fontData,
+                      backgroundColour: backgroundColour,
+                      themeColour: themeColour,
+                      cardColour: cardColour,
                     )
                   )).whenComplete(() => pageState.retrieveData()),
                   child: Container(
                     width: MediaQuery.of(context).size.width,
                     child: Card(
+                        color: cardColour,
                         margin: new EdgeInsets.symmetric(vertical: 6.0),
                         elevation: 3.0,
                         //display a slot in a list tile
@@ -390,7 +595,9 @@ class TimeslotCard extends StatelessWidget {
                                   pageState.submit(true);
                                   Subject subject = await Subject.getSubjectByTitle(subjectList[position].subjectTitle);
                                   pageState.submit(false);
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject)));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(
+                                      subject: subject,
+                                  )));
                                 },
                               ),
                             ],
@@ -409,7 +616,14 @@ class TimeslotCard extends StatelessWidget {
                       color: iconData.color,
                       iconSize: 42.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
                       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                        AddTimeslot(day: day, lastTime: subjectList[subjectList.length-1].time, fontData: fontData))).whenComplete(() => pageState.retrieveData()),
+                        AddTimeslot(
+                            day: day,
+                            lastTime: subjectList[subjectList.length-1].time,
+                            fontData: fontData,
+                            backgroundColour: backgroundColour,
+                            themeColour: themeColour,
+                            cardColour: cardColour,
+                        ))).whenComplete(() => pageState.retrieveData()),
                     )
                   ],
                ) : new Container()

@@ -2,15 +2,15 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/material_viewer.dart';
-import 'package:my_school_life_prototype/class_material.dart';
-import 'package:my_school_life_prototype/recording_manager.dart';
-import 'package:my_school_life_prototype/request_manager.dart';
-import 'package:my_school_life_prototype/subject.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/material_viewer.dart';
+import 'package:Athena/class_material.dart';
+import 'package:Athena/recording_manager.dart';
+import 'package:Athena/request_manager.dart';
+import 'package:Athena/subject.dart';
+import 'package:Athena/theme_check.dart';
 
 class AddMaterial extends StatefulWidget {
 
@@ -19,7 +19,11 @@ class AddMaterial extends StatefulWidget {
   final FontData fontData;
   final AthenaIconData iconData;
 
-  AddMaterial({Key key, this.subject, this.currentMaterial, this.fontData, this.iconData}) : super(key: key);
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
+
+  AddMaterial({Key key, this.subject, this.currentMaterial, this.fontData, this.iconData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
 
   @override
   _AddMaterialState createState() => _AddMaterialState();
@@ -81,6 +85,7 @@ class _AddMaterialState extends State<AddMaterial> {
           materialImage = GestureDetector(
               onTap: () => getImage(),
               child: new Card(
+                color: widget.cardColour,
                 elevation: 3,
                 child: new Container(
                   padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
@@ -114,7 +119,7 @@ class _AddMaterialState extends State<AddMaterial> {
                           fit: BoxFit.cover,
                           width: tileSize * ThemeCheck.orientatedScaleFactor(context),
                           height: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                          placeholder: CircularProgressIndicator(),
+                          placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(widget.themeColour),),
                           imageUrl: widget.currentMaterial.photoUrl,
                         ),
                       ),
@@ -130,6 +135,7 @@ class _AddMaterialState extends State<AddMaterial> {
       materialImage = GestureDetector(
           onTap: () => getImage(),
           child: new Card(
+            color: widget.cardColour,
             elevation: 3,
             child: Container(
               padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
@@ -160,10 +166,11 @@ class _AddMaterialState extends State<AddMaterial> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              backgroundColor: widget.backgroundColour,
               resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
                 iconTheme: IconThemeData(
-                  color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+                  color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
                 ),
                 actions: <Widget>[
                   IconButton(
@@ -173,9 +180,8 @@ class _AddMaterialState extends State<AddMaterial> {
                 ],
                 backgroundColor: Color(int.tryParse(widget.subject.colour)),
                 title: new Text("Add a New Material", style: TextStyle(
-                    fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
                     fontFamily: widget.fontData.font,
-                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
                   )
                 ),
               ),
@@ -184,6 +190,7 @@ class _AddMaterialState extends State<AddMaterial> {
                   children: <Widget>[
                     SizedBox(height: 20.0),
                     new Card(
+                        color: widget.cardColour,
                         margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                         elevation: 3.0,
                         child: new Column(
@@ -199,7 +206,7 @@ class _AddMaterialState extends State<AddMaterial> {
                                 style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
                                 decoration: InputDecoration(
                                     hintText: "Material Name",
-                                    labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
+                                    labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
                                     border: UnderlineInputBorder()
                                 ),
                               ),
@@ -231,6 +238,7 @@ class _AddMaterialState extends State<AddMaterial> {
                                           materialImage = GestureDetector(
                                               onTap: () => getImage(),
                                               child: new Card(
+                                                color: widget.cardColour,
                                                 elevation: 3,
                                                 child: Container(
                                                   padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
@@ -265,9 +273,9 @@ class _AddMaterialState extends State<AddMaterial> {
                                     elevation: 3.0,
                                     onPressed: showAreYouSureDialog,
                                     child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                                    color: Color(int.tryParse(widget.subject.colour)),
+                                    color: ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour))),
 
-                                    textColor: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black,
+                                    textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour)))),
                                   ),
                                 )
                             )
@@ -352,9 +360,23 @@ class _AddMaterialState extends State<AddMaterial> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Material?", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+        backgroundColor: widget.cardColour,
+        content: new Text(
+          "Do you want to SAVE this Material?",
+          style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.fontData.color
+          ),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text(
+            "NO",
+            style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+            ),)),
           new FlatButton(onPressed: () async {
             if (materialNameController.text == "") {
               Navigator.pop(context, false);
@@ -367,7 +389,14 @@ class _AddMaterialState extends State<AddMaterial> {
               submit(false);
               Navigator.pop(context, true);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          }, child: new Text(
+            "YES",
+            style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+            ),)),
         ],
       );
 
@@ -380,13 +409,22 @@ class _AddMaterialState extends State<AddMaterial> {
 
   void showAreYouSureDialog() {
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: widget.cardColour,
       content: new Text("Do you want to SAVE this Material?", style: TextStyle(
           fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-          fontFamily: widget.fontData.font
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
         ),
       ),
       actions: <Widget>[
-        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text(
+          "NO",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
         new FlatButton(onPressed: () async {
           if (materialNameController.text == "") {
             Navigator.pop(context, false);
@@ -399,7 +437,14 @@ class _AddMaterialState extends State<AddMaterial> {
             submit(false);
             Navigator.pop(context);
           }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        }, child: new Text(
+          "YES",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+          ),)),
       ],
     );
 
@@ -423,9 +468,20 @@ class _AddMaterialState extends State<AddMaterial> {
     if (response !=  "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
+        backgroundColor: widget.cardColour,
+        content: new Text("An error has occured please try again", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        ),),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+            )
+          ))
         ],
       );
 
@@ -435,9 +491,23 @@ class _AddMaterialState extends State<AddMaterial> {
 
   void showYouMustHaveMaterialNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("The Material must have a Name!", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+      backgroundColor: widget.cardColour,
+      content: new Text(
+        "The Material must have a Name!",
+        style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+        ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text(
+          "OK",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+          ),)),
       ],
     );
 

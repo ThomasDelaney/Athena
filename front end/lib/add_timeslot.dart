@@ -1,6 +1,6 @@
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/theme_check.dart';
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'subject.dart';
@@ -10,12 +10,16 @@ import 'timetable_slot.dart';
 
 class AddTimeslot extends StatefulWidget {
 
-  AddTimeslot({Key key, this.day, this.lastTime, this.currentTimeslot, this.fontData}) : super(key: key);
+  AddTimeslot({Key key, this.day, this.lastTime, this.currentTimeslot, this.fontData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
 
   final String day;
   final String lastTime;
   final TimetableSlot currentTimeslot;
   final FontData fontData;
+
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
 
   @override
   _AddTimeslotState createState() => _AddTimeslotState();
@@ -92,8 +96,23 @@ class _AddTimeslotState extends State<AddTimeslot> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              backgroundColor: widget.backgroundColour,
               appBar: new AppBar(
-                title: widget.currentTimeslot == null ? new Text("Add a New Timeslot", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),) : new Text(widget.currentTimeslot.subjectTitle+" at "+widget.currentTimeslot.time),
+                backgroundColor: widget.themeColour,
+                iconTheme: IconThemeData(
+                    color: ThemeCheck.colorCheck(widget.themeColour)
+                ),
+                title: widget.currentTimeslot == null ? new Text(
+                    "Add a New Timeslot",
+                    style: TextStyle(
+                        fontFamily: widget.fontData.font
+                    ),
+                  ) : new Text(
+                    widget.currentTimeslot.subjectTitle+" at "+widget.currentTimeslot.time,
+                    style: TextStyle(
+                        fontFamily: widget.fontData.font
+                    ),
+                ),
                   actions: <Widget>[
                     IconButton(
                         icon: Icon(Icons.home),
@@ -110,6 +129,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
                 children: <Widget>[
                   SizedBox(height: 20.0),
                   new Card(
+                      color: widget.cardColour,
                       margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                       elevation: 3.0,
                       child: new Column(
@@ -134,9 +154,9 @@ class _AddTimeslotState extends State<AddTimeslot> {
                                             )
                                         )
                                     ),
-                                    color: Theme.of(context).errorColor,
+                                    color: widget.themeColour,
 
-                                    textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                                    textColor: ThemeCheck.colorCheck(widget.themeColour),
                                   ),
                                 )
                             ) : new Container(),
@@ -155,7 +175,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
                               },
                               decoration: InputDecoration(
                                   hintText: "What's the Room name?",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
+                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
                                   border: UnderlineInputBorder(),
 
                               ),
@@ -175,7 +195,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
                               },
                               decoration: InputDecoration(
                                   hintText: "What's the Teacher's name?",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
+                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
                                   border: UnderlineInputBorder()
                               ),
                             ),
@@ -183,28 +203,35 @@ class _AddTimeslotState extends State<AddTimeslot> {
                           SizedBox(height: 20.0),
                           new Container(
                               margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: new DateTimePickerFormField(
-                                controller: timeController,
-                                initialValue: widget.currentTimeslot == null ? null :
-                                  DateTime(2000, 03, 07, int.tryParse(widget.currentTimeslot.time.split(':')[0]), int.tryParse(widget.currentTimeslot.time.split(':')[1])),
-                                format: DateFormat("HH:mm"),
-                                inputType: InputType.time,
-                                editable: false,
-                                onChanged: (DateTime dt) {
-                                  setState(() =>
-                                    currentTime = (dt.hour.toString()+":"+dt.minute.toString())
-                                  );
+                              child: new Theme(
+                                  data: ThemeData(
+                                    accentColor: widget.themeColour,
+                                    dialogBackgroundColor: widget.cardColour,
+                                    primaryColor: widget.themeColour,
+                                    primaryColorDark: widget.themeColour
+                                  ),
+                                  child: DateTimePickerFormField(
+                                      controller: timeController,
+                                      initialValue: widget.currentTimeslot == null ? null :
+                                      DateTime(2000, 03, 07, int.tryParse(widget.currentTimeslot.time.split(':')[0]), int.tryParse(widget.currentTimeslot.time.split(':')[1])),
+                                      format: DateFormat("HH:mm"),
+                                      inputType: InputType.time,
+                                      editable: false,
+                                      onChanged: (DateTime dt) {
+                                        setState(() =>
+                                        dt != null ? currentTime = (dt.hour.toString()+":"+dt.minute.toString()) : null
+                                        );
 
-                                  FocusScope.of(context).requestFocus(new FocusNode());
-                                },
-                                style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
-                                decoration: InputDecoration(
-                                    hintText: "What Time is the class at?",
-                                    hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font),
-                                    hasFloatingPlaceholder: false,
-                                ),
-                                initialTime: null,
-
+                                        FocusScope.of(context).requestFocus(new FocusNode());
+                                      },
+                                      style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                      decoration: InputDecoration(
+                                        hintText: "What Time is the class at?",
+                                        hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font),
+                                        hasFloatingPlaceholder: false,
+                                      ),
+                                      initialTime: null
+                                  )
                               )
                           ),
                           SizedBox(height: 20.0),
@@ -220,9 +247,9 @@ class _AddTimeslotState extends State<AddTimeslot> {
                           elevation: 3.0,
                           onPressed: showAreYouSureDialog,
                           child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size))),
-                          color: Theme.of(context).errorColor,
+                          color: ThemeCheck.errorColorOfColor(widget.themeColour),
 
-                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                          textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(widget.themeColour)),
                         ),
                       )
                   )
@@ -244,6 +271,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   void showSubjectList(){
     AlertDialog tags = new AlertDialog(
+      backgroundColor: widget.cardColour,
       content: new Container(
         width: MediaQuery.of(context).size.width,
         child: new ListView.builder(
@@ -251,6 +279,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
             itemCount: subjects.length,
             itemBuilder: (BuildContext ctxt, int index) {
               return new RadioListTile<Subject>(
+                activeColor: widget.themeColour,
                 value: subjects[index],
                 groupValue: selectedSubject == null ? null : selectedSubject,
                 title: Text(
@@ -299,9 +328,21 @@ class _AddTimeslotState extends State<AddTimeslot> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to ADD this Timeslot to your Timetable?", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: widget.cardColour,
+      content: new Text(
+          "Do you want to ADD this Timeslot to your Timetable?",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+          )
+      ),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.themeColour
+        ),)),
         new FlatButton(onPressed: () async {
           if (currentTime == null) {
             Navigator.pop(context);
@@ -327,7 +368,12 @@ class _AddTimeslotState extends State<AddTimeslot> {
             submit(false);
             Navigator.pop(context);
           }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -337,9 +383,20 @@ class _AddTimeslotState extends State<AddTimeslot> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Timeslot?", /*style: TextStyle(fontFamily: font),*/),
+        backgroundColor: widget.cardColour,
+        content: new Text(
+            "Do you want to SAVE this Timeslot?",
+            style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.themeColour
+          ),)),
           new FlatButton(onPressed: () async {
             if (currentTime == null) {
               Navigator.pop(context);
@@ -365,7 +422,12 @@ class _AddTimeslotState extends State<AddTimeslot> {
               submit(false);
               Navigator.pop(context, true);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          ),)),
         ],
       );
 
@@ -378,9 +440,19 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   void showTimeErrorDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("The chosen time cannot be before the last timeslot in your Timetable", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: widget.cardColour,
+      content: new Text("The chosen time cannot be before the last timeslot in your Timetable", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -389,9 +461,19 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   void showMustHaveSubjectDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must select a Subject for this timeslot", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: widget.cardColour,
+      content: new Text("You must select a Subject for this timeslot", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -400,9 +482,19 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   void showMustHaveTimeDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must select a Time for this timeslot", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: widget.cardColour,
+      content: new Text("You must select a Time for this timeslot", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -428,9 +520,19 @@ class _AddTimeslotState extends State<AddTimeslot> {
     if (response !=  "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        backgroundColor: widget.cardColour,
+        content: new Text("An error has occured please try again", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          )))
         ],
       );
 
@@ -449,12 +551,22 @@ class _AddTimeslotState extends State<AddTimeslot> {
     else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
+        backgroundColor: widget.cardColour,
+        content: new Text("An error has occured please try again", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
           new FlatButton(onPressed: () {
             Navigator.pop(context);
             submit(false);
-          }, child: new Text("OK"))
+          }, child: new Text("OK", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          )))
         ],
       );
 
@@ -466,20 +578,33 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   void deleteTimeslotDialog() {
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: widget.cardColour,
       content: new Text(
-        "Do you want to DELETE this Timeslot?", /*style: TextStyle(fontFamily: font),*/),
+        "Do you want to DELETE this Timeslot?", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
         }, child: new Text("NO", style: TextStyle(
-          fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.themeColour
+        ),)),
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
           await deleteTimeslot();
         },
             child: new Text("YES",
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+              style: TextStyle(
+                  fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                  fontFamily: widget.fontData.font,
+                  fontWeight: FontWeight.bold,
+                  color: widget.themeColour
+              ),)),
       ],
     );
 

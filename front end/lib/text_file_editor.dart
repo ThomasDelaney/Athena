@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/text_file_tag_picker_dialog.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/text_file_tag_picker_dialog.dart';
+import 'package:Athena/theme_check.dart';
 import 'package:zefyr/zefyr.dart';
 import 'request_manager.dart';
 import 'note.dart';
@@ -243,7 +243,7 @@ class TextFileEditorState extends State<TextFileEditor> {
                                 child: Align(alignment: Alignment.centerLeft, child: Text('Done', style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font))),
                                 color: Theme.of(context).errorColor,
 
-                                textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                                textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
                               ),
                             )
                         ) : new Container()

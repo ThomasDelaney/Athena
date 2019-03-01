@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/theme_check.dart';
 import 'tag.dart';
 import 'request_manager.dart';
 
@@ -124,7 +124,7 @@ class _AddTagState extends State<AddTag> {
                           child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
                           color: Theme.of(context).errorColor,
 
-                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
                         ),
                       )
                   )

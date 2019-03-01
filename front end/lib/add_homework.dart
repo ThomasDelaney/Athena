@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/recording_manager.dart';
-import 'package:my_school_life_prototype/request_manager.dart';
-import 'package:my_school_life_prototype/subject.dart';
-import 'package:my_school_life_prototype/homework.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/recording_manager.dart';
+import 'package:Athena/request_manager.dart';
+import 'package:Athena/subject.dart';
+import 'package:Athena/homework.dart';
+import 'package:Athena/theme_check.dart';
 
 class AddHomework extends StatefulWidget {
 
@@ -15,7 +15,11 @@ class AddHomework extends StatefulWidget {
   final FontData fontData;
   final AthenaIconData iconData;
 
-  AddHomework({Key key, this.subject, this.currentHomework, this.fontData, this.iconData}) : super(key: key);
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
+
+  AddHomework({Key key, this.subject, this.currentHomework, this.fontData, this.iconData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
 
   @override
   _AddHomeworkState createState() => _AddHomeworkState();
@@ -75,6 +79,7 @@ class _AddHomeworkState extends State<AddHomework> {
           children: <Widget>[
             Scaffold(
               resizeToAvoidBottomPadding: false,
+              backgroundColor: widget.backgroundColour,
               appBar: new AppBar(
                 actions: <Widget>[
                   IconButton(
@@ -82,14 +87,14 @@ class _AddHomeworkState extends State<AddHomework> {
                       onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                   ),
                 ],
-                iconTheme: IconThemeData(
-                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
-                ),
                 backgroundColor: Color(int.tryParse(widget.subject.colour)),
+                iconTheme: IconThemeData(
+                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
+                ),
                 title: new Text("Add a New Homework", style: TextStyle(
                     fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
                     fontFamily: widget.fontData.font,
-                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
                   )
                 ),
               ),
@@ -99,82 +104,83 @@ class _AddHomeworkState extends State<AddHomework> {
                   children: <Widget>[
                     SizedBox(height: 20.0),
                     new Card(
-                        margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                        elevation: 3.0,
-                        child: new Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: TextFormField(
-                                focusNode: homeworkDescriptionFocusNode,
-                                keyboardType: TextInputType.text,
-                                autofocus: false,
-                                controller: homeworkDescriptionController,
-                                style: TextStyle(
-                                    fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                    fontFamily: widget.fontData.font,
-                                    color: widget.fontData.color
-                                ),
-                                decoration: InputDecoration(
-                                    hintText: "Homework Description",
-                                    labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
-                                    border: UnderlineInputBorder()
-                                ),
+                      color: widget.cardColour,
+                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                      elevation: 3.0,
+                      child: new Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          new Container(
+                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                            child: TextFormField(
+                              focusNode: homeworkDescriptionFocusNode,
+                              keyboardType: TextInputType.text,
+                              autofocus: false,
+                              controller: homeworkDescriptionController,
+                              style: TextStyle(
+                                  fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                  fontFamily: widget.fontData.font,
+                                  color: widget.fontData.color
+                              ),
+                              decoration: InputDecoration(
+                                  hintText: "Homework Description",
+                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
+                                  border: UnderlineInputBorder()
                               ),
                             ),
-                            SizedBox(height: 20.0),
-                            new Container(
-                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Container(
-                                        child: new Text("Is this Homework already completed?", style: TextStyle(
-                                            fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                            fontFamily: widget.fontData.font,
-                                            color: widget.fontData.color
-                                          )
+                          ),
+                          SizedBox(height: 20.0),
+                          new Container(
+                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                      child: new Text("Is this Homework already completed?", style: TextStyle(
+                                          fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                          fontFamily: widget.fontData.font,
+                                          color: widget.fontData.color
                                         )
-                                    ),
-                                    SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)),
-                                    Container(
-                                      width: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
-                                      height: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
-                                      child: Transform.scale(
-                                        alignment: Alignment.center,
-                                        scale: 1.25*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
-                                        child: new Checkbox(
-                                          materialTapTargetSize: MaterialTapTargetSize.padded,
-                                          activeColor: Color(int.tryParse(widget.subject.colour)),
-                                          value: completedValue,
-                                          onChanged: (newVal) {
-                                            setState(() {
-                                              completedValue = newVal;
-                                            });
-                                          },
-                                        ),
                                       )
-                                    )
-                                  ],
-                                )
-                            ),
-                            new Container(
-                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                child: ButtonTheme(
-                                  height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                                  child: RaisedButton(
-                                    elevation: 3.0,
-                                    onPressed: showAreYouSureDialog,
-                                    child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                                    color: Color(int.tryParse(widget.subject.colour)),
-
-                                    textColor: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black,
                                   ),
-                                )
-                            )
-                          ],
-                        )
+                                  SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)),
+                                  Container(
+                                    width: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                    height: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                    child: Transform.scale(
+                                      alignment: Alignment.center,
+                                      scale: 1.25*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                      child: new Checkbox(
+                                        materialTapTargetSize: MaterialTapTargetSize.padded,
+                                        activeColor: Color(int.tryParse(widget.subject.colour)),
+                                        value: completedValue,
+                                        onChanged: (newVal) {
+                                          setState(() {
+                                            completedValue = newVal;
+                                          });
+                                        },
+                                      ),
+                                    )
+                                  )
+                                ],
+                              )
+                          ),
+                          new Container(
+                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                              child: ButtonTheme(
+                                height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                child: RaisedButton(
+                                  elevation: 3.0,
+                                  onPressed: showAreYouSureDialog,
+                                  child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                                  color: Color(int.tryParse(widget.subject.colour)),
+
+                                  textColor: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))),
+                                ),
+                              )
+                          )
+                        ],
+                      )
                     )
                   ],
                 ),
@@ -196,9 +202,23 @@ class _AddHomeworkState extends State<AddHomework> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Homework?", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+        backgroundColor: widget.cardColour,
+        content: new Text(
+          "Do you want to SAVE this Homework?",
+          style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.fontData.color
+          ),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text(
+            "NO",
+            style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.themeColour
+            ),
+          )),
           new FlatButton(onPressed: () async {
             if (homeworkDescriptionController.text == "") {
               Navigator.pop(context, false);
@@ -211,7 +231,14 @@ class _AddHomeworkState extends State<AddHomework> {
               submit(false);
               Navigator.pop(context, true);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          }, child: new Text(
+            "YES",
+            style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+            ),)),
         ],
       );
 
@@ -224,9 +251,22 @@ class _AddHomeworkState extends State<AddHomework> {
 
   void showAreYouSureDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to SAVE this Homework?", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+      backgroundColor: widget.cardColour,
+      content: new Text(
+        "Do you want to SAVE this Homework?",
+        style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text(
+          "NO",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.themeColour
+          ),)),
         new FlatButton(onPressed: () async {
           if (homeworkDescriptionController.text == "") {
             Navigator.pop(context, false);
@@ -239,7 +279,14 @@ class _AddHomeworkState extends State<AddHomework> {
             submit(false);
             Navigator.pop(context);
           }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        }, child: new Text(
+          "YES",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+          ),)),
       ],
     );
 
@@ -262,9 +309,19 @@ class _AddHomeworkState extends State<AddHomework> {
     if (response !=  "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
+        backgroundColor: widget.cardColour,
+        content: new Text("An error has occured please try again", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          )))
         ],
       );
 
@@ -274,9 +331,23 @@ class _AddHomeworkState extends State<AddHomework> {
 
   void showYouMustHaveHomeworkDescriptionDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must have a Homework Description", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+      backgroundColor: widget.cardColour,
+      content: new Text(
+        "You must have a Homework Description",
+        style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text(
+          "OK",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+          ),)),
       ],
     );
 

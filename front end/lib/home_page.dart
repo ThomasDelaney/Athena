@@ -1,8 +1,12 @@
+import 'package:Athena/background_settings.dart';
+import 'package:Athena/sign_out.dart';
+import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/icon_settings.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/card_settings.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/icon_settings.dart';
+import 'package:Athena/theme_check.dart';
 import 'home_tile.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
@@ -37,9 +41,15 @@ class HomePageState extends State<HomePage> {
 
   FontData fontData;
   AthenaIconData iconData;
+  Color cardColour;
+  Color backgroundColour;
+  Color themeColour;
 
   bool fontLoaded = false;
   bool iconLoaded = false;
+  bool cardColourLoaded = false;
+  bool backgroundColourLoaded = false;
+  bool themeColourLoaded = false;
 
   @override
   void initState() {
@@ -58,78 +68,190 @@ class HomePageState extends State<HomePage> {
   void receiveData() async{
     setState(()  {
       fontLoaded = false;
+      themeColourLoaded = false;
+      backgroundColourLoaded = false;
+      cardColourLoaded = false;
       iconLoaded = false;
+      getCurrentBackgroundColour();
+      getCurrentThemeColour();
       getCurrentIconData();
       getCurrentFontData();
+      getCurrentCardColour();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
       //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
       endDrawer: new Drawer(
-        child: ListView(
-          //Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            //drawer header
-            DrawerHeader(
-              child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black)),
-              decoration: BoxDecoration(
-                color: Colors.red,
+        child: new Container(
+          color: cardColour,
+          child: ListView(
+            //Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              //drawer header
+              DrawerHeader(
+                child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
+                decoration: BoxDecoration(
+                  color: themeColour,
+                ),
               ),
-            ),
-            //fonts option
-            ListTile(
-              leading: Icon(
-                Icons.font_download,
-                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                color: iconLoaded ? iconData.color : Colors.red,
+              //fonts option
+              ListTile(
+                leading: Icon(
+                  Icons.font_download,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                  'Fonts',
+                  style: TextStyle(
+                    fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                    fontFamily: fontLoaded ? fontData.font : "",
+                    color: fontLoaded ? fontData.color : Colors.black,
+                  )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(receiveData);
+                },
               ),
-              title: Text('Fonts', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(receiveData);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.insert_emoticon,
-                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                color: iconLoaded ? iconData.color : Colors.red,
+              ListTile(
+                leading: Icon(
+                  Icons.insert_emoticon,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Icons',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(receiveData);
+                },
               ),
-              title: Text('Icons', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(receiveData);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.local_offer,
-                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                color: iconLoaded ? iconData.color : Colors.red,
+              ListTile(
+                leading: Icon(
+                  Icons.color_lens,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Theme Colour',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(receiveData);
+                },
               ),
-              title: Text('Tags', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
-              },
-            ),
-            //sign out option
-            ListTile(
-              leading: Icon(
-                Icons.exit_to_app,
-                size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                color: iconLoaded ? iconData.color : Colors.red,),
-              title: Text('Sign Out', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
-              onTap: () {
-                signOut();
-              },
-            ),
-          ],
+              ListTile(
+                leading: Icon(
+                  Icons.format_paint,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Background Colour',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: fontData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(receiveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.colorize,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Card Colour',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(receiveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.invert_colors,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Dyslexia Friendly Mode',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(receiveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.local_offer,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Tags',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
+                },
+              ),
+              //sign out option
+              ListTile(
+                leading: Icon(
+                  Icons.exit_to_app,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                  color: iconLoaded ? iconData.color : Colors.red,),
+                title: Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
+              ),
+            ],
+          ),
         ),
       ),
       appBar: new AppBar(
-        title: new Text("Home", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : ""),),
+        iconTheme: IconThemeData(
+          color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
+        ),
+        backgroundColor: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
+        title: new Text("Home", style: TextStyle(fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white),),
         //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
         actions: recorder.recording ? <Widget>[
           // action button
@@ -151,7 +273,7 @@ class HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: fontLoaded && iconLoaded ? new Stack(
+      body: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded ? new Stack(
         children: <Widget>[
           new Center(
             child: SingleChildScrollView(
@@ -161,11 +283,11 @@ class HomePageState extends State<HomePage> {
                 children: <Widget>[
                   new Container(
                     padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
-                    child: new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, fontData: fontData, iconData: iconData, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
+                    child: new HomeTile(title: "Timetables",  icon: Icons.insert_invitation, fontData: fontData, themeColour: themeColour, iconData: iconData, route: TimetablePage(initialDay: DateTime.now().weekday > 5 ? "Monday" : weekdays.elementAt(DateTime.now().weekday-1),)),
                   ),
                   new Container(
                     padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
-                    child: new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub(), fontData: fontData, iconData: iconData),
+                    child: new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub(), fontData: fontData, iconData: iconData, themeColour: themeColour,),
                   )
                 ],
               ),
@@ -187,9 +309,19 @@ class HomePageState extends State<HomePage> {
         children: <Widget>[
           new Container(
               margin: MediaQuery.of(context).viewInsets,
-              child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
-        ],
-      )
+              child: new Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    new Container(
+                      child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                    ),
+                    new ModalBarrier(color: Colors.black54, dismissible: false,),
+                  ]
+              )
+            ),
+            new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: themeColourLoaded ? AlwaysStoppedAnimation<Color>(themeColour) : AlwaysStoppedAnimation<Color>(Colors.white),))
+          ]
+        )
     );
   }
 
@@ -203,6 +335,36 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+  void getCurrentCardColour() async {
+
+    Color data = await requestManager.getCardColour();
+
+    setState(() {
+      cardColourLoaded = true;
+      cardColour = data;
+    });
+  }
+
+  void getCurrentBackgroundColour() async {
+
+    Color data = await requestManager.getBackgroundColour();
+
+    setState(() {
+      backgroundColourLoaded = true;
+      backgroundColour = data;
+    });
+  }
+
+  void getCurrentThemeColour() async {
+
+    Color data = await requestManager.getThemeColour();
+
+    setState(() {
+      themeColourLoaded = true;
+      themeColour = data;
+    });
+  }
+
   void getCurrentIconData() async {
 
     AthenaIconData data = await requestManager.getIconData();
@@ -211,30 +373,5 @@ class HomePageState extends State<HomePage> {
       iconLoaded = true;
       iconData = new AthenaIconData(data.color, data.size);
     });
-  }
-
-  //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
-  void signOut()
-  {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font)),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: fontData.font)))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => signOutDialog);
-  }
-
-  //clear relevant shared preference data
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-    //clear the widget stack and route user to the login page
-    Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
   }
 }

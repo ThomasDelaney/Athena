@@ -1,15 +1,18 @@
+import 'package:Athena/background_settings.dart';
+import 'package:Athena/card_settings.dart';
+import 'package:Athena/sign_out.dart';
+import 'package:Athena/tag_manager.dart';
+import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/icon_settings.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
-import 'home_tile.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/icon_settings.dart';
+import 'package:Athena/theme_check.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
 import 'font_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
 import 'add_subject.dart';
 import 'subject.dart';
 import 'subject_hub_tile.dart';
@@ -35,6 +38,14 @@ class SubjectHubState extends State<SubjectHub> {
   bool fontLoaded = false;
   bool iconLoaded = false;
 
+  bool cardColourLoaded = false;
+  bool backgroundColourLoaded = false;
+  bool themeColourLoaded = false;
+
+  Color themeColour;
+  Color backgroundColour;
+  Color cardColour;
+
   List<Subject> subjectList = new List<Subject>();
 
   FontData fontData;
@@ -45,6 +56,43 @@ class SubjectHubState extends State<SubjectHub> {
     recorder.assignParent(this);
     retrieveData();
     super.initState();
+  }
+
+  //get current font from shared preferences if present
+  void getCardColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        cardColourLoaded = true;
+        cardColour = Color(prefs.getInt("cardColour"));
+      });
+    }
+  }
+
+  void getBackgroundColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        backgroundColourLoaded = true;
+        backgroundColour = Color(prefs.getInt("backgroundColour"));
+      });
+    }
+  }
+
+  void getThemeColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        themeColourLoaded = true;
+        themeColour = Color(prefs.getInt("themeColour"));
+      });
+    }
   }
 
   //get current font from shared preferences if present
@@ -84,10 +132,16 @@ class SubjectHubState extends State<SubjectHub> {
   }
 
   void retrieveData() {
+    cardColourLoaded = false;
+    backgroundColourLoaded = false;
+    themeColourLoaded = false;
     iconLoaded = false;
     fontLoaded = false;
     subjectsLoaded = false;
     subjectList.clear();
+    getBackgroundColour();
+    getThemeColour();
+    getCardColour();
     getSubjects();
     getIconData();
     getFontData();
@@ -108,12 +162,13 @@ class SubjectHubState extends State<SubjectHub> {
               child: new SizedBox(
                 width: MediaQuery.of(context).size.width * 0.95,
                 child: new Card(
+                  color: cardColour,
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        new Text("Add Subjects By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: fontData.font, fontSize: 24.0), ),
+                        new Text("Add Subjects By Using the", textAlign: TextAlign.center, style: TextStyle(fontFamily: fontData.font, fontSize: 24.0*fontData.size, color: fontData.color), ),
                         new SizedBox(height: 10.0,),
-                        new Icon(Icons.add_circle, size: 40.0, color: Colors.grey,),
+                        new Icon(Icons.add_circle, size: 40.0*iconData.size, color: iconData.color,),
                       ]
                   ),
                 ),
@@ -133,6 +188,9 @@ class SubjectHubState extends State<SubjectHub> {
                 children: <Widget>[
                   SizedBox(height: 10.0),
                   SubjectHubTile(
+                    backgroundColour: backgroundColour,
+                    themeColour: themeColour,
+                    cardColour: cardColour,
                     iconData: iconData,
                     fontData: fontData,
                     subject: subjectList.elementAt(position), state: this,)
@@ -148,33 +206,37 @@ class SubjectHubState extends State<SubjectHub> {
         Scaffold(
             key: _scaffoldKey,
             //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-            endDrawer: Container(
-              width: MediaQuery.of(context).size.width/1.25,
-              child: new Drawer(
+            backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
+            //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
+            endDrawer: new Drawer(
+              child: new Container(
+                color: cardColour,
                 child: ListView(
                   //Remove any padding from the ListView.
                   padding: EdgeInsets.zero,
                   children: <Widget>[
                     //drawer header
                     DrawerHeader(
-                      child: Text('Settings', style: TextStyle(
-                        fontSize: 20.0,
-                        fontFamily: fontLoaded ? fontData.font : "",
-                        color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
-                      )
-                      ),
+                      child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
                       decoration: BoxDecoration(
-                        color: Colors.red,
+                        color: themeColour,
                       ),
                     ),
                     //fonts option
                     ListTile(
                       leading: Icon(
                         Icons.font_download,
-                        size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
                         color: iconLoaded ? iconData.color : Colors.red,
                       ),
-                      title: Text('Fonts', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                      title: Text(
+                          'Fonts',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
                       },
@@ -182,32 +244,119 @@ class SubjectHubState extends State<SubjectHub> {
                     ListTile(
                       leading: Icon(
                         Icons.insert_emoticon,
-                        size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
                         color: iconLoaded ? iconData.color : Colors.red,
                       ),
-                      title: Text('Icons', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                      title: Text(
+                          'Icons',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.color_lens,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Colors.red,
+                      ),
+                      title: Text(
+                          'Theme Colour',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.format_paint,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Colors.red,
+                      ),
+                      title: Text(
+                          'Background Colour',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: fontData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.colorize,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Colors.red,
+                      ),
+                      title: Text(
+                          'Card Colour',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(retrieveData);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        Icons.local_offer,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                        color: iconLoaded ? iconData.color : Colors.red,
+                      ),
+                      title: Text(
+                          'Tags',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
                       },
                     ),
                     //sign out option
                     ListTile(
                       leading: Icon(
                         Icons.exit_to_app,
-                        size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                        color: iconLoaded ? iconData.color : Colors.red,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                        color: iconLoaded ? iconData.color : Colors.red,),
+                      title: Text(
+                          'Sign Out',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
                       ),
-                      title: Text('Sign Out', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                      onTap: () {
-                        signOut();
-                      },
+                      onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
                     ),
                   ],
                 ),
               ),
             ),
             appBar: new AppBar(
-              title: new Text("Subject Hub", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : ""),),
+              iconTheme: IconThemeData(
+                  color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
+              ),
+              backgroundColor: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
+              title: new Text("Subject Hub", style: TextStyle(fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white),),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[
                 // action button
@@ -227,7 +376,7 @@ class SubjectHubState extends State<SubjectHub> {
                 IconButton(
                   icon: Icon(Icons.add_circle),
                   onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => AddSubject(fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),)))
+                      MaterialPageRoute(builder: (context) => AddSubject(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour, themeColour: themeColour,)))
                       .whenComplete(retrieveData),
                 ),
                 // else display the mic button and settings button
@@ -251,9 +400,24 @@ class SubjectHubState extends State<SubjectHub> {
             body: new Stack(
               children: <Widget>[
                 new Center(
-                  child: subjectsLoaded && fontLoaded && iconLoaded ? sList : new SizedBox(width: 50.0,
-                      height: 50.0,
-                      child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+                  child: subjectsLoaded && fontLoaded && iconLoaded ? sList : new Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        new Container(
+                            margin: MediaQuery.of(context).viewInsets,
+                            child: new Stack(
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  new Container(
+                                    child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                                  ),
+                                  new ModalBarrier(color: Colors.black54, dismissible: false,),
+                                ]
+                            )
+                        ),
+                        new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
+                      ]
+                  )
                 ),
                 new Container(
                     child: recorder.recording ?
@@ -281,36 +445,6 @@ class SubjectHubState extends State<SubjectHub> {
       ],
     );
   }
-
-  //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
-  void signOut() {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text(
-          "You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font)),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(),
-            child: new Text("OK", style: TextStyle(fontFamily: fontData.font)))
-      ],
-    );
-
-    showDialog(context: context,
-        barrierDismissible: false,
-        builder: (_) => signOutDialog);
-  }
-
-  //clear relevant shared preference data
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-    //clear the widget stack and route user to the login page
-    Navigator.pushNamedAndRemoveUntil(
-        context, LoginPage.routeName, (Route<dynamic> route) => false);
-  }
-
   void getSubjects() async {
     List<Subject> reqSubjects = await requestManager.getSubjects();
     this.setState(() {
@@ -332,11 +466,12 @@ class SubjectHubState extends State<SubjectHub> {
     else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
+        backgroundColor: cardColour,
+        content: new Text("An error has occured please try again", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
         actions: <Widget>[
           new FlatButton(onPressed: () {
             Navigator.pop(context);
-          }, child: new Text("OK"))
+          }, child: new Text("OK", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)))
         ],
       );
 
@@ -348,13 +483,14 @@ class SubjectHubState extends State<SubjectHub> {
 
   void deleteSubjectDialog(String id, String title) {
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: cardColour,
       content: new Text(
-        "Do you want to DELETE this SUBJECT and all its DATA?", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font),),
+        "Do you want to DELETE this SUBJECT and all its DATA?", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
         }, child: new Text("NO", style: TextStyle(
-          fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold,),)),
+          fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: themeColour),)),
         new FlatButton(onPressed: () async {
           Navigator.pop(context);
           submit(true);
@@ -362,7 +498,7 @@ class SubjectHubState extends State<SubjectHub> {
           submit(false);
         },
             child: new Text("YES",
-              style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold,),)),
+              style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: themeColour),)),
       ],
     );
 

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/font_settings.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/recording_manager.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/font_settings.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/recording_manager.dart';
+import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 import 'request_manager.dart';
@@ -121,7 +121,7 @@ class _IconSettingsState extends State<IconSettings> {
                 ),
                 appBar: new AppBar(
                   backgroundColor: Theme.of(context).accentColor,
-                  title: Text("Font Settings", style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
+                  title: Text("Icon Settings", style: TextStyle(fontFamily: fontLoaded ? fontData.font : "")),
                   //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
                   actions: recorder.recording ? <Widget>[
                     // action button
@@ -297,7 +297,7 @@ class _IconSettingsState extends State<IconSettings> {
                                     child: Align(alignment: Alignment.centerLeft, child: Text('Select Icon Colour', style: TextStyle(fontSize: 24.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font))),
                                     color: currentData.color,
 
-                                    textColor: ThemeCheck.colorCheck(currentData.color) ? Colors.white : Colors.black,
+                                    textColor: ThemeCheck.colorCheck(currentData.color),
                                   ),
                                 )
                             ),
@@ -325,7 +325,7 @@ class _IconSettingsState extends State<IconSettings> {
                             child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
                             color: Theme.of(context).errorColor,
 
-                            textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                            textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
                           ),
                         )
                     )

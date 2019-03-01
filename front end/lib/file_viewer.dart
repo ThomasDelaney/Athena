@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/media_file_tag_picker_dialog.dart';
-import 'package:my_school_life_prototype/request_manager.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/media_file_tag_picker_dialog.dart';
+import 'package:Athena/request_manager.dart';
+import 'package:Athena/theme_check.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:video_player/video_player.dart';
 import 'video_manager.dart';

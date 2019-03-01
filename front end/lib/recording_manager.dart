@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:dio/dio.dart';
-import 'package:my_school_life_prototype/by_tag.dart';
-import 'package:my_school_life_prototype/timetable_page.dart';
+import 'package:Athena/by_tag.dart';
+import 'package:Athena/timetable_page.dart';
 import 'request_manager.dart';
 import 'tag.dart';
 
@@ -113,6 +113,7 @@ class RecordingManger
             showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
           }
           else {
+
             //else go to the timetables page and pass in the day
             Navigator.push(context, MaterialPageRoute(builder: (context) => TimetablePage(initialDay: result.data['option'])));
           }

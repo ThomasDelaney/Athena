@@ -351,6 +351,117 @@ def get_icon_data():
         parsedError = new[new.index("{"):]
         return jsonify(response=parsedError)
 
+# route to change card colour
+@app.route('/putCardColour', methods=['POST'])
+def put_card_colour():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        # set posted font under the design node
+        result = db.child("users").child(user['userId']).child("design").child("cardColour").set(request.form['cardColour'], user['idToken'])
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to get card colour
+@app.route('/getCardColour', methods=['GET'])
+def get_card_colour():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("design").child("cardColour").get(user['idToken'])
+        # return refresh token if successfull
+        return jsonify(data=result.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to change background colour
+@app.route('/putBackgroundColour', methods=['POST'])
+def put_background_colour():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        # set posted font under the design node
+        result = db.child("users").child(user['userId']).child("design").child("backgroundColour").set(request.form['backgroundColour'], user['idToken'])
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to get background colour
+@app.route('/getBackgroundColour', methods=['GET'])
+def get_background_colour():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("design").child("backgroundColour").get(user['idToken'])
+        # return refresh token if successfull
+        return jsonify(data=result.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to change theme colour
+@app.route('/putThemeColour', methods=['POST'])
+def put_theme_colour():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        # set posted font under the design node
+        result = db.child("users").child(user['userId']).child("design").child("themeColour").set(request.form['themeColour'], user['idToken'])
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to get theme colour
+@app.route('/getThemeColour', methods=['GET'])
+def get_theme_colour():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("design").child("themeColour").get(user['idToken'])
+        # return refresh token if successfull
+        return jsonify(data=result.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
 # route to put text file
 @app.route('/putNote', methods=['POST'])
 def put_note():

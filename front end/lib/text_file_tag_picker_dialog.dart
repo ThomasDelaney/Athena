@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/text_file_editor.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/text_file_editor.dart';
+import 'package:Athena/theme_check.dart';
 
 class TextFileTagPickerDialog extends StatefulWidget {
 
@@ -86,7 +86,7 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
                       ),
                       color: Theme.of(context).errorColor,
 
-                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
                     ),
                   )
                 ],
@@ -139,7 +139,7 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
                       ),
                       color: Theme.of(context).errorColor,
 
-                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
                     ),
                   )
                 ],

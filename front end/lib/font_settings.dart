@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/recording_manager.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/recording_manager.dart';
+import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 import 'request_manager.dart';
@@ -291,7 +291,7 @@ class _FontSettingsState extends State<FontSettings> {
                                   child: Align(alignment: Alignment.centerLeft, child: Text('Select Font Colour', style: TextStyle(fontSize: 24.0*oldData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: oldData.font))),
                                   color: currentData.color,
 
-                                  textColor: ThemeCheck.colorCheck(currentData.color) ? Colors.white : Colors.black,
+                                  textColor: ThemeCheck.colorCheck(currentData.color),
                                 ),
                               )
                           ),
@@ -321,7 +321,7 @@ class _FontSettingsState extends State<FontSettings> {
                           child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
                           color: Theme.of(context).errorColor,
 
-                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor) ? Colors.white : Colors.black,
+                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
                         ),
                       )
                   )

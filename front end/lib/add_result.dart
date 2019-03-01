@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/recording_manager.dart';
-import 'package:my_school_life_prototype/request_manager.dart';
-import 'package:my_school_life_prototype/subject.dart';
-import 'package:my_school_life_prototype/test_result.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/recording_manager.dart';
+import 'package:Athena/request_manager.dart';
+import 'package:Athena/subject.dart';
+import 'package:Athena/test_result.dart';
+import 'package:Athena/theme_check.dart';
 
 class AddResult extends StatefulWidget {
 
@@ -13,7 +13,11 @@ class AddResult extends StatefulWidget {
   final TestResult currentResult;
   final FontData fontData;
 
-  AddResult({Key key, this.subject, this.currentResult, this.fontData}) : super(key: key);
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
+
+  AddResult({Key key, this.subject, this.currentResult, this.fontData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
 
   @override
   _AddResultState createState() => _AddResultState();
@@ -72,13 +76,17 @@ class _AddResultState extends State<AddResult> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              backgroundColor: widget.backgroundColour,
               resizeToAvoidBottomPadding: false,
               appBar: new AppBar(
                 backgroundColor: Color(int.tryParse(widget.subject.colour)),
                 iconTheme: IconThemeData(
-                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black
+                    color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
                 ),
-                title: new Text("Add a New Test Result", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black)),
+                title: new Text("Add a New Test Result", style: TextStyle(
+                  fontFamily: widget.fontData.font,
+                  color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour
+                ))))),
                 actions: <Widget>[
                   IconButton(
                       icon: Icon(Icons.home),
@@ -92,6 +100,7 @@ class _AddResultState extends State<AddResult> {
                   children: <Widget>[
                     SizedBox(height: 20.0),
                     new Card(
+                        color: widget.cardColour,
                         margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                         elevation: 3.0,
                         child: new Column(
@@ -107,7 +116,7 @@ class _AddResultState extends State<AddResult> {
                                 style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.fontData.color),
                                 decoration: InputDecoration(
                                     hintText: "Test Title",
-                                    labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
+                                    labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
                                     border: UnderlineInputBorder()
                                 ),
                               ),
@@ -170,9 +179,9 @@ class _AddResultState extends State<AddResult> {
                                     elevation: 3.0,
                                     onPressed: showAreYouSureDialog,
                                     child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                                    color: Color(int.tryParse(widget.subject.colour)),
+                                    color: ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour))),
 
-                                    textColor: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))) ? Colors.white : Colors.black,
+                                    textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour)))),
                                   ),
                                 )
                             )
@@ -199,9 +208,22 @@ class _AddResultState extends State<AddResult> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Test Result?", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+        backgroundColor: widget.cardColour,
+        content: new Text(
+          "Do you want to SAVE this Test Result?",
+          style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.fontData.color
+          ),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text(
+            "NO",
+            style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.themeColour
+            ),)),
           new FlatButton(onPressed: () async {
             if (testTitleController.text == "") {
               Navigator.pop(context, false);
@@ -214,7 +236,13 @@ class _AddResultState extends State<AddResult> {
               submit(false);
               Navigator.pop(context, true);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          }, child: new Text(
+              "YES",
+              style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,
+              color: widget.themeColour
+           ),)),
         ],
       );
 
@@ -227,9 +255,23 @@ class _AddResultState extends State<AddResult> {
 
   void showAreYouSureDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to SAVE this Test Result?", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+      backgroundColor: widget.cardColour,
+      content: new Text(
+        "Do you want to SAVE this Test Result?",
+        style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text(
+          "NO",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+          ),)),
         new FlatButton(onPressed: () async {
           if (testTitleController.text == "") {
             Navigator.pop(context, false);
@@ -242,7 +284,14 @@ class _AddResultState extends State<AddResult> {
             submit(false);
             Navigator.pop(context);
           }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        }, child: new Text(
+          "YES",
+          style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+          ),)),
       ],
     );
 
@@ -265,9 +314,19 @@ class _AddResultState extends State<AddResult> {
     if (response !=  "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
+        backgroundColor: widget.cardColour,
+        content: new Text("An error has occured please try again", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          )))
         ],
       );
 
@@ -277,9 +336,19 @@ class _AddResultState extends State<AddResult> {
 
   void showYouMustHaveResultTitleDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must have a Result Title", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),),
+      backgroundColor: widget.cardColour,
+      content: new Text("You must have a Result Title", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 

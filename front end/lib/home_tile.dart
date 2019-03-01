@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/recording_manager.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/recording_manager.dart';
+import 'package:Athena/theme_check.dart';
 
 class HomeTile extends StatelessWidget {
 
-  HomeTile({Key key, this.title, this.icon, this.route, this.fontData, this.iconData}) : super(key: key);
+  HomeTile({Key key, this.title, this.icon, this.route, this.fontData, this.iconData, this.themeColour}) : super(key: key);
 
   final String title;
   final IconData icon;
   final Widget route;
   final FontData fontData;
   final AthenaIconData iconData;
+  final Color themeColour;
 
   final tileSize = 185.0;
 
@@ -28,7 +29,7 @@ class HomeTile extends StatelessWidget {
         width: fontData.size < 1.0 ? tileSize*ThemeCheck.orientatedScaleFactor(context) : tileSize*ThemeCheck.orientatedScaleFactor(context)*(fontData.size*1.05),
         height: fontData.size < 1.0 ? tileSize*ThemeCheck.orientatedScaleFactor(context) : tileSize*ThemeCheck.orientatedScaleFactor(context)*(fontData.size*1.05),
         padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
-        color: Theme.of(context).backgroundColor,
+        color: ThemeCheck.lightColorOfColor(themeColour),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[

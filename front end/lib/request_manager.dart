@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/class_material.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/homework.dart';
-import 'package:my_school_life_prototype/test_result.dart';
-import 'package:my_school_life_prototype/timetable_slot.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/class_material.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/homework.dart';
+import 'package:Athena/test_result.dart';
+import 'package:Athena/timetable_slot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'note.dart';
@@ -60,6 +60,12 @@ class RequestManager
   final String deleteMaterialURL = url+"/deleteMaterial";
   final String putIconUrl = url+"/putIconData";
   final String getIconUrl = url+"/getIconData";
+  final String putCardColourUrl = url+"/putCardColour";
+  final String getCardColourUrl = url+"/getCardColour";
+  final String putBackgroundColourUrl = url+"/putBackgroundColour";
+  final String getBackgroundColourUrl = url+"/getBackgroundColour";
+  final String putThemeColourUrl = url+"/putThemeColour";
+  final String getThemeColourUrl = url+"/getThemeColour";
 
   Dio dio = new Dio();
 
@@ -278,6 +284,171 @@ class RequestManager
 
     await prefs.setInt("iconColour", data.color.value);
     await prefs.setDouble("iconSize", data.size);
+
+    return data;
+  }
+
+  //method to submit the new font
+  Future<String> putCardColour(Color color) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "cardColour": color.value,
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putCardColourUrl, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        await prefs.setInt("cardColour", color.value);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<Color> getCardColour() async
+  {
+    Color data;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getCardColourUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['data'] != null) {
+
+      data = Color(int.tryParse(response.data['data']));
+    }else{
+      data = Colors.white;
+    }
+
+    await prefs.setInt("cardColour", data.value);
+
+    return data;
+  }
+
+  //method to submit the new font
+  Future<String> putBackgroundColour(Color color) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "backgroundColour": color.value,
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putBackgroundColourUrl, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        await prefs.setInt("backgroundColour", color.value);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<Color> getBackgroundColour() async
+  {
+    Color data;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getBackgroundColourUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['data'] != null) {
+
+      data = Color(int.tryParse(response.data['data']));
+    }else{
+      data = Colors.white;
+    }
+
+    await prefs.setInt("backgroundColour", data.value);
+
+    return data;
+  }
+
+  //method to submit the new font
+  Future<String> putThemeColour(Color color) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "themeColour": color.value,
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putThemeColourUrl, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        await prefs.setInt("themeColour", color.value);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<Color> getThemeColour() async
+  {
+    Color data;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getThemeColourUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['data'] != null) {
+
+      data = Color(int.tryParse(response.data['data']));
+    }else{
+      data = Colors.white;
+    }
+
+    await prefs.setInt("themeColour", data.value);
 
     return data;
   }

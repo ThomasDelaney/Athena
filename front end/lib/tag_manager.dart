@@ -1,6 +1,6 @@
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/theme_check.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'request_manager.dart';
@@ -150,7 +150,7 @@ class _TagManagerState extends State<TagManager> {
                         style: TextStyle(
                           fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
                           fontFamily: fontLoaded ? fontData.font : "",
-                          color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
+                          color: ThemeCheck.colorCheck(Theme.of(context).accentColor),
                         )
                     ),
                     decoration: BoxDecoration(

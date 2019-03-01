@@ -1,5 +1,5 @@
-name: my_school_life_prototype
-description: Prototype for FYP
+name: Athena
+description: Universally Designed Mobile Application to Enable Secondary School Students to Manage their Daily School Life
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -34,6 +34,7 @@ dependencies:
   marquee: ^1.1.0
   datetime_picker_formfield: ^0.1.8
   charts_flutter: ^0.5.0
+  flutter_launcher_icons: ^0.7.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -43,12 +44,18 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon3.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
 # The following section is specific to Flutter.
 flutter:
+  assets:
+    - assets/icon/icon3.png
   fonts:
     - family: Roboto
       fonts:

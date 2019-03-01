@@ -1,16 +1,19 @@
+import 'package:Athena/background_settings.dart';
+import 'package:Athena/card_settings.dart';
+import 'package:Athena/sign_out.dart';
+import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:my_school_life_prototype/add_result.dart';
-import 'package:my_school_life_prototype/athena_icon_data.dart';
-import 'package:my_school_life_prototype/font_data.dart';
-import 'package:my_school_life_prototype/font_settings.dart';
-import 'package:my_school_life_prototype/home_page.dart';
-import 'package:my_school_life_prototype/icon_settings.dart';
-import 'package:my_school_life_prototype/login_page.dart';
-import 'package:my_school_life_prototype/recording_manager.dart';
-import 'package:my_school_life_prototype/request_manager.dart';
-import 'package:my_school_life_prototype/subject.dart';
-import 'package:my_school_life_prototype/tag_manager.dart';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/font_settings.dart';
+import 'package:Athena/home_page.dart';
+import 'package:Athena/icon_settings.dart';
+import 'package:Athena/login_page.dart';
+import 'package:Athena/recording_manager.dart';
+import 'package:Athena/request_manager.dart';
+import 'package:Athena/subject.dart';
+import 'package:Athena/tag_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'test_result.dart';
 import 'homework.dart';
@@ -66,6 +69,51 @@ class _ProgressState extends State<Progress> {
   bool iconLoaded = false;
   AthenaIconData iconData;
 
+  bool cardColourLoaded = false;
+  bool backgroundColourLoaded = false;
+  bool themeColourLoaded = false;
+
+  Color themeColour;
+  Color backgroundColour;
+  Color cardColour;
+
+  //get current font from shared preferences if present
+  void getCardColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        cardColourLoaded = true;
+        cardColour = Color(prefs.getInt("cardColour"));
+      });
+    }
+  }
+
+  void getBackgroundColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        backgroundColourLoaded = true;
+        backgroundColour = Color(prefs.getInt("backgroundColour"));
+      });
+    }
+  }
+
+  void getThemeColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        themeColourLoaded = true;
+        themeColour = Color(prefs.getInt("themeColour"));
+      });
+    }
+  }
+
   //get current font from shared preferences if present
   void getFontData() async
   {
@@ -98,6 +146,14 @@ class _ProgressState extends State<Progress> {
 
     iconLoaded = false;
     fontLoaded = false;
+
+    cardColourLoaded = false;
+    backgroundColourLoaded = false;
+    themeColourLoaded = false;
+
+    await getBackgroundColour();
+    await getThemeColour();
+    await getCardColour();
 
     await getFontData();
     await getIconData();
@@ -184,55 +240,146 @@ class _ProgressState extends State<Progress> {
       children: <Widget>[
         Scaffold(
           key: _scaffoldKey,
+          backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
           //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-          endDrawer: Container(
-            width: MediaQuery.of(context).size.width/1.25,
-            child: new Drawer(
+          endDrawer: new Drawer(
+            child: new Container(
+              color: cardColour,
               child: ListView(
                 //Remove any padding from the ListView.
                 padding: EdgeInsets.zero,
                 children: <Widget>[
                   //drawer header
                   DrawerHeader(
-                    child: Text('Settings', style: TextStyle(
-                      fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
-                      fontFamily: fontLoaded ? fontData.font : "",
-                      color: ThemeCheck.colorCheck(Theme.of(context).accentColor) ? Colors.white : Colors.black,
-                    )
-                    ),
+                    child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: themeColour,
                     ),
                   ),
                   //fonts option
                   ListTile(
-                    leading: Icon(Icons.font_download),
-                    title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    leading: Icon(
+                      Icons.font_download,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Colors.red,
+                    ),
+                    title: Text(
+                        'Fonts',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.insert_emoticon),
-                    title: Text('Icons', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    leading: Icon(
+                      Icons.insert_emoticon,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                      color: iconLoaded ? iconData.color : Colors.red,
+                    ),
+                    title: Text(
+                        'Icons',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.local_offer),
-                    title: Text('Tags', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                    leading: Icon(
+                      Icons.color_lens,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Colors.red,
+                    ),
+                    title: Text(
+                        'Theme Colour',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.format_paint,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Colors.red,
+                    ),
+                    title: Text(
+                        'Background Colour',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: fontData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.colorize,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Colors.red,
+                    ),
+                    title: Text(
+                        'Card Colour',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.local_offer,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                      color: iconLoaded ? iconData.color : Colors.red,
+                    ),
+                    title: Text(
+                        'Tags',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
                     },
                   ),
                   //sign out option
                   ListTile(
-                    leading: Icon(Icons.exit_to_app),
-                    title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                    onTap: () {
-                      signOut();
-                    },
+                    leading: Icon(
+                      Icons.exit_to_app,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                      color: iconLoaded ? iconData.color : Colors.red,),
+                    title: Text(
+                        'Sign Out',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
                   ),
                 ],
               ),
@@ -240,7 +387,7 @@ class _ProgressState extends State<Progress> {
           ),
           appBar: new AppBar(
             backgroundColor: Color(int.tryParse(widget.subject.colour)),
-            title: Text("Progress", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "")),
+            title: Text("Progress", style: TextStyle(fontFamily: fontLoaded ? fontData.font : "", color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))))),
             //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
             actions: recorder.recording ? <Widget>[
               // action button
@@ -266,34 +413,38 @@ class _ProgressState extends State<Progress> {
               ),
             ],
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            fixedColor: Color(int.tryParse(widget.subject.colour)),
-            onTap: (newIndex) {
-              setState(() {
-                currentDesc = newIndex;
-              });
-            },
-            currentIndex: currentDesc, // this will be set when a new tab is tapped
-            items: [
-              BottomNavigationBarItem(
-                icon: new Icon(Icons.school, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
-                title: new Text(statsDescription[0], style: TextStyle(
-                  fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
-                  fontFamily: fontData.font,
-                  color: fontData.color
-                ),),
-              ),
-              BottomNavigationBarItem(
-                icon: new Icon(Icons.library_books, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
-                title: new Text(statsDescription[1], style: TextStyle(
-                  fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
-                  fontFamily: fontData.font,
-                  color: fontData.color
-                )),
-              ),
-            ],
+          bottomNavigationBar: new Theme(
+            data: ThemeData(
+              canvasColor: cardColour
+            ),
+            child: BottomNavigationBar(
+              fixedColor: Color(int.tryParse(widget.subject.colour)),
+              onTap: (newIndex) {
+                setState(() {
+                  currentDesc = newIndex;
+                });
+              },
+              currentIndex: currentDesc, // this will be set when a new tab is tapped
+              items: [
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.school, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
+                  title: new Text(statsDescription[0], style: TextStyle(
+                      fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
+                      fontFamily: fontData.font,
+                      color: fontData.color
+                  ),),
+                ),
+                BottomNavigationBarItem(
+                  icon: new Icon(Icons.library_books, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
+                  title: new Text(statsDescription[1], style: TextStyle(
+                      fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
+                      fontFamily: fontData.font,
+                      color: fontData.color
+                  )),
+                ),
+              ],
+            ),
           ),
-
           body: Stack(
               children: <Widget>[
                 new Center(
@@ -303,6 +454,7 @@ class _ProgressState extends State<Progress> {
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height * ((0.65 + (iconData.size/fontData.size/10) / iconData.size/fontData.size)),
                       child: new Card(
+                        color: cardColour,
                         child: new Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
@@ -366,7 +518,24 @@ class _ProgressState extends State<Progress> {
                         ),
                       ),
                     ),
-                  ) : new SizedBox(width: 50.0,height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+                  ) : new Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        new Container(
+                            margin: MediaQuery.of(context).viewInsets,
+                            child: new Stack(
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  new Container(
+                                    child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                                  ),
+                                  new ModalBarrier(color: Colors.black54, dismissible: false,),
+                                ]
+                            )
+                        ),
+                        new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
+                      ]
+                  ),
                 ),
                 //container for the recording card, show if recording, show blank container if not
                 new Container(
@@ -393,31 +562,6 @@ class _ProgressState extends State<Progress> {
         ): new Container()
       ],
     );
-  }
-
-  //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
-  void signOut()
-  {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font)),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: fontData.font)))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => signOutDialog);
-  }
-
-  //clear relevant shared preference data
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-    //clear the widget stack and route user to the login page
-    Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
   }
 
   List<charts.Series<Map, String>> getTestResultListAsSeriesData() {
@@ -577,7 +721,6 @@ class _ProgressState extends State<Progress> {
       )
     ];
   }
-
 
   void getStatsData() async {
     List<TestResult> reqResults = await requestManager.getTestResults(widget.subject.id);
