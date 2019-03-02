@@ -1,3 +1,10 @@
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/background_settings.dart';
+import 'package:Athena/card_settings.dart';
+import 'package:Athena/icon_settings.dart';
+import 'package:Athena/sign_out.dart';
+import 'package:Athena/tag_manager.dart';
+import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
@@ -31,10 +38,34 @@ class _FontSettingsState extends State<FontSettings> {
   FontData currentData;
   FontData oldData;
 
+  AthenaIconData iconData;
+  bool iconLoaded = false;
+
+  bool cardColourLoaded = false;
+  bool backgroundColourLoaded = false;
+  bool themeColourLoaded = false;
+
+  Color themeColour;
+  Color backgroundColour;
+  Color cardColour;
+
   @override
   void initState() {
-    getCurrentFontData();
+    retrieveData();
     super.initState();
+  }
+
+  void retrieveData() async {
+    iconLoaded = false;
+    loaded = false;
+    cardColourLoaded = false;
+    themeColourLoaded = false;
+    backgroundColourLoaded = false;
+    await getIconData();
+    await getCurrentFontData();
+    await getBackgroundColour();
+    await getThemeColour();
+    await getCardColour();
   }
 
   //get current font from shared preferences if present
@@ -47,6 +78,58 @@ class _FontSettingsState extends State<FontSettings> {
       currentData = new FontData(data.font, data.color, data.size);
       oldData = new FontData(data.font, data.color, data.size);
     });
+  }
+
+  //get current font from shared preferences if present
+  void getCardColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        cardColourLoaded = true;
+        cardColour = Color(prefs.getInt("cardColour"));
+      });
+    }
+  }
+
+  void getBackgroundColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        backgroundColourLoaded = true;
+        backgroundColour = Color(prefs.getInt("backgroundColour"));
+      });
+    }
+  }
+
+  void getThemeColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        themeColourLoaded = true;
+        themeColour = Color(prefs.getInt("themeColour"));
+      });
+    }
+  }
+
+  //get current icon settings from shared preferences if present
+  void getIconData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        iconLoaded = true;
+        iconData = new AthenaIconData(
+            Color(prefs.getInt("iconColour")),
+            prefs.getDouble("iconSize"));
+      });
+    }
   }
 
   bool isFileEdited() {
@@ -65,40 +148,156 @@ class _FontSettingsState extends State<FontSettings> {
         child: Stack(
           children: <Widget>[
             Scaffold(
+              backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
               key: _scaffoldKey,
               endDrawer: new Drawer(
-                child: ListView(
-                  //Remove any padding from the ListView.
-                  padding: EdgeInsets.zero,
-                  children: <Widget>[
-                    //drawer header
-                    DrawerHeader(
-                      child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: loaded ? oldData.font : "")),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).accentColor,
+                child: new Container(
+                  color: cardColour,
+                  child: ListView(
+                    //Remove any padding from the ListView.
+                    padding: EdgeInsets.zero,
+                    children: <Widget>[
+                      //drawer header
+                      DrawerHeader(
+                        child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: loaded ? oldData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
+                        decoration: BoxDecoration(
+                          color: themeColour,
+                        ),
                       ),
-                    ),
-                    //fonts option
-                    ListTile(
-                      leading: Icon(Icons.font_download),
-                      title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: loaded ? oldData.font : "")),
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
-                      },
-                    ),
-                    //sign out option
-                    ListTile(
-                      leading: Icon(Icons.exit_to_app),
-                      title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: loaded ? oldData.font : "")),
-                      onTap: () {
-                        signOut();
-                      },
-                    ),
-                  ],
+                      //fonts option
+                      ListTile(
+                        leading: Icon(
+                          Icons.font_download,
+                          size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                          color: iconLoaded ? iconData.color : Colors.red,
+                        ),
+                        title: Text(
+                            'Fonts',
+                            style: TextStyle(
+                              fontSize: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                              fontFamily: loaded ? oldData.font : "",
+                              color: loaded ? oldData.color : Colors.black,
+                            )
+                        ),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.insert_emoticon,
+                          size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                          color: iconLoaded ? iconData.color : Colors.red,
+                        ),
+                        title: Text(
+                            'Icons',
+                            style: TextStyle(
+                              fontSize: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                              fontFamily: loaded ? oldData.font : "",
+                              color: loaded ? oldData.color : Colors.black,
+                            )
+                        ),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.color_lens,
+                          size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                          color: iconLoaded ? iconData.color : Colors.red,
+                        ),
+                        title: Text(
+                            'Theme Colour',
+                            style: TextStyle(
+                              fontSize: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                              fontFamily: loaded ? oldData.font : "",
+                              color: loaded ? oldData.color : Colors.black,
+                            )
+                        ),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: oldData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.format_paint,
+                          size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                          color: iconLoaded ? iconData.color : Colors.red,
+                        ),
+                        title: Text(
+                            'Background Colour',
+                            style: TextStyle(
+                              fontSize: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                              fontFamily: loaded ? oldData.font : "",
+                              color: loaded ? oldData.color : Colors.black,
+                            )
+                        ),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: oldData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.colorize,
+                          size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                          color: iconLoaded ? iconData.color : Colors.red,
+                        ),
+                        title: Text(
+                            'Card Colour',
+                            style: TextStyle(
+                              fontSize: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                              fontFamily: loaded ? oldData.font : "",
+                              color: loaded ? oldData.color : Colors.black,
+                            )
+                        ),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: oldData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(retrieveData);
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.local_offer,
+                          size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                          color: iconLoaded ? iconData.color : Colors.red,
+                        ),
+                        title: Text(
+                            'Tags',
+                            style: TextStyle(
+                              fontSize: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                              fontFamily: loaded ? oldData.font : "",
+                              color: loaded ? oldData.color : Colors.black,
+                            )
+                        ),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
+                        },
+                      ),
+                      //sign out option
+                      ListTile(
+                        leading: Icon(
+                          Icons.exit_to_app,
+                          size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                          color: iconLoaded ? iconData.color : Colors.red,),
+                        title: Text(
+                            'Sign Out',
+                            style: TextStyle(
+                              fontSize: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                              fontFamily: loaded ? oldData.font : "",
+                              color: loaded ? oldData.color : Colors.black,
+                            )
+                        ),
+                        onTap: () => SignOut.signOut(context, oldData, cardColour, themeColour),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               appBar: new AppBar(
-                backgroundColor: Theme.of(context).accentColor,
+                iconTheme: IconThemeData(
+                    color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
+                ),
+                backgroundColor: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
                 title: Text("Font Settings", style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context), fontFamily: loaded ? oldData.font : "")),
                 //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
                 actions: recorder.recording ? <Widget>[
@@ -130,6 +329,7 @@ class _FontSettingsState extends State<FontSettings> {
                 children: <Widget>[
                   SizedBox(height: 20.0),
                   new Card(
+                      color: cardColour,
                       margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                       elevation: 3.0,
                       child: new Column(
@@ -140,12 +340,12 @@ class _FontSettingsState extends State<FontSettings> {
                             child: new DropdownButton<String>(
                               isExpanded: true,
                               value: this.currentData.font == "" ? null : this.currentData.font,
-                              hint: new Text("Choose a Font", style: TextStyle(fontSize: 24.0)),
+                              hint: new Text("Choose a Font", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: oldData.font)),
                               items: <String>['Roboto', 'NotoSansTC', 'Montserrat', 'Arimo', 'B612', 'FiraSans', 'JosefinSans', 'Oxygen', 'Teko', 'Cuprum',
                               'Orbitron', 'Rajdhani', 'Monda', 'Philosopher', 'SignikaNegative', 'Amaranth'].map((String value) {
                                 return new DropdownMenuItem<String>(
                                   value: value,
-                                  child: new Text(value,  style: TextStyle(fontSize: 24.0, fontFamily: value)),
+                                  child: new Text(value,  style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: value, color: oldData.color)),
                                 );
                               }).toList(),
                               //when the font is changed in the dropdown, change the current font state
@@ -162,7 +362,8 @@ class _FontSettingsState extends State<FontSettings> {
                               children: <Widget>[
                                 Flexible(
                                   child: new Slider(
-                                    activeColor: Theme.of(context).accentColor,
+                                    activeColor: themeColour,
+                                    inactiveColor: ThemeCheck.lightColorOfColor(themeColour),
                                     divisions: 20,
                                     value: currentData.size != null ? currentData.size : 1.0,
                                     min: 0.5,
@@ -193,6 +394,7 @@ class _FontSettingsState extends State<FontSettings> {
                                             height: MediaQuery.of(context).size.height*0.8,
                                             width: MediaQuery.of(context).size.width*0.985,
                                             child: Card(
+                                              color: cardColour,
                                               child: Container(
                                                 padding: EdgeInsets.symmetric(horizontal: 30.0*ThemeCheck.orientatedScaleFactor(context)),
                                                 child: Column(
@@ -217,11 +419,16 @@ class _FontSettingsState extends State<FontSettings> {
                                                           viewportFraction: 0.99999,
                                                           scale: 0.9,
                                                           pagination: new SwiperPagination(
-                                                            builder: SwiperPagination.dots,
+                                                              builder: DotSwiperPaginationBuilder(
+                                                                  size: 20.0,
+                                                                  activeSize: 20.0,
+                                                                  space: 10.0,
+                                                                  activeColor: themeColour
+                                                              )
                                                           ),
                                                           scrollDirection: Axis.horizontal,
                                                           control: SwiperControl(
-                                                              color: Theme.of(context).accentColor,
+                                                              color: themeColour,
                                                               padding: EdgeInsets.zero,
                                                               size: 24*ThemeCheck.orientatedScaleFactor(context)
                                                           ),
@@ -314,26 +521,43 @@ class _FontSettingsState extends State<FontSettings> {
                   new Container(
                       margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                       child: ButtonTheme(
-                        height: 50.0,
+                        height: 50.0*ThemeCheck.orientatedScaleFactor(context),
                         child: RaisedButton(
                           elevation: 3.0,
                           onPressed: showAreYouSureDialog,
-                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
-                          color: Theme.of(context).errorColor,
+                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size, fontFamily: oldData.font,))),
+                          color: ThemeCheck.errorColorOfColor(themeColour),
 
-                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
+                          textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(ThemeCheck.errorColorOfColor(themeColour))),
                         ),
                       )
                   )
                 ],
-              ) : new Container()
+              ) : new Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    new Container(
+                        margin: MediaQuery.of(context).viewInsets,
+                        child: new Stack(
+                            alignment: Alignment.center,
+                            children: <Widget>[
+                              new Container(
+                                child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                              ),
+                              new ModalBarrier(color: Colors.black54, dismissible: false,),
+                            ]
+                        )
+                    ),
+                    new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
+                  ]
+              )
             ),
-            submitting || !loaded ? new Stack(
+            submitting ? new Stack(
               alignment: Alignment.center,
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],
@@ -365,9 +589,18 @@ class _FontSettingsState extends State<FontSettings> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to change your Font?", style: TextStyle(fontFamily: oldData.font),),
+        backgroundColor: cardColour,
+        content: new Text("Do you want to change your Font?", style: TextStyle(
+            fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: oldData.font,
+            color: oldData.color
+        ),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO",  style: TextStyle(
+              fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: oldData.font,
+              color: themeColour
+          ),)),
           new FlatButton(onPressed: () async {
             if (currentData.font == "") {
               Navigator.pop(context);
@@ -380,7 +613,12 @@ class _FontSettingsState extends State<FontSettings> {
               submit(false);
               Navigator.pop(context);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES",  style: TextStyle(
+              fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: oldData.font,
+              fontWeight: FontWeight.bold,
+              color: themeColour
+          ),)),
         ],
       );
 
@@ -394,9 +632,18 @@ class _FontSettingsState extends State<FontSettings> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to change your Font?", style: TextStyle(fontFamily: oldData.font),),
+      backgroundColor: cardColour,
+      content: new Text("Do you want to change your Font?", style: TextStyle(
+          fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: oldData.font,
+          color: oldData.color
+      ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(
+            fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: oldData.font,
+            color: themeColour
+        ),)),
         new FlatButton(onPressed: () async {
           if (currentData.font == "") {
             Navigator.pop(context);
@@ -409,7 +656,12 @@ class _FontSettingsState extends State<FontSettings> {
             submit(false);
             Navigator.pop(context);
           }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(
+            fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: oldData.font,
+            fontWeight: FontWeight.bold,
+            color: themeColour
+        ),)),
       ],
     );
 
@@ -418,9 +670,19 @@ class _FontSettingsState extends State<FontSettings> {
 
   void showMustHaveFontDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must select a Font", style: TextStyle(fontFamily: oldData.font),),
+      backgroundColor: cardColour,
+      content: new Text("You must select a Font", style: TextStyle(
+          fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: oldData.font,
+          color: oldData.color
+      ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: oldData.font,
+            fontWeight: FontWeight.bold,
+            color: themeColour
+        ),)),
       ],
     );
 
@@ -441,37 +703,22 @@ class _FontSettingsState extends State<FontSettings> {
     submit(false);
 
     AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again"),
+      backgroundColor: cardColour,
+      content: new Text("An Error has occured. Please try again", style: TextStyle(
+          fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: oldData.font,
+          color: oldData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK"))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*oldData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: oldData.font,
+            fontWeight: FontWeight.bold,
+            color: themeColour
+        )))
       ],
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
-  }
-
-  //method which displays a dialog telling the user that they are about to be signed out, if they press okay then handle the sign out
-  void signOut()
-  {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: currentData.font)),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: currentData.font)))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => signOutDialog);
-  }
-
-  //clear shared preference information and route user back to the log in page
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-
-    Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
   }
 }

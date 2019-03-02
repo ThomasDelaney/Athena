@@ -319,7 +319,7 @@ class HomePageState extends State<HomePage> {
                   ]
               )
             ),
-            new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: themeColourLoaded ? AlwaysStoppedAnimation<Color>(themeColour) : AlwaysStoppedAnimation<Color>(Colors.white),))
+            new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
           ]
         )
     );

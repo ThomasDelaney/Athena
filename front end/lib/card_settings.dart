@@ -283,7 +283,7 @@ class _CardSettingsState extends State<CardSettings> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],
@@ -342,6 +342,7 @@ class _CardSettingsState extends State<CardSettings> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: oldColour,
       content: new Text("Do you want to change your Card Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font),),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font),)),
@@ -373,6 +374,7 @@ class _CardSettingsState extends State<CardSettings> {
     submit(false);
 
     AlertDialog errorDialog = new AlertDialog(
+      backgroundColor: oldColour,
       content: new Text("An Error has occured. Please try again", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font)),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font)))
@@ -380,30 +382,5 @@ class _CardSettingsState extends State<CardSettings> {
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
-  }
-
-  //method which displays a dialog telling the user that they are about to be signed out, if they press okay then handle the sign out
-  void signOut()
-  {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font)),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font)))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => signOutDialog);
-  }
-
-  //clear shared preference information and route user back to the log in page
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-
-    Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
   }
 }

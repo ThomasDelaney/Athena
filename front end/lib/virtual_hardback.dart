@@ -1,3 +1,8 @@
+import 'package:Athena/background_settings.dart';
+import 'package:Athena/card_settings.dart';
+import 'package:Athena/sign_out.dart';
+import 'package:Athena/tag_manager.dart';
+import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
@@ -70,6 +75,14 @@ class VirtualHardbackState extends State<VirtualHardback> {
   AthenaIconData iconData;
   bool iconLoaded = false;
 
+  bool cardColourLoaded = false;
+  bool backgroundColourLoaded = false;
+  bool themeColourLoaded = false;
+
+  Color themeColour;
+  Color backgroundColour;
+  Color cardColour;
+
   //get user files
   void getFiles() async
   {
@@ -99,6 +112,43 @@ class VirtualHardbackState extends State<VirtualHardback> {
       this.setState((){
         fontLoaded = true;
         fontData = new FontData(prefs.getString("font"), Color(prefs.getInt("fontColour")), prefs.getDouble("fontSize"));
+      });
+    }
+  }
+
+  //get current font from shared preferences if present
+  void getCardColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        cardColourLoaded = true;
+        cardColour = Color(prefs.getInt("cardColour"));
+      });
+    }
+  }
+
+  void getBackgroundColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        backgroundColourLoaded = true;
+        backgroundColour = Color(prefs.getInt("backgroundColour"));
+      });
+    }
+  }
+
+  void getThemeColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        themeColourLoaded = true;
+        themeColour = Color(prefs.getInt("themeColour"));
       });
     }
   }
@@ -135,10 +185,16 @@ class VirtualHardbackState extends State<VirtualHardback> {
     iconLoaded = false;
     filesLoaded = false;
     notesLoaded = false;
+    cardColourLoaded = false;
+    backgroundColourLoaded = false;
+    themeColourLoaded = false;
     subjectFiles.clear();
     notesList.clear();
     oldSubjectFiles.clear();
     oldNotesList.clear();
+    getBackgroundColour();
+    getThemeColour();
+    getCardColour();
     getFiles();
     getNotes();
     getFontData();
@@ -168,6 +224,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                     child: GestureDetector(
                       onTap: () => getImage(),
                       child: new Card(
+                        color: cardColour,
                         child: new Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -207,6 +264,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                   margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                   child: new SizedBox(
                     child: new Card(
+                        color: cardColour,
                         child: new Stack(
                           children: <Widget>[
                             Center(
@@ -214,7 +272,16 @@ class VirtualHardbackState extends State<VirtualHardback> {
                               child: GestureDetector(
                                 onTap:() async {
                                   //go to the file viewer page and pass in the image list, and the index of the image tapped
-                                  final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(list: subjectFiles, i: index, subject: widget.subject, fontData: fontData, iconData: iconData))).whenComplete(retrieveData);
+                                  final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(
+                                      list: subjectFiles,
+                                      i: index,
+                                      subject: widget.subject,
+                                      fontData: fontData,
+                                      iconData: iconData,
+                                      cardColour: cardColour,
+                                      backgroundColour: backgroundColour,
+                                      themeColour: themeColour,
+                                  ))).whenComplete(retrieveData);
 
                                   if (result){
                                     _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('File Deleted!', style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font))));
@@ -226,7 +293,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                                   tag: "fileAt"+index.toString(),
                                   //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
-                                      placeholder: CircularProgressIndicator(),
+                                      placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour)),
                                       imageUrl: subjectFiles[index].url,
                                       height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
                                       width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
@@ -242,7 +309,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                                         autoInitialize: true,
                                         showControls: false,
                                         looping: false,
-                                        placeholder: new Center(child: new CircularProgressIndicator(backgroundColor: Theme.of(context).accentColor,)),
+                                        placeholder: new Center(child: new CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour),)),
                                       ),
                                     ),
                                     new Center(
@@ -292,7 +359,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
     }
     else{
       //display a circular progress indicator when the image list is loading
-      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context)))));
+      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour)))));
     }
 
     ListView textFileList;
@@ -307,8 +374,15 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 child: new Container(
                   width: MediaQuery.of(context).size.width * 0.95,
                   child: GestureDetector(
-                    onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontData,))).whenComplete(retrieveData);},
+                    onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(
+                      subject: widget.subject,
+                      fontData: fontData,
+                      backgroundColour: backgroundColour,
+                      themeColour: themeColour,
+                      cardColour: cardColour,
+                    ))).whenComplete(retrieveData);},
                     child: new Card(
+                      color: cardColour,
                       child: new Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
@@ -341,10 +415,18 @@ class VirtualHardbackState extends State<VirtualHardback> {
         itemCount: notesList.length,
         itemBuilder: (context, position) {
           return Card(
+              color: cardColour,
               margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
               elevation: 3.0,
               child: new ListTile(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList[position], subject: widget.subject, fontData: fontData))).whenComplete(retrieveData),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(
+                    note: notesList[position],
+                    subject: widget.subject,
+                    fontData: fontData,
+                    backgroundColour: backgroundColour,
+                    themeColour: themeColour,
+                    cardColour: cardColour,
+                ))).whenComplete(retrieveData),
                 contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
                 leading: Container(
                   padding: EdgeInsets.only(right: 12.0),
@@ -374,36 +456,39 @@ class VirtualHardbackState extends State<VirtualHardback> {
 
     //scaffold to encapsulate all the widgets
     final page = Scaffold(
+      backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
       resizeToAvoidBottomPadding: false,
       key: _scaffoldKey,
       //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-      endDrawer: Container(
-        width: MediaQuery.of(context).size.width/1.25,
-        child: new Drawer(
+      endDrawer: new Drawer(
+        child: new Container(
+          color: cardColour,
           child: ListView(
             //Remove any padding from the ListView.
             padding: EdgeInsets.zero,
             children: <Widget>[
               //drawer header
               DrawerHeader(
-                child: Text('Settings', style: TextStyle(
-                    fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0,
-                    fontFamily: fontLoaded ? fontData.font : "",
-                    color: ThemeCheck.colorCheck(Theme.of(context).accentColor),
-                  )
-                ),
+                child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
                 decoration: BoxDecoration(
-                  color: Colors.red,
+                  color: themeColour,
                 ),
               ),
               //fonts option
               ListTile(
                 leading: Icon(
-                    Icons.font_download,
-                    size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                    color: iconLoaded ? iconData.color : Colors.red,
+                  Icons.font_download,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
                 ),
-                title: Text('Fonts', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                title: Text(
+                    'Fonts',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
                 },
@@ -411,25 +496,108 @@ class VirtualHardbackState extends State<VirtualHardback> {
               ListTile(
                 leading: Icon(
                   Icons.insert_emoticon,
-                  size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
                   color: iconLoaded ? iconData.color : Colors.red,
                 ),
-                title: Text('Icons', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
+                title: Text(
+                    'Icons',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.color_lens,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Theme Colour',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.format_paint,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Background Colour',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: fontData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(retrieveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.colorize,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Card Colour',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(retrieveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.local_offer,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                  color: iconLoaded ? iconData.color : Colors.red,
+                ),
+                title: Text(
+                    'Tags',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete(retrieveData);
                 },
               ),
               //sign out option
               ListTile(
                 leading: Icon(
                   Icons.exit_to_app,
-                  size: iconLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                  color: iconLoaded ? iconData.color : Colors.red,),
+                title: Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
                 ),
-                title: Text('Sign Out', style: TextStyle(fontSize: fontLoaded ? 20.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 20.0, fontFamily: fontLoaded ? fontData.font : "")),
-                onTap: () {
-                  signOut();
-                },
+                onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
               ),
             ],
           ),
@@ -460,7 +628,13 @@ class VirtualHardbackState extends State<VirtualHardback> {
         ] : <Widget>[
           IconButton(
             icon: Icon(Icons.note_add),
-            onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(subject: widget.subject, fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0)))).whenComplete(retrieveData);},
+            onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(
+                subject: widget.subject,
+                fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
+                backgroundColour: backgroundColour,
+                themeColour: themeColour,
+                cardColour: cardColour,
+            ))).whenComplete(retrieveData);},
           ),
           filterTag != "" ? IconButton(
             icon: Icon(Icons.close),
@@ -500,7 +674,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 //note container, which is 60% the size of the screen
                 height: MediaQuery.of(context).size.height * ((0.45 + (iconData.size/10) / iconData.size)) * ThemeCheck.orientatedScaleFactor(context),
                 alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
-                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context),)),
+                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
               ),
               new SizedBox(height: 15/iconData.size,),
               new Container(
@@ -551,7 +725,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
               new Container(
                 width: MediaQuery.of(context).size.width * 0.50,
                 alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
-                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context),)),
+                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
               ),
               new Flexible(
                   child: Container(
@@ -608,7 +782,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
           children: <Widget>[
             new Container(
                 margin: MediaQuery.of(context).padding,
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context),))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour)))
           ],
         ): new Container()
       ],
@@ -659,9 +833,20 @@ class VirtualHardbackState extends State<VirtualHardback> {
   void showErrorDialog()
   {
     AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again", style: TextStyle(fontFamily: fontData.font, fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),),),
+      backgroundColor: cardColour,
+      content: new Text("An Error has occured. Please try again", style: TextStyle(
+        fontFamily: fontData.font,
+        fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+        color: fontData.color
+      ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: fontData.font, fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),),))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text(
+          "OK", style: TextStyle(
+          fontFamily: fontData.font,
+          fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontWeight: FontWeight.bold,
+          color: themeColour
+        ),))
       ],
     );
 
@@ -670,12 +855,26 @@ class VirtualHardbackState extends State<VirtualHardback> {
 
   void deleteNoteDialog(Note note) {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to DELETE this Note?", style: TextStyle(fontFamily: fontData.font, fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context)),),
+      backgroundColor: cardColour,
+      content: new Text("Do you want to DELETE this Note?", style: TextStyle(
+          fontFamily: fontData.font,
+          fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          color: fontData.color
+      ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold, fontFamily: fontData.font),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(
+            fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: fontData.font,
+            color: themeColour
+        ),)),
         new FlatButton(onPressed: () {
           deleteNote(note);
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(
+          fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontWeight: FontWeight.bold,
+          fontFamily: fontData.font,
+          color: themeColour
+        ),)),
       ],
     );
 
@@ -688,46 +887,37 @@ class VirtualHardbackState extends State<VirtualHardback> {
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
       Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Deleted!', style: TextStyle(fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font),)));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text(
+        'Note Deleted!',
+        style: TextStyle(
+            fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: fontData.font,
+            color: fontData.color
+        ),)));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
     else{
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        backgroundColor: cardColour,
+        content: new Text("An Error has occured. Please try again", style: TextStyle(
+            fontFamily: fontData.font,
+            fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            color: fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+              fontFamily: fontData.font,
+              fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontWeight: FontWeight.bold,
+              color: themeColour
+          )))
         ],
       );
 
       showDialog(context: context, barrierDismissible: true, builder: (_) => responseDialog);
     }
-  }
-
-  //method to display sign out dialog that notifies user that they will be signed out, when OK is pressed, handle the sign out
-  void signOut()
-  {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontFamily: fontData.font, fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context))),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontFamily: fontData.font, fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context))))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => signOutDialog);
-  }
-
-  //clear relevant shared preference data
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-    //clear the widget stack and route user to the login page
-    Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
   }
 
   //method for uploading user chosen image
@@ -769,6 +959,9 @@ class VirtualHardbackState extends State<VirtualHardback> {
     showDialog(context: context, barrierDismissible: true, builder: (_) =>
     new TagFilterDialog(
         fontData: fontData,
+        backgroundColour: backgroundColour,
+        themeColour: themeColour,
+        cardColour: cardColour,
         parent: this,
         tagValues: tagValues,
         currentTag: filterTag,
@@ -778,6 +971,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
 
   void showTagList(List<String> tagValues){
     AlertDialog tags = new AlertDialog(
+      backgroundColor: cardColour,
       content: new Container(
         width: MediaQuery.of(context).size.width,
         child: new ListView.builder(
@@ -786,6 +980,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
           itemBuilder: (BuildContext ctxt, int index) {
             return new RadioListTile<String>(
               value: tagValues[index],
+              activeColor: themeColour,
               groupValue: filterTag == "" ? null : filterTag,
               title: Text(
                 tagValues[index], style: TextStyle(
@@ -808,7 +1003,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
       ),
     );
 
-    showDialog(context: context, barrierDismissible: false, builder: (_) => tags, );
+    showDialog(context: context, barrierDismissible: true, builder: (_) => tags, );
   }
   
   void filterByTag() async {

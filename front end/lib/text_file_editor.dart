@@ -17,7 +17,11 @@ class TextFileEditor extends StatefulWidget {
   final Subject subject;
   final FontData fontData;
 
-  TextFileEditor({Key key, this.note, this.subject, this.fontData}) : super(key: key);
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
+
+  TextFileEditor({Key key, this.note, this.backgroundColour, this.themeColour, this.cardColour, this.subject, this.fontData}) : super(key: key);
 
   @override
   TextFileEditorState createState() => TextFileEditorState();
@@ -103,10 +107,21 @@ class TextFileEditorState extends State<TextFileEditor> {
         },
         child: new Stack(children: <Widget>[
             Scaffold(
+                backgroundColor: widget.backgroundColour,
                 resizeToAvoidBottomPadding: true,
                 key: _scaffoldKey,
                 appBar: AppBar(
-                    title: new Text(title),
+                    backgroundColor: Color(int.tryParse(widget.subject.colour)),
+                    iconTheme: IconThemeData(
+                        color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
+                    ),
+                    title: new Text(
+                        title,
+                        style: TextStyle(
+                            fontFamily: widget.fontData.font,
+                            color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
+                        )
+                    ),
                     actions: <Widget>[
                       IconButton(
                           icon: Icon(Icons.home),
@@ -150,6 +165,7 @@ class TextFileEditorState extends State<TextFileEditor> {
                       new Expanded(
                           child: Container(
                               child: Card(
+                                  color: widget.cardColour,
                                   elevation: 18.0,
                                   child: new ZefyrScaffold(
                                       child: new ZefyrTheme(
@@ -163,8 +179,8 @@ class TextFileEditorState extends State<TextFileEditor> {
                                                 )
                                             ),
                                             toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
-                                                color: Theme.of(context).accentColor,
-                                                iconColor: Theme.of(context).canvasColor,
+                                                color: widget.themeColour,
+                                                iconColor: ThemeCheck.colorCheck(widget.themeColour),
                                                 disabledIconColor: Theme.of(context).disabledColor)
                                         ),
                                         child: ZefyrField(
@@ -203,6 +219,7 @@ class TextFileEditorState extends State<TextFileEditor> {
                               new Expanded(
                                   child: Container(
                                       child: Card(
+                                          color: widget.cardColour,
                                           elevation: 18.0,
                                           child: new ZefyrScaffold(
                                               child: new ZefyrTheme(
@@ -215,8 +232,8 @@ class TextFileEditorState extends State<TextFileEditor> {
                                                       )
                                                     ),
                                                     toolbarTheme: ZefyrToolbarTheme.fallback(context).copyWith(
-                                                        color: Theme.of(context).accentColor,
-                                                        iconColor: Theme.of(context).canvasColor,
+                                                        color: widget.themeColour,
+                                                        iconColor: ThemeCheck.colorCheck(widget.themeColour),
                                                         disabledIconColor: Theme.of(context).disabledColor)
                                                   ),
                                                   child: ZefyrField(
@@ -241,9 +258,9 @@ class TextFileEditorState extends State<TextFileEditor> {
                                 elevation: 3.0,
                                 onPressed: () => FocusScope.of(context).requestFocus(new FocusNode()),
                                 child: Align(alignment: Alignment.centerLeft, child: Text('Done', style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font))),
-                                color: Theme.of(context).errorColor,
+                                color: ThemeCheck.errorColorOfColor(widget.themeColour),
 
-                                textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
+                                textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(widget.themeColour)),
                               ),
                             )
                         ) : new Container()
@@ -255,7 +272,7 @@ class TextFileEditorState extends State<TextFileEditor> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(widget.themeColour)))
               ],
             ): new Container()
           ],
@@ -266,6 +283,7 @@ class TextFileEditorState extends State<TextFileEditor> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: widget.cardColour,
       content: new Text("Do you want to SAVE this Note?", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font)),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)),
@@ -292,9 +310,15 @@ class TextFileEditorState extends State<TextFileEditor> {
 
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Note?", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font)),
+        backgroundColor: widget.cardColour,
+        content: new Text("Do you want to SAVE this Note?", style: TextStyle(
+            fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(
+              fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.themeColour),)),
           new FlatButton(onPressed: () async {
             if (fileNameController.text == "") {
               showYouMustHaveFileNameDialog();
@@ -307,7 +331,12 @@ class TextFileEditorState extends State<TextFileEditor> {
               submit(false);
               return true;
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontWeight: FontWeight.bold,
+              fontFamily: widget.fontData.font,
+              color: widget.themeColour
+          ),)),
         ],
       );
 
@@ -320,7 +349,12 @@ class TextFileEditorState extends State<TextFileEditor> {
 
   void showYouMustHaveFileNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must have a Note Name", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font)),
+      backgroundColor: widget.cardColour,
+      content: new Text("You must have a Note Name", style: TextStyle(
+          fontFamily: widget.fontData.font,
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
         new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
       ],
@@ -349,6 +383,9 @@ class TextFileEditorState extends State<TextFileEditor> {
 
     showDialog(context: context, barrierDismissible: true, builder: (_) => new TextFileTagPickerDialog(
         fontData: widget.fontData,
+        backgroundColour: widget.backgroundColour,
+        themeColour: widget.themeColour,
+        cardColour: widget.cardColour,
         previousTag: previousTag,
         parent: this,
         tagValues: tagValues,
@@ -359,6 +396,7 @@ class TextFileEditorState extends State<TextFileEditor> {
 
   void showTagList(List<String> tagValues){
     AlertDialog tags = new AlertDialog(
+      backgroundColor: widget.cardColour,
       content: new Container(
         width: MediaQuery.of(context).size.width,
         child: new ListView.builder(
@@ -407,7 +445,11 @@ class TextFileEditorState extends State<TextFileEditor> {
 
     //if null, then the request was a success, retrieve the information
     if (response ==  "success"){
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Saved!', style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Saved!', style: TextStyle(
+          fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      ),)));
 
       currentlySaved = true;
 
@@ -419,9 +461,19 @@ class TextFileEditorState extends State<TextFileEditor> {
     else{
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured please try again"),
+        backgroundColor: widget.cardColour,
+        content: new Text("An error has occured please try again", style: TextStyle(
+            fontFamily: widget.fontData.font,
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(
+              fontFamily: widget.fontData.font,
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          )))
         ],
       );
 
@@ -431,7 +483,11 @@ class TextFileEditorState extends State<TextFileEditor> {
 
   void addTagToNote() async {
     if (widget.note == null) {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(
+          fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      ),)));
     }
     else {
       Map map = {"id": widget.note.id, "tag": currentTag, "subjectID": widget.subject.id};
@@ -443,15 +499,29 @@ class TextFileEditorState extends State<TextFileEditor> {
         setState(() {
           previousTag = currentTag;
         });
-        _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)));
+        _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(
+            fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        ),)));
       }
       //else the response ['response']  is not null, then print the error message
       else{
         //display alertdialog with the returned message
         AlertDialog responseDialog = new AlertDialog(
-          content: new Text("An error occured please try again"),
+          backgroundColor: widget.cardColour,
+          content: new Text("An error occured please try again", style: TextStyle(
+              fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.fontData.color
+          )),
           actions: <Widget>[
-            new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK"))
+            new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(
+                fontFamily: widget.fontData.font,
+                fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                fontWeight: FontWeight.bold,
+                color: widget.themeColour
+            )))
           ],
         );
 

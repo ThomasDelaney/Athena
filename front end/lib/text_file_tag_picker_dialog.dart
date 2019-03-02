@@ -11,7 +11,11 @@ class TextFileTagPickerDialog extends StatefulWidget {
   final List<String> tagValues;
   final TextFileEditorState parent;
 
-  TextFileTagPickerDialog({Key key, this.fontData, this.previousTag, this.parent, this.tagValues, this.currentTag}) : super(key: key);
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
+
+  TextFileTagPickerDialog({Key key, this.fontData, this.backgroundColour, this.themeColour, this.cardColour, this.previousTag, this.parent, this.tagValues, this.currentTag}) : super(key: key);
 
   @override
   _TextFileTagPickerDialogState createState() => _TextFileTagPickerDialogState();
@@ -31,6 +35,7 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
   Widget build(BuildContext context) {
     return new Center(
       child: new Card(
+        color: widget.cardColour,
         child: new Container(
           padding: EdgeInsets.symmetric(horizontal: 30.0*ThemeCheck.orientatedScaleFactor(context), vertical: 10*ThemeCheck.orientatedScaleFactor(context)),
           child: new Column(
@@ -84,9 +89,8 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
                             ),
                           )
                       ),
-                      color: Theme.of(context).errorColor,
-
-                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
+                      color: widget.themeColour,
+                      textColor: ThemeCheck.colorCheck(widget.themeColour),
                     ),
                   )
                 ],
@@ -137,9 +141,8 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
                             ),
                           )
                       ),
-                      color: Theme.of(context).errorColor,
-
-                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
+                      color: widget.themeColour,
+                      textColor: ThemeCheck.colorCheck(widget.themeColour),
                     ),
                   )
                 ],
@@ -154,7 +157,7 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
                         style: TextStyle(
                             fontSize: 18.0*widget.fontData.size,
                             fontFamily: widget.fontData.font,
-                            color: Theme.of(context).accentColor
+                            color: widget.themeColour
                         ),
                       )
                   ),
@@ -171,7 +174,7 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
                               fontSize: 18.0*widget.fontData.size,
                               fontFamily: widget.fontData.font,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).accentColor
+                              color: ThemeCheck.errorColorOfColor(widget.themeColour)
                           )
                       )
                   ),

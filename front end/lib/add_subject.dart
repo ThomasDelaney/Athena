@@ -133,8 +133,9 @@ class _AddSubjectState extends State<AddSubject> {
                               ),
                               decoration: InputDecoration(
                                   hintText: "Subject Name",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
-                                  border: UnderlineInputBorder()
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: widget.themeColour),
+                                  ),
                               ),
                             ),
                           ),
@@ -161,7 +162,7 @@ class _AddSubjectState extends State<AddSubject> {
                                                   children: <Widget>[
                                                     new SizedBox(height: 20.0,),
                                                     Text(
-                                                        'Select a Colour for the Font',
+                                                        'Select a Colour for the Subject',
                                                         style: TextStyle(
                                                             fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
                                                             color: widget.fontData.color,
@@ -254,7 +255,7 @@ class _AddSubjectState extends State<AddSubject> {
                                             )
                                         );},
                                     );},
-                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Font Colour', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font))),
+                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Subject Colour', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font))),
                                   color: currentColor != null ? currentColor : widget.themeColour,
 
                                   textColor: ThemeCheck.colorCheck(currentColor != null ? currentColor : widget.themeColour),
@@ -289,7 +290,7 @@ class _AddSubjectState extends State<AddSubject> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],
@@ -353,6 +354,7 @@ class _AddSubjectState extends State<AddSubject> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
+        backgroundColor: widget.cardColour,
         content: new Text(
           "Do you want to SAVE this Subject?",
           style: TextStyle(
@@ -367,7 +369,6 @@ class _AddSubjectState extends State<AddSubject> {
             style: TextStyle(
                 fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
                 fontFamily: widget.fontData.font,
-                fontWeight: FontWeight.bold,
                 color: widget.themeColour
               ),
             ),
@@ -406,6 +407,7 @@ class _AddSubjectState extends State<AddSubject> {
 
   void showYouMustHaveFileNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: widget.cardColour,
       content: new Text(
         "You must have a Subject Name",
         style: TextStyle(

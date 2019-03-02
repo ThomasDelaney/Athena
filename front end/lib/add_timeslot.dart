@@ -155,7 +155,6 @@ class _AddTimeslotState extends State<AddTimeslot> {
                                         )
                                     ),
                                     color: widget.themeColour,
-
                                     textColor: ThemeCheck.colorCheck(widget.themeColour),
                                   ),
                                 )
@@ -164,41 +163,54 @@ class _AddTimeslotState extends State<AddTimeslot> {
                           SizedBox(height: 10.0),
                           new Container(
                             margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: TextFormField(
-                              focusNode: roomFocusNode,
-                              keyboardType: TextInputType.text,
-                              autofocus: false,
-                              controller: roomController,
-                              style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
-                              onFieldSubmitted: (String value) {
-                                FocusScope.of(context).requestFocus(teacherFocusNode);
-                              },
-                              decoration: InputDecoration(
-                                  hintText: "What's the Room name?",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
-                                  border: UnderlineInputBorder(),
-
-                              ),
-                            ),
+                            child: Theme(
+                                data: ThemeData(
+                                  primaryColor: widget.themeColour,
+                                ),
+                                child: TextFormField(
+                                  focusNode: roomFocusNode,
+                                  keyboardType: TextInputType.text,
+                                  autofocus: false,
+                                  controller: roomController,
+                                  style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                  onFieldSubmitted: (String value) {
+                                    FocusScope.of(context).requestFocus(teacherFocusNode);
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: "What's the Room name?",
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(color: widget.themeColour),
+                                    ),
+                                  ),
+                                  cursorColor: widget.themeColour,
+                                ),
+                            )
                           ),
                           SizedBox(height: 20.0),
                           new Container(
                             margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: TextFormField(
-                              focusNode: teacherFocusNode,
-                              keyboardType: TextInputType.text,
-                              autofocus: false,
-                              controller: teacherController,
-                              style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
-                              onFieldSubmitted: (String value) {
-                                FocusScope.of(context).requestFocus(new FocusNode());
-                              },
-                              decoration: InputDecoration(
-                                  hintText: "What's the Teacher's name?",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
-                                  border: UnderlineInputBorder()
+                            child: Theme(
+                              data: ThemeData(
+                                primaryColor: widget.themeColour,
                               ),
-                            ),
+                              child: TextFormField(
+                                focusNode: teacherFocusNode,
+                                keyboardType: TextInputType.text,
+                                autofocus: false,
+                                controller: teacherController,
+                                style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                onFieldSubmitted: (String value) {
+                                  FocusScope.of(context).requestFocus(new FocusNode());
+                                },
+                                decoration: InputDecoration(
+                                  hintText: "What's the Teacher's name?",
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: widget.themeColour),
+                                  ),
+                                ),
+                                cursorColor: widget.themeColour,
+                              ),
+                            )
                           ),
                           SizedBox(height: 20.0),
                           new Container(
@@ -261,7 +273,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],

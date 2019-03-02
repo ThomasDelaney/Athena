@@ -10,7 +10,11 @@ class TagFilterDialog extends StatefulWidget {
   final List<String> tagValues;
   final VirtualHardbackState parent;
 
-  TagFilterDialog({Key key, this.fontData, this.parent, this.tagValues, this.currentTag}) : super(key: key);
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
+
+  TagFilterDialog({Key key, this.fontData, this.backgroundColour, this.themeColour, this.cardColour, this.parent, this.tagValues, this.currentTag}) : super(key: key);
 
   @override
   _TagFilterDialogState createState() => _TagFilterDialogState();
@@ -30,6 +34,7 @@ class _TagFilterDialogState extends State<TagFilterDialog> {
   Widget build(BuildContext context) {
     return new Center(
       child: new Card(
+        color: widget.cardColour,
         child: new Container(
           padding: EdgeInsets.symmetric(horizontal: 30.0*ThemeCheck.orientatedScaleFactor(context), vertical: 10*ThemeCheck.orientatedScaleFactor(context)),
           child: new Column(
@@ -53,6 +58,8 @@ class _TagFilterDialogState extends State<TagFilterDialog> {
                   new SizedBox(height: 20.0*ThemeCheck.orientatedScaleFactor(context),),
                   new ButtonTheme(
                     child: RaisedButton(
+                      color: widget.themeColour,
+                      textColor: ThemeCheck.colorCheck(widget.themeColour),
                       elevation: 3.0,
                       onPressed: () => widget.parent.showTagList(widget.tagValues),
                       child: Align(
@@ -68,9 +75,6 @@ class _TagFilterDialogState extends State<TagFilterDialog> {
                             ),
                           )
                       ),
-                      color: Theme.of(context).errorColor,
-
-                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
                     ),
                   )
                 ],
@@ -105,9 +109,8 @@ class _TagFilterDialogState extends State<TagFilterDialog> {
                             ),
                           )
                       ),
-                      color: Theme.of(context).errorColor,
-
-                      textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
+                      color: widget.themeColour,
+                      textColor: ThemeCheck.colorCheck(widget.themeColour),
                     ),
                   )
                 ],
@@ -123,7 +126,7 @@ class _TagFilterDialogState extends State<TagFilterDialog> {
                         style: TextStyle(
                             fontSize: 16.0*widget.fontData.size,
                             fontFamily: widget.fontData.font,
-                            color: Theme.of(context).accentColor
+                            color: widget.themeColour
                         ),
                       )
                   ),
@@ -141,7 +144,7 @@ class _TagFilterDialogState extends State<TagFilterDialog> {
                               fontSize: 16.0*widget.fontData.size,
                               fontFamily: widget.fontData.font,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).accentColor
+                              color: ThemeCheck.errorColorOfColor(widget.themeColour)
                           )
                       )
                   ),

@@ -124,8 +124,9 @@ class _AddHomeworkState extends State<AddHomework> {
                               ),
                               decoration: InputDecoration(
                                   hintText: "Homework Description",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: widget.themeColour),
-                                  border: UnderlineInputBorder()
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: widget.themeColour),
+                                  ),
                               ),
                             ),
                           ),
@@ -191,7 +192,7 @@ class _AddHomeworkState extends State<AddHomework> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],

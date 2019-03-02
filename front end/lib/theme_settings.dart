@@ -80,7 +80,7 @@ class _ThemeSettingsState extends State<ThemeSettings> {
                   iconTheme: IconThemeData(
                       color: loaded ? ThemeCheck.colorCheck(currentColour) : Colors.white
                   ),
-                  backgroundColor: currentColour,
+                  backgroundColor: loaded ? currentColour : Color.fromRGBO(113, 180, 227, 1),
                   title: new Text("Theme Colour Settings", style: TextStyle(fontFamily: widget.fontData.font, color: loaded ? ThemeCheck.colorCheck(currentColour) : Colors.white),),
                   actions: <Widget>[
                     IconButton(
@@ -141,7 +141,12 @@ class _ThemeSettingsState extends State<ThemeSettings> {
                                                           viewportFraction: 0.99999,
                                                           scale: 0.9,
                                                           pagination: new SwiperPagination(
-                                                            builder: SwiperPagination.dots,
+                                                              builder: DotSwiperPaginationBuilder(
+                                                                  size: 20.0,
+                                                                  activeSize: 20.0,
+                                                                  space: 10.0,
+                                                                  activeColor: oldColour
+                                                              )
                                                           ),
                                                           scrollDirection: Axis.horizontal,
                                                           control: SwiperControl(
@@ -275,9 +280,26 @@ class _ThemeSettingsState extends State<ThemeSettings> {
                       )
                     ],
                   ),
-                ) : new Container()
+                ) : new Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      new Container(
+                          margin: MediaQuery.of(context).viewInsets,
+                          child: new Stack(
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                new Container(
+                                  child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                                ),
+                                new ModalBarrier(color: Colors.black54, dismissible: false,),
+                              ]
+                          )
+                      ),
+                      new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
+                    ]
+                )
             ),
-            submitting || !loaded ? new Stack(
+            submitting ? new Stack(
               alignment: Alignment.center,
               children: <Widget>[
                 new Container(
@@ -318,16 +340,17 @@ class _ThemeSettingsState extends State<ThemeSettings> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to change your Theme Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font),),
+        backgroundColor: widget.cardColour,
+        content: new Text("Do you want to change your Theme Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: oldColour,),)),
           new FlatButton(onPressed: () async {
             submit(true);
             Navigator.pop(context);
             await putThemeColour();
             submit(false);
             Navigator.pop(context);
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font),)),
+          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font, color: oldColour),)),
         ],
       );
 
@@ -341,16 +364,17 @@ class _ThemeSettingsState extends State<ThemeSettings> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to change your Theme Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font),),
+      backgroundColor: widget.cardColour,
+      content: new Text("Do you want to change your Theme Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: oldColour),)),
         new FlatButton(onPressed: () async {
           submit(true);
           Navigator.pop(context);
           await putThemeColour();
           submit(false);
           Navigator.pop(context);
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font, color: oldColour),)),
       ],
     );
 
@@ -372,9 +396,10 @@ class _ThemeSettingsState extends State<ThemeSettings> {
     submit(false);
 
     AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font)),
+      backgroundColor: widget.cardColour,
+      content: new Text("An Error has occured. Please try again", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color)),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font)))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font, color: oldColour)))
       ],
     );
 
@@ -385,9 +410,10 @@ class _ThemeSettingsState extends State<ThemeSettings> {
   void signOut()
   {
     AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font)),
+      backgroundColor: widget.cardColour,
+      content: new Text("You are about to be Signed Out", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color)),
       actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font)))
+        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font, color: oldColour)))
       ],
     );
 

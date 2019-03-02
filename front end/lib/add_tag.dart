@@ -1,3 +1,5 @@
+import 'package:Athena/font_data.dart';
+import 'package:Athena/subject.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/theme_check.dart';
@@ -6,9 +8,14 @@ import 'request_manager.dart';
 
 class AddTag extends StatefulWidget {
 
-  AddTag({Key key, this.tag}) : super(key: key);
+  AddTag({Key key, this.tag, this.fontData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
 
   final Tag tag;
+  final FontData fontData;
+
+  final Color backgroundColour;
+  final Color cardColour;
+  final Color themeColour;
 
   @override
   _AddTagState createState() => _AddTagState();
@@ -76,8 +83,17 @@ class _AddTagState extends State<AddTag> {
           children: <Widget>[
             Scaffold(
               resizeToAvoidBottomPadding: false,
+              backgroundColor: widget.backgroundColour,
               appBar: new AppBar(
-                title: widget.tag == null ? new Text("Add a New Tag") : new Text(widget.tag.tag),
+                title: widget.tag == null ? new Text("Add a New Tag", style: TextStyle(
+                    fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
+                    fontFamily: widget.fontData.font,
+                    color: ThemeCheck.colorCheck(widget.themeColour)
+                )) : new Text(widget.tag.tag),
+                backgroundColor: widget.themeColour,
+                iconTheme: IconThemeData(
+                    color: ThemeCheck.colorCheck(widget.themeColour)
+                ),
                 actions: <Widget>[
                   IconButton(
                       icon: Icon(Icons.home),
@@ -90,6 +106,7 @@ class _AddTagState extends State<AddTag> {
                 children: <Widget>[
                   SizedBox(height: 20.0),
                   new Card(
+                      color: widget.cardColour,
                       margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                       elevation: 3.0,
                       child: new Column(
@@ -101,11 +118,16 @@ class _AddTagState extends State<AddTag> {
                               keyboardType: TextInputType.text,
                               autofocus: false,
                               controller: tagController,
-                              style: TextStyle(fontSize: 24.0),
+                              style: TextStyle(
+                                  fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                  fontFamily: widget.fontData.font,
+                                  color: widget.fontData.color
+                              ),
                               decoration: InputDecoration(
                                   hintText: "Tag",
-                                  labelStyle: Theme.of(context).textTheme.caption.copyWith(color: Theme.of(context).accentColor),
-                                  border: UnderlineInputBorder()
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: widget.themeColour),
+                                  ),
                               ),
                             ),
                           ),
@@ -121,10 +143,10 @@ class _AddTagState extends State<AddTag> {
                         child: RaisedButton(
                           elevation: 3.0,
                           onPressed: showAreYouSureDialog,
-                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0))),
-                          color: Theme.of(context).errorColor,
+                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                          color: widget.themeColour,
 
-                          textColor: ThemeCheck.colorCheck(Theme.of(context).errorColor),
+                          textColor: ThemeCheck.colorCheck(widget.themeColour),
                         ),
                       )
                   )
@@ -136,7 +158,7 @@ class _AddTagState extends State<AddTag> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],
@@ -147,9 +169,18 @@ class _AddTagState extends State<AddTag> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to ADD this Tag to your Tags?", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: widget.cardColour,
+      content: new Text("Do you want to ADD this Tag to your Tags?", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.themeColour
+        ),)),
         new FlatButton(onPressed: () async {
 
           submit(true);
@@ -176,7 +207,12 @@ class _AddTagState extends State<AddTag> {
               submit(false);
             }
           }
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -186,9 +222,18 @@ class _AddTagState extends State<AddTag> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to SAVE this Tag?", /*style: TextStyle(fontFamily: font),*/),
+        backgroundColor: widget.cardColour,
+        content: new Text("Do you want to SAVE this Tag?", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              color: widget.themeColour
+          ),)),
           new FlatButton(onPressed: () async {
 
             submit(true);
@@ -211,7 +256,12 @@ class _AddTagState extends State<AddTag> {
               submit(false);
               Navigator.pop(context, true);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          ),)),
         ],
       );
 
@@ -224,9 +274,19 @@ class _AddTagState extends State<AddTag> {
 
   void showYouMustHaveTagDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You must have a Tag", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: widget.cardColour,
+      content: new Text("You must have a Tag", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -235,9 +295,19 @@ class _AddTagState extends State<AddTag> {
 
   void showDuplicateTagDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("You Already Have a Tag with this Name", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: widget.cardColour,
+      content: new Text("You Already Have a Tag with this Name", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -255,9 +325,19 @@ class _AddTagState extends State<AddTag> {
     if (response !=  "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occurred. Please try again"),
+        backgroundColor: widget.cardColour,
+        content: new Text("An error has occurred. Please try again", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),))
+          new FlatButton(onPressed: () {Navigator.pop(context); submit(false);}, child: new Text("OK", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          ),))
         ],
       );
 

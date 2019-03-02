@@ -175,7 +175,7 @@ class _TestResultsState extends State<TestResults> {
                         children: <Widget>[
                           new Text("Add Test Results By Using the", textAlign: TextAlign.center, style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color,), ),
                           new SizedBox(height: 10.0,),
-                          new Icon(Icons.add_circle, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: Colors.grey,),
+                          new Icon(Icons.add_circle, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,),
                         ]
                     ),
                   ),
@@ -526,6 +526,7 @@ class _TestResultsState extends State<TestResults> {
     else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
+        backgroundColor: cardColour,
         content: new Text("An error has occured please try again", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color)),
         actions: <Widget>[
           new FlatButton(onPressed: () {
@@ -542,6 +543,7 @@ class _TestResultsState extends State<TestResults> {
 
   void deleteTestResultDialog(TestResult result) {
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: cardColour,
       content: new Text("Do you want to DELETE this Test Result?", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
       actions: <Widget>[
         new FlatButton(onPressed: () {

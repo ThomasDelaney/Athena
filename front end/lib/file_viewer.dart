@@ -19,7 +19,7 @@ import 'subject.dart';
 //Widget that displays an interactive file list
 class FileViewer extends StatefulWidget
 {
-  FileViewer({Key key, this.list, this.i, this.subject, this.fromTagMap, this.fontData, this.iconData}) : super(key: key);
+  FileViewer({Key key, this.list, this.i, this.subject, this.fromTagMap, this.fontData, this.iconData, this.backgroundColour, this.cardColour, this.themeColour}) : super(key: key);
 
   //list of file URLS
   final List<SubjectFile> list;
@@ -31,6 +31,10 @@ class FileViewer extends StatefulWidget
   final FontData fontData;
 
   final AthenaIconData iconData;
+
+  final Color cardColour;
+  final Color backgroundColour;
+  final Color themeColour;
 
   //current selected index (passed in from page in which it was invoked)
   final int i;
@@ -123,6 +127,8 @@ class FileViewerState extends State<FileViewer>
                       : FileTypeManger.getFileTypeFromURL(
                         widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "audio" ?
                         new AudioManager(
+                          themeColour: widget.themeColour,
+                          cardColour: widget.cardColour,
                           iconData: widget.iconData,
                           fontData: widget.fontData,
                           subjectFile: widget.fromTagMap == null ? widget.list[index] : widget.fromTagMap.values.elementAt(index),

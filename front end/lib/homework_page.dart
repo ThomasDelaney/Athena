@@ -542,6 +542,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
+        backgroundColor: cardColour,
         content: new Text("An error has occured please try again", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color)),
         actions: <Widget>[
           new FlatButton(onPressed: () {
@@ -558,6 +559,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
 
   void deleteHomeworkDialog(Homework homework) {
     AlertDialog areYouSure = new AlertDialog(
+      backgroundColor: cardColour,
       content: new Text("Do you want to DELETE this Homework?",  style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
       actions: <Widget>[
         new FlatButton(onPressed: () {

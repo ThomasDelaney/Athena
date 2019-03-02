@@ -138,7 +138,12 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
                                                           viewportFraction: 0.99999,
                                                           scale: 0.9,
                                                           pagination: new SwiperPagination(
-                                                            builder: SwiperPagination.dots,
+                                                              builder: DotSwiperPaginationBuilder(
+                                                                  size: 20.0,
+                                                                  activeSize: 20.0,
+                                                                  space: 10.0,
+                                                                  activeColor: widget.themeColour
+                                                              )
                                                           ),
                                                           scrollDirection: Axis.horizontal,
                                                           control: SwiperControl(
@@ -272,9 +277,26 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
                       )
                     ],
                   ),
-                ) : new Container()
+                ) : new Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      new Container(
+                          margin: MediaQuery.of(context).viewInsets,
+                          child: new Stack(
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                new Container(
+                                  child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                                ),
+                                new ModalBarrier(color: Colors.black54, dismissible: false,),
+                              ]
+                          )
+                      ),
+                      new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
+                    ]
+                )
             ),
-            submitting || !loaded ? new Stack(
+            submitting ? new Stack(
               alignment: Alignment.center,
               children: <Widget>[
                 new Container(
@@ -315,16 +337,17 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
-        content: new Text("Do you want to change your Background Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font),),
+        backgroundColor: widget.cardColour,
+        content: new Text("Do you want to change your Background Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold,),)),
+          new FlatButton(onPressed: () => Navigator.pop(context, true), child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.themeColour,),)),
           new FlatButton(onPressed: () async {
             submit(true);
             Navigator.pop(context);
             await putBackgroundColour();
             submit(false);
             Navigator.pop(context);
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font),)),
+          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, color: widget.themeColour, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold),)),
         ],
       );
 
@@ -338,16 +361,17 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
   void showAreYouSureDialog() {
 
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to change your Background Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font),),
+      backgroundColor: widget.cardColour,
+      content: new Text("Do you want to change your Background Colour?", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.themeColour,),)),
         new FlatButton(onPressed: () async {
           submit(true);
           Navigator.pop(context);
           await putBackgroundColour();
           submit(false);
           Navigator.pop(context);
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, color: widget.themeColour, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold),)),
       ],
     );
 
@@ -369,37 +393,13 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
     submit(false);
 
     AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font)),
+      backgroundColor: widget.cardColour,
+      content: new Text("An Error has occured. Please try again", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color)),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font)))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, color: widget.themeColour, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold)))
       ],
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
-  }
-
-  //method which displays a dialog telling the user that they are about to be signed out, if they press okay then handle the sign out
-  void signOut()
-  {
-    AlertDialog signOutDialog = new AlertDialog(
-      content: new Text("You are about to be Signed Out", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font)),
-      actions: <Widget>[
-        new FlatButton(onPressed: () => handleSignOut(), child: new Text("OK", style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontWeight: FontWeight.bold, fontFamily: widget.fontData.font)))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => signOutDialog);
-  }
-
-  //clear shared preference information and route user back to the log in page
-  void handleSignOut() async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove("name");
-    await prefs.remove("id");
-    await prefs.remove("refreshToken");
-
-
-    Navigator.pushNamedAndRemoveUntil(context, LoginPage.routeName, (Route<dynamic> route) => false);
   }
 }

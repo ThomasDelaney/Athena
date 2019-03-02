@@ -7,12 +7,14 @@ import 'subject_file.dart';
 import 'package:marquee/marquee.dart';
 
 class AudioManager extends StatefulWidget {
-  AudioManager({Key key, this.subjectFile, this.audioPlayer, this.fontData, this.iconData}) : super(key: key);
+  AudioManager({Key key, this.subjectFile, this.audioPlayer, this.fontData, this.iconData, this.cardColour, this.themeColour}) : super(key: key);
 
   final SubjectFile subjectFile;
   final AudioPlayer audioPlayer;
   final FontData fontData;
   final AthenaIconData iconData;
+  final Color cardColour;
+  final Color themeColour;
 
   @override
   _AudioManagerState createState() => _AudioManagerState();
@@ -152,6 +154,7 @@ class _AudioManagerState extends State<AudioManager> {
               width: MediaQuery.of(context).size.width ,
               height: MediaQuery.of(context).size.height,
               child: Card (
+                color: widget.cardColour,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -199,7 +202,8 @@ class _AudioManagerState extends State<AudioManager> {
                                 ),
                                 new Flexible(
                                     child: Slider(
-                                        activeColor: Colors.red,
+                                        activeColor: widget.themeColour,
+                                        inactiveColor: ThemeCheck.lightColorOfColor(widget.themeColour),
                                         value:  maxSize != null ? ((currentProgress/maxSize) * 100.0) / 100.0 : 0.0,
                                         onChanged: (double value) {
                                           setState(() {
@@ -220,7 +224,7 @@ class _AudioManagerState extends State<AudioManager> {
                                       textAlign: TextAlign.center,
                                     )
                                 ):
-                                new Container(child: new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context), height: 15.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(),),)
+                                new Container(child: new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context), height: 15.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(widget.themeColour)),),)
                               ],
                             )
                         )
