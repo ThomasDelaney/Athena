@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:Athena/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/class_material.dart';
@@ -66,6 +67,8 @@ class RequestManager
   final String getBackgroundColourUrl = url+"/getBackgroundColour";
   final String putThemeColourUrl = url+"/putThemeColour";
   final String getThemeColourUrl = url+"/getThemeColour";
+  final String putIsDyslexiaModeEnabledUrl = url+"/setIsDyslexiaModeEnabled";
+  final String getIsDyslexiaModeEnabledUrl = url+"/getIsDyslexiaModeEnabled";
 
   Dio dio = new Dio();
 
@@ -217,7 +220,19 @@ class RequestManager
     }
 
     await prefs.setString("font", data.font);
-    await prefs.setInt("fontColour", data.color.value);
+
+    if (!await getDyslexiaFriendlyModeEnabled()){
+      await prefs.setInt("fontColour", data.color.value);
+    }else{
+      if(await prefs.getInt("fontColour") != null){
+        data.color = await Color(prefs.getInt("fontColour"));
+      }
+      else{
+        await prefs.setInt("fontColour", Colors.black.value);
+        data.color = await Color(prefs.getInt("fontColour"));
+      }
+    }
+
     await prefs.setDouble("fontSize", data.size);
 
     return data;
@@ -282,7 +297,18 @@ class RequestManager
       );
     }
 
-    await prefs.setInt("iconColour", data.color.value);
+    if (!await getDyslexiaFriendlyModeEnabled()){
+      await prefs.setInt("iconColour", data.color.value);
+    }else{
+      if(await prefs.getInt("iconColour") != null){
+        data.color = await Color(prefs.getInt("iconColour"));
+      }
+      else{
+        await prefs.setInt("iconColour", Colors.black.value);
+        data.color = await Color(prefs.getInt("iconColour"));
+      }
+    }
+
     await prefs.setDouble("iconSize", data.size);
 
     return data;
@@ -338,7 +364,71 @@ class RequestManager
       data = Colors.white;
     }
 
-    await prefs.setInt("cardColour", data.value);
+    if (!await getDyslexiaFriendlyModeEnabled()){
+      await prefs.setInt("cardColour", data.value);
+    }else{
+      if(await prefs.getInt("cardColour") != null){
+        data = await Color(prefs.getInt("cardColour"));
+      }else{
+        await prefs.setInt("cardColour", Color.fromRGBO(242, 227, 198, 1).value);
+        data = await Color(prefs.getInt("cardColour"));
+      }
+    }
+
+    return data;
+  }
+
+  //method to submit the new font
+  Future<String> putDyslexiaFriendlyModeEnabled(bool enabled) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //create form data for the request, with the new font
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "dyslexiaFriendlyEnabled": enabled.toString(),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putIsDyslexiaModeEnabledUrl, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        await prefs.setBool("dyslexiaFriendlyEnabled", enabled);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<bool> getDyslexiaFriendlyModeEnabled() async
+  {
+    bool data;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user images
+    Response response = await dio.get(getIsDyslexiaModeEnabledUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['data'] != null) {
+
+      data = response.data['data'].toLowerCase() == 'true';
+    }else{
+      data = false;
+    }
+
+    await prefs.setBool("dyslexiaFriendlyEnabled", data);
 
     return data;
   }
@@ -393,7 +483,16 @@ class RequestManager
       data = Colors.white;
     }
 
-    await prefs.setInt("backgroundColour", data.value);
+    if (!await getDyslexiaFriendlyModeEnabled()){
+      await prefs.setInt("backgroundColour", data.value);
+    }else{
+      if(await prefs.getInt("backgroundColour") != null){
+        data = await Color(prefs.getInt("backgroundColour"));
+      }else{
+        await prefs.setInt("backgroundColour", ThemeCheck.errorColorOfColor(Color.fromRGBO(242, 227, 198, 1)).value);
+        data = await Color(prefs.getInt("backgroundColour"));
+      }
+    }
 
     return data;
   }
@@ -448,7 +547,16 @@ class RequestManager
       data = Colors.white;
     }
 
-    await prefs.setInt("themeColour", data.value);
+    if (!await getDyslexiaFriendlyModeEnabled()){
+      await prefs.setInt("themeColour", data.value);
+    }else{
+      if(await prefs.getInt("themeColour") != null){
+        data = await Color(prefs.getInt("themeColour"));
+      }else{
+        await prefs.setInt("themeColour", Color.fromRGBO(113, 180, 227, 1).value);
+        data = await Color(prefs.getInt("themeColour"));
+      }
+    }
 
     return data;
   }

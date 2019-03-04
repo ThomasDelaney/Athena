@@ -1,3 +1,4 @@
+import 'package:Athena/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'dart:async';
@@ -55,67 +56,77 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context){
 
     //text input field for the user's email
-    final email = new TextFormField(
-      keyboardType: TextInputType.emailAddress,
-      autofocus: false,
+    final email = Theme(
+        data: ThemeData(
+            highlightColor: Color.fromRGBO(94, 185, 255, 1)
+        ),
+        child: new TextFormField(
+          keyboardType: TextInputType.emailAddress,
+          autofocus: false,
 
-      focusNode: emailFocusNode,
+          focusNode: emailFocusNode,
 
-      onFieldSubmitted: (String value) {
-        FocusScope.of(context).requestFocus(passwordFocusNode);
-      },
+          onFieldSubmitted: (String value) {
+            FocusScope.of(context).requestFocus(passwordFocusNode);
+          },
 
-      onEditingComplete: () {
-        setState(() {
-          emailHint = "Email";
-        });
-      },
+          onEditingComplete: () {
+            setState(() {
+              emailHint = "Email";
+            });
+          },
 
-      controller: emailController,
-      decoration: InputDecoration(
-        hintText: emailHint,
-        labelText: "Email",
-        contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.zero
+          controller: emailController,
+          decoration: InputDecoration(
+              hintText: emailHint,
+              labelText: "Email",
+              contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+              )
+          ),
         )
-      ),
     );
 
     //text input field for the user's password
-    final password = new TextFormField(
-      autofocus: false,
-      focusNode: passwordFocusNode,
-      controller: passwordController,
-      obscureText: true,
+    final password = new Theme(
+        data: ThemeData(
+          highlightColor: Color.fromRGBO(94, 185, 255, 1)
+        ),
+        child: new TextFormField(
+          autofocus: false,
+          focusNode: passwordFocusNode,
+          controller: passwordController,
+          obscureText: true,
 
-      onFieldSubmitted: (String value) {
-        FocusScope.of(context).requestFocus(new FocusNode());
-      },
+          onFieldSubmitted: (String value) {
+            FocusScope.of(context).requestFocus(new FocusNode());
+          },
 
-      onEditingComplete: () {
-        setState(() {
-          passHint = "Password";
-        });
-      },
+          onEditingComplete: () {
+            setState(() {
+              passHint = "Password";
+            });
+          },
 
-      decoration: InputDecoration(
-          labelText: "Password",
-          hintText: passHint,
-          contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero
-          )
-      ),
+          decoration: InputDecoration(
+              labelText: "Password",
+              hintText: passHint,
+              contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.zero
+              )
+          ),
+        )
     );
 
     //button to submit the log in details
     final loginButton = ButtonTheme(
         minWidth: MediaQuery.of(context).size.width * 0.95,
-        height: 46.0,
+        height: 50.0*ThemeCheck.orientatedScaleFactor(context),
         child: new RaisedButton(
-          child: new Text("Login", style: new TextStyle(color: Colors.white, fontSize: 20.0)),
-          color: Colors.redAccent,
+          child: new Text("Login", style: new TextStyle(color: Colors.white, fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context))),
+          color: ThemeCheck.errorColorOfColor(Color.fromRGBO(94, 185, 255, 1)),
           onPressed: () => signInUser(emailController.text, passwordController.text)
         )
     );
@@ -123,62 +134,65 @@ class _LoginPageState extends State<LoginPage> {
     final newUser = Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget> [
-          Text("New User?", style: TextStyle(color: Colors.grey, fontSize: 20.0, fontWeight: FontWeight.bold)),
+          Text("New User?", style: TextStyle(color: Colors.grey, fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold)),
           Container(
               padding: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
               child: GestureDetector(
-                child: Text("Sign Up!", style: TextStyle(color: Colors.red, fontSize: 20.0, fontWeight: FontWeight.bold)),
+                child: Text("Sign Up!", style: TextStyle(color: ThemeCheck.errorColorOfColor(Color.fromRGBO(94, 185, 255, 1)), fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold)),
                 onTap: () => receiveUserData(),
               )
           ),
         ],
     );
 
-    final forgot = Container(alignment: Alignment.centerRight, child: Text("Forgot Password?", style: TextStyle(color: Colors.grey, fontSize: 20.0, fontWeight: FontWeight.bold),));
+    final forgot = Container(alignment: Alignment.centerRight, child: Text("Forgot Password?", style: TextStyle(color: Colors.grey, fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold),));
 
     //scaffold to encapsulate all the widgets
     return new Scaffold(
           key: _scaffoldKey,
           appBar: new AppBar(
-          title: new Text(widget.pageTitle),
+            backgroundColor: Color.fromRGBO(94, 185, 255, 1),
+            title: new Text(widget.pageTitle),
           ),
-          body: new Center(
-            child: SingleChildScrollView(
-              child: new Stack(
-                children: <Widget>[
-                  new Container(
+          body: new Stack(
+            children: <Widget>[
+              new Center(
+                child: SingleChildScrollView(
+                  child: Container(
                     padding: EdgeInsets.only(left: 25.0, right: 25.0),
                     child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
+                        new Container(
+                          child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                        ),
+                        SizedBox(height: 75.0*ThemeCheck.orientatedScaleFactor(context)),
                         email,
-                        SizedBox(height: 30.0),
+                        SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
                         password,
-                        SizedBox(height: 30.0),
+                        SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
                         forgot,
-                        SizedBox(height: 30.0),
+                        SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
                         loginButton,
-                        SizedBox(height: 30.0),
+                        SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
                         newUser,
                       ],
                     ),
                   ),
-                  new Container(
-                    //if submitting font, show a circular progress indicator, with a modal barrier which ensures the user cannot interact with the app while submitting
-                      alignment: Alignment.center,
-                      child: signingIn ? new Stack(
-                        alignment: Alignment.center,
-                        children: <Widget>[
-                          new Container(
-                              margin: MediaQuery.of(context).padding,
-                              child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
-                        ],
-                      )
-                          : new Container()
-                  ),
-                ],
+                ),
               ),
-            ),
+              signingIn ? new Container(
+                height: MediaQuery.of(context).size.height,
+                child: new Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    new Container(
+                        child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(ThemeCheck.errorColorOfColor(Color.fromRGBO(94, 185, 255, 1)))))
+                  ],
+                ),
+              )
+              : new Container()
+            ],
           )
         );
     }
@@ -228,9 +242,9 @@ class _LoginPageState extends State<LoginPage> {
 
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        content: new Text(response['error']['response'], style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context),),),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context), child: new Text("OK"))
+          new FlatButton(onPressed: () => Navigator.pop(context), child: new Text("OK", style: TextStyle(color: Color.fromRGBO(94, 185, 255, 1), fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold),))
         ],
       );
 

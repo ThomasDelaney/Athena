@@ -147,149 +147,6 @@ class _IconSettingsState extends State<IconSettings> {
             Scaffold(
                 backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
                 key: _scaffoldKey,
-                endDrawer: new Drawer(
-                  child: new Container(
-                    color: cardColour,
-                    child: ListView(
-                      //Remove any padding from the ListView.
-                      padding: EdgeInsets.zero,
-                      children: <Widget>[
-                        //drawer header
-                        DrawerHeader(
-                          child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
-                          decoration: BoxDecoration(
-                            color: themeColour,
-                          ),
-                        ),
-                        //fonts option
-                        ListTile(
-                          leading: Icon(
-                            Icons.font_download,
-                            size: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 20.0,
-                            color: loaded ? oldData.color : Colors.red,
-                          ),
-                          title: Text(
-                              'Fonts',
-                              style: TextStyle(
-                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                                fontFamily: fontLoaded ? fontData.font : "",
-                                color: fontLoaded ? fontData.color : Colors.black,
-                              )
-                          ),
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
-                          },
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.insert_emoticon,
-                            size: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0,
-                            color: loaded ? oldData.color : Colors.red,
-                          ),
-                          title: Text(
-                              'Icons',
-                              style: TextStyle(
-                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                                fontFamily: fontLoaded ? fontData.font : "",
-                                color: fontLoaded ? fontData.color : Colors.black,
-                              )
-                          ),
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
-                          },
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.color_lens,
-                            size: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 20.0,
-                            color: loaded ? oldData.color : Colors.red,
-                          ),
-                          title: Text(
-                              'Theme Colour',
-                              style: TextStyle(
-                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                                fontFamily: fontLoaded ? fontData.font : "",
-                                color: fontLoaded ? fontData.color : Colors.black,
-                              )
-                          ),
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(retrieveData);
-                          },
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.format_paint,
-                            size: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 20.0,
-                            color: loaded ? oldData.color : Colors.red,
-                          ),
-                          title: Text(
-                              'Background Colour',
-                              style: TextStyle(
-                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                                fontFamily: fontLoaded ? fontData.font : "",
-                                color: fontLoaded ? fontData.color : Colors.black,
-                              )
-                          ),
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: fontData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(retrieveData);
-                          },
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.colorize,
-                            size: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 20.0,
-                            color: loaded ? oldData.color : Colors.red,
-                          ),
-                          title: Text(
-                              'Card Colour',
-                              style: TextStyle(
-                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                                fontFamily: fontLoaded ? fontData.font : "",
-                                color: fontLoaded ? fontData.color : Colors.black,
-                              )
-                          ),
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(retrieveData);
-                          },
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.local_offer,
-                            size: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0,
-                            color: loaded ? oldData.color : Colors.red,
-                          ),
-                          title: Text(
-                              'Tags',
-                              style: TextStyle(
-                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                                fontFamily: fontLoaded ? fontData.font : "",
-                                color: fontLoaded ? fontData.color : Colors.black,
-                              )
-                          ),
-                          onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
-                          },
-                        ),
-                        //sign out option
-                        ListTile(
-                          leading: Icon(
-                            Icons.exit_to_app,
-                            size: loaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*oldData.size : 24.0,
-                            color: loaded ? oldData.color : Colors.red,),
-                          title: Text(
-                              'Sign Out',
-                              style: TextStyle(
-                                fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                                fontFamily: fontLoaded ? fontData.font : "",
-                                color: fontLoaded ? fontData.color : Colors.black,
-                              )
-                          ),
-                          onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 appBar: new AppBar(
                   iconTheme: IconThemeData(
                       color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
@@ -312,12 +169,6 @@ class _IconSettingsState extends State<IconSettings> {
                     IconButton(
                       icon: Icon(Icons.mic),
                       onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
-                    ),
-                    Builder(
-                      builder: (context) => IconButton(
-                        icon: Icon(Icons.settings),
-                        onPressed: () => Scaffold.of(context).openEndDrawer(),
-                      ),
                     ),
                   ],
                 ),
@@ -396,7 +247,12 @@ class _IconSettingsState extends State<IconSettings> {
                                                             viewportFraction: 0.99999,
                                                             scale: 0.9,
                                                             pagination: new SwiperPagination(
-                                                              builder: SwiperPagination.dots,
+                                                                builder: DotSwiperPaginationBuilder(
+                                                                    size: 20.0,
+                                                                    activeSize: 20.0,
+                                                                    space: 10.0,
+                                                                    activeColor: themeColour
+                                                                )
                                                             ),
                                                             scrollDirection: Axis.horizontal,
                                                             control: SwiperControl(

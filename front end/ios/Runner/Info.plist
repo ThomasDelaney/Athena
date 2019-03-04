@@ -28,8 +28,6 @@
 	<string>Main</string>
 	<key>NSCameraUsageDescription</key>
     <string>To be used to take photos or videos</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>To record audio for videos</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>To choose pictures from the library</string>
     <key>NSMicrophoneUsageDescription</key>
@@ -53,10 +51,10 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-</dict>
-<key>NSAppTransportSecurity</key>
-<dict>
-  <key>NSAllowsArbitraryLoads</key>
-  <true/>
+	<key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSAllowsArbitraryLoads</key>
+      <true/>
+    </dict>
 </dict>
 </plist>

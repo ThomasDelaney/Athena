@@ -46,8 +46,22 @@ def register_user():
             "secondName": request.form['secondName']
         }
 
+
         # upload their first name and second name to the database
         results = db.child("users").child(user['localId']).child("userDetails").set(data, user['idToken'])
+
+        """
+        #add initial colour settings
+        fontData = {
+            "font": 'request.form['font']',
+            "fontColour": request.form['fontColour'],
+            "fontSize": request.form['fontSize']
+        }
+
+        # set posted font under the design node
+        result = db.child("users").child(user['userId']).child("design").child("font").set(data, user['idToken'])
+		
+		"""
         # return success message
         return jsonify(message="User Created Successfully")
     # catch exception and handle error
@@ -363,6 +377,42 @@ def put_card_colour():
 
         # set posted font under the design node
         result = db.child("users").child(user['userId']).child("design").child("cardColour").set(request.form['cardColour'], user['idToken'])
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to get card colour
+@app.route('/getIsDyslexiaModeEnabled', methods=['GET'])
+def get_is_dyslexia_mode_enabled():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.args['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("design").child("dyslexiaFriendlyEnabled").get(user['idToken'])
+        # return refresh token if successfull
+        return jsonify(data=result.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+# route to get card colour
+@app.route('/setIsDyslexiaModeEnabled', methods=['POST'])
+def set_is_dyslexia_mode_enabled():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("design").child("dyslexiaFriendlyEnabled").set(request.form['dyslexiaFriendlyEnabled'], user['idToken'])
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
     except requests.exceptions.HTTPError as e:

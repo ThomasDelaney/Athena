@@ -1,6 +1,7 @@
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/login_page.dart';
+import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'request_manager.dart';
@@ -30,6 +31,8 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
 
   Color currentColour;
   Color oldColour;
+
+  RecordingManger recorder = RecordingManger.singleton;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -79,7 +82,17 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
                 appBar: new AppBar(
                   backgroundColor: widget.themeColour,
                   title: new Text("Background Colour Settings", style: TextStyle(fontFamily: widget.fontData.font),),
-                  actions: <Widget>[
+                  actions: recorder.recording ? <Widget>[
+                    // action button
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
+                    ),
+                  ] : <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.mic),
+                      onPressed: () {setState(() {recorder.recordAudio(context);});},
+                    ),
                     IconButton(
                         icon: Icon(Icons.home),
                         onPressed: () async {

@@ -55,7 +55,7 @@ class SubjectHubTile extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 32.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
                         fontFamily: fontData.font,
-                        color: cardColour,
+                        color: ThemeCheck.colorCheck(Color(int.tryParse(subject.colour))),
                         fontWeight: FontWeight.bold
                     )
                   ),
@@ -65,13 +65,13 @@ class SubjectHubTile extends StatelessWidget {
                       IconButton(
                           icon: Icon(Icons.edit),
                           iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                          color: cardColour,
+                          color: ThemeCheck.colorCheck(Color(int.tryParse(subject.colour))),
                           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject, fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour, themeColour: themeColour))).whenComplete(state.retrieveData)
                       ),
                       IconButton(
                           icon: Icon(Icons.delete),
                           iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                          color: cardColour,
+                          color: ThemeCheck.colorCheck(Color(int.tryParse(subject.colour))),
                           onPressed: () => state.deleteSubjectDialog(subject.id, subject.name)
                       ),
                     ],
@@ -94,9 +94,9 @@ class SubjectHubTile extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
-                                Icon(Icons.business_center, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                Icon(Icons.business_center, size: 26*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
                                 SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
-                                Text("Materials", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                                Text("Materials", style: TextStyle(fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
                               ],
                             ),
                           )
@@ -112,9 +112,9 @@ class SubjectHubTile extends StatelessWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
-                                  Icon(Icons.insert_chart, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                  Icon(Icons.insert_chart, size: 26*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
                                   SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
-                                  Text("Progress", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                                  Text("Progress", style: TextStyle(fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
                                 ],
                               ),
                             )
@@ -134,9 +134,9 @@ class SubjectHubTile extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
-                                Icon(Icons.school, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                Icon(Icons.school, size: 26*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
                                 SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
-                                Text("Test Results", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                                Text("Test Results", style: TextStyle(fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
                               ],
                             ),
                           )
@@ -153,9 +153,9 @@ class SubjectHubTile extends StatelessWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
-                                  Icon(Icons.library_books, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                                  Icon(Icons.library_books, size: 26*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
                                   SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
-                                  Text("Homework", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                                  Text("Homework", style: TextStyle(fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
                                 ],
                               ),
                             )
@@ -175,9 +175,9 @@ class SubjectHubTile extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
-                              Icon(Icons.folder_open, size: 24*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
+                              Icon(Icons.folder_open, size: 26*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color),
                               SizedBox(width: 7.5*ThemeCheck.orientatedScaleFactor(context)),
-                              Text("Hardback", textScaleFactor: ThemeCheck.orientatedScaleFactor(context), style: TextStyle(fontSize: 24*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
+                              Text("Hardback", style: TextStyle(fontSize: 18*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: fontData.color)),
                             ],
                           ),
                         )

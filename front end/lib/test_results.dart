@@ -1,5 +1,6 @@
 import 'package:Athena/background_settings.dart';
 import 'package:Athena/card_settings.dart';
+import 'package:Athena/dyslexia_friendly_settings.dart';
 import 'package:Athena/sign_out.dart';
 import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
@@ -217,7 +218,7 @@ class _TestResultsState extends State<TestResults> {
                                 runAlignment: WrapAlignment.start,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: <Widget>[
-                                  Icon(Icons.school, color: Color(int.tryParse(widget.subject.colour)), size: 32.0*iconData.size,),
+                                  Icon(Icons.school, color: Color(int.tryParse(widget.subject.colour)), size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,),
                                   new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context),),
                                   new Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -225,13 +226,13 @@ class _TestResultsState extends State<TestResults> {
                                     children: <Widget>[
                                       Text(
                                         resultsList[position].title,
-                                        style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color),
+                                        style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color),
                                       ),
                                       SizedBox(height: 5.0*ThemeCheck.orientatedScaleFactor(context)),
                                       Container(
                                         child: Text(
                                           resultsList[position].score.toString()+"%",
-                                          style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color, fontWeight: FontWeight.bold),
+                                          style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color, fontWeight: FontWeight.bold),
                                         ),
                                       )
                                     ],
@@ -281,7 +282,7 @@ class _TestResultsState extends State<TestResults> {
                     leading: Icon(
                       Icons.font_download,
                       size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Colors.red,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                     ),
                     title: Text(
                         'Fonts',
@@ -299,7 +300,7 @@ class _TestResultsState extends State<TestResults> {
                     leading: Icon(
                       Icons.insert_emoticon,
                       size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                      color: iconLoaded ? iconData.color : Colors.red,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                     ),
                     title: Text(
                         'Icons',
@@ -317,7 +318,7 @@ class _TestResultsState extends State<TestResults> {
                     leading: Icon(
                       Icons.color_lens,
                       size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Colors.red,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                     ),
                     title: Text(
                         'Theme Colour',
@@ -335,7 +336,7 @@ class _TestResultsState extends State<TestResults> {
                     leading: Icon(
                       Icons.format_paint,
                       size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Colors.red,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                     ),
                     title: Text(
                         'Background Colour',
@@ -353,7 +354,7 @@ class _TestResultsState extends State<TestResults> {
                     leading: Icon(
                       Icons.colorize,
                       size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Colors.red,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                     ),
                     title: Text(
                         'Card Colour',
@@ -369,9 +370,27 @@ class _TestResultsState extends State<TestResults> {
                   ),
                   ListTile(
                     leading: Icon(
+                      Icons.invert_colors,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Dyslexia Friendly Mode',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete(retrieveData);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(
                       Icons.local_offer,
                       size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                      color: iconLoaded ? iconData.color : Colors.red,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                     ),
                     title: Text(
                         'Tags',
@@ -390,7 +409,7 @@ class _TestResultsState extends State<TestResults> {
                     leading: Icon(
                       Icons.exit_to_app,
                       size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                      color: iconLoaded ? iconData.color : Colors.red,),
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),),
                     title: Text(
                         'Sign Out',
                         style: TextStyle(

@@ -1,4 +1,5 @@
 import 'package:Athena/background_settings.dart';
+import 'package:Athena/dyslexia_friendly_settings.dart';
 import 'package:Athena/sign_out.dart';
 import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
@@ -104,7 +105,7 @@ class HomePageState extends State<HomePage> {
                 leading: Icon(
                   Icons.font_download,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                   'Fonts',
@@ -122,7 +123,7 @@ class HomePageState extends State<HomePage> {
                 leading: Icon(
                   Icons.insert_emoticon,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Icons',
@@ -140,7 +141,7 @@ class HomePageState extends State<HomePage> {
                 leading: Icon(
                   Icons.color_lens,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Theme Colour',
@@ -158,7 +159,7 @@ class HomePageState extends State<HomePage> {
                 leading: Icon(
                   Icons.format_paint,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Background Colour',
@@ -176,7 +177,7 @@ class HomePageState extends State<HomePage> {
                 leading: Icon(
                   Icons.colorize,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Card Colour',
@@ -194,7 +195,7 @@ class HomePageState extends State<HomePage> {
                 leading: Icon(
                   Icons.invert_colors,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Dyslexia Friendly Mode',
@@ -205,14 +206,14 @@ class HomePageState extends State<HomePage> {
                     )
                 ),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(receiveData);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete(receiveData);
                 },
               ),
               ListTile(
                 leading: Icon(
                   Icons.local_offer,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Tags',
@@ -231,7 +232,7 @@ class HomePageState extends State<HomePage> {
                 leading: Icon(
                   Icons.exit_to_app,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                  color: iconLoaded ? iconData.color : Colors.red,),
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),),
                 title: Text(
                     'Sign Out',
                     style: TextStyle(

@@ -15,7 +15,7 @@ class HomeTile extends StatelessWidget {
   final AthenaIconData iconData;
   final Color themeColour;
 
-  final tileSize = 185.0;
+  final tileSize = 200.0;
 
   //Recording Manager Object
   RecordingManger recorder = RecordingManger.singleton;
@@ -33,9 +33,9 @@ class HomeTile extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(title, style: TextStyle(fontSize: (24*ThemeCheck.orientatedScaleFactor(context))*fontData.size, color: fontData.color, fontWeight: FontWeight.bold, fontFamily: fontData.font), textAlign: TextAlign.center,),
-            SizedBox(height: 25.0*ThemeCheck.orientatedScaleFactor(context)*(fontData.size/iconData.size)),
-            Icon(icon, size: 48*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,),
+            Text(title, style: TextStyle(fontSize: (28*ThemeCheck.orientatedScaleFactor(context))*fontData.size, color: fontData.color, fontWeight: FontWeight.bold, fontFamily: fontData.font), textAlign: TextAlign.center,),
+            SizedBox(height: 25.0*ThemeCheck.orientatedScaleFactor(context)),
+            Icon(icon, size: 54*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,),
           ],
         ),
       )

@@ -1,4 +1,7 @@
+import 'package:Athena/font_data.dart';
+import 'package:Athena/request_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeCheck
 {
@@ -33,6 +36,25 @@ class ThemeCheck
     ];
   }
 
+  static void activateDyslexiaFriendlyMode() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt("fontColour", Colors.black.value);
+    await prefs.setInt("iconColour", Colors.black.value);
+    await prefs.setInt("themeColour", Color.fromRGBO(113, 180, 227, 1).value);
+    await prefs.setInt("cardColour", Color.fromRGBO(242, 227, 198, 1).value);
+    await prefs.setInt("backgroundColour", errorColorOfColor(Color.fromRGBO(242, 227, 198, 1)).value);
+  }
+
+  static void disableDyslexiaFriendlyMode() async {
+    RequestManager requestManger = RequestManager.singleton;
+
+    await requestManger.getFontData();
+    await requestManger.getIconData();
+    await requestManger.getCardColour();
+    await requestManger.getBackgroundColour();
+    await requestManger.getThemeColour();
+  }
+
   static Color errorColorOfColor(Color color){
     HSLColor hslColor = HSLColor.fromColor(color);
     HSLColor newHSLColour = new HSLColor.fromAHSL(hslColor.alpha, hslColor.hue, hslColor.saturation, hslColor.lightness / 1.20);
@@ -51,14 +73,8 @@ class ThemeCheck
   //scale factor based on orientation
   static double orientatedScaleFactor(BuildContext _context){
 
-    double ratioPortrait = (MediaQuery.of(_context).size.width / MediaQuery.of(_context).size.height) < 0.60 ? 800 : 500;
-    double ratioLandscape = (MediaQuery.of(_context).size.height / MediaQuery.of(_context).size.width) < 0.60 ? 800 : 500;
-
-    double portraitDifference = (MediaQuery.of(_context).size.height - MediaQuery.of(_context).size.width)/ratioPortrait;
-    double landScapeDifference = (MediaQuery.of(_context).size.width - MediaQuery.of(_context).size.height)/ratioLandscape;
-
-    double scaleFactorLandscape = landScapeDifference*MediaQuery.of(_context).size.width / MediaQuery.of(_context).size.height;
-    double scaleFactorPortrait = portraitDifference*MediaQuery.of(_context).size.height / MediaQuery.of(_context).size.width;
+    double scaleFactorLandscape = (MediaQuery.of(_context).size.width + MediaQuery.of(_context).size.height)/1400;
+    double scaleFactorPortrait = (MediaQuery.of(_context).size.height + MediaQuery.of(_context).size.width)/1400;
 
     return (MediaQuery.of(_context).orientation == Orientation.portrait ? scaleFactorPortrait : scaleFactorLandscape);
   }

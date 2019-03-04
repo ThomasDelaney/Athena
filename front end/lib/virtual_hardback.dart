@@ -1,5 +1,6 @@
 import 'package:Athena/background_settings.dart';
 import 'package:Athena/card_settings.dart';
+import 'package:Athena/dyslexia_friendly_settings.dart';
 import 'package:Athena/sign_out.dart';
 import 'package:Athena/tag_manager.dart';
 import 'package:Athena/theme_settings.dart';
@@ -479,7 +480,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 leading: Icon(
                   Icons.font_download,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Fonts',
@@ -497,7 +498,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 leading: Icon(
                   Icons.insert_emoticon,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Icons',
@@ -515,7 +516,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 leading: Icon(
                   Icons.color_lens,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Theme Colour',
@@ -533,7 +534,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 leading: Icon(
                   Icons.format_paint,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Background Colour',
@@ -551,7 +552,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 leading: Icon(
                   Icons.colorize,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Card Colour',
@@ -567,9 +568,27 @@ class VirtualHardbackState extends State<VirtualHardback> {
               ),
               ListTile(
                 leading: Icon(
+                  Icons.invert_colors,
+                  size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                ),
+                title: Text(
+                    'Dyslexia Friendly Mode',
+                    style: TextStyle(
+                      fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black,
+                    )
+                ),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete(retrieveData);
+                },
+              ),
+              ListTile(
+                leading: Icon(
                   Icons.local_offer,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                  color: iconLoaded ? iconData.color : Colors.red,
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
                 ),
                 title: Text(
                     'Tags',
@@ -580,7 +599,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                     )
                 ),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete(retrieveData);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
                 },
               ),
               //sign out option
@@ -588,7 +607,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 leading: Icon(
                   Icons.exit_to_app,
                   size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                  color: iconLoaded ? iconData.color : Colors.red,),
+                  color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),),
                 title: Text(
                     'Sign Out',
                     style: TextStyle(

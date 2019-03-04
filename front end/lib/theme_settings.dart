@@ -1,6 +1,7 @@
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/login_page.dart';
+import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'request_manager.dart';
@@ -23,6 +24,7 @@ class ThemeSettings extends StatefulWidget {
 class _ThemeSettingsState extends State<ThemeSettings> {
 
   RequestManager requestManager = RequestManager.singleton;
+  RecordingManger recorder = RecordingManger.singleton;
 
   bool submitting = false;
 
@@ -82,15 +84,21 @@ class _ThemeSettingsState extends State<ThemeSettings> {
                   ),
                   backgroundColor: loaded ? currentColour : Color.fromRGBO(113, 180, 227, 1),
                   title: new Text("Theme Colour Settings", style: TextStyle(fontFamily: widget.fontData.font, color: loaded ? ThemeCheck.colorCheck(currentColour) : Colors.white),),
-                  actions: <Widget>[
+                  actions: recorder.recording ? <Widget>[
+                    // action button
                     IconButton(
-                        icon: Icon(Icons.home, color: loaded ? ThemeCheck.colorCheck(currentColour) : Colors.white),
-                        onPressed: () async {
-
-                          if(await exitCheck() == null){
-                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false);
-                          }
-                        }
+                      icon: Icon(Icons.close),
+                      onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
+                    ),
+                  ] : <Widget>[
+                    IconButton(
+                        icon: Icon(Icons.home),
+                        onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                    ),
+                    // else display the mic button and settings button
+                    IconButton(
+                      icon: Icon(Icons.mic),
+                      onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
                     ),
                   ],
                 ),

@@ -1,6 +1,7 @@
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/login_page.dart';
+import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'request_manager.dart';
@@ -23,6 +24,7 @@ class CardSettings extends StatefulWidget {
 class _CardSettingsState extends State<CardSettings> {
 
   RequestManager requestManager = RequestManager.singleton;
+  RecordingManger recorder = RecordingManger.singleton;
 
   bool submitting = false;
 
@@ -79,7 +81,17 @@ class _CardSettingsState extends State<CardSettings> {
                 appBar: new AppBar(
                   backgroundColor: widget.themeColour,
                   title: new Text("Card Colour Settings", style: TextStyle(fontFamily: widget.fontData.font),),
-                  actions: <Widget>[
+                  actions: recorder.recording ? <Widget>[
+                    // action button
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
+                    ),
+                  ] : <Widget>[
+                    IconButton(
+                      icon: Icon(Icons.mic),
+                      onPressed: () {setState(() {recorder.recordAudio(context);});},
+                    ),
                     IconButton(
                         icon: Icon(Icons.home),
                         onPressed: () async {
@@ -142,7 +154,12 @@ class _CardSettingsState extends State<CardSettings> {
                                                               viewportFraction: 0.99999,
                                                               scale: 0.9,
                                                               pagination: new SwiperPagination(
-                                                                builder: SwiperPagination.dots,
+                                                                  builder: DotSwiperPaginationBuilder(
+                                                                      size: 20.0,
+                                                                      activeSize: 20.0,
+                                                                      space: 10.0,
+                                                                      activeColor: widget.themeColour
+                                                                  )
                                                               ),
                                                               scrollDirection: Axis.horizontal,
                                                               control: SwiperControl(
@@ -240,8 +257,8 @@ class _CardSettingsState extends State<CardSettings> {
                                             );},
                                         );},
                                         child: Align(alignment: Alignment.centerLeft, child: Text('Select Card Colour', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font))),
-                                        color: Theme.of(context).accentColor,
-                                        textColor: ThemeCheck.colorCheck(widget.themeColour),
+                                      color: widget.themeColour,
+                                      textColor: ThemeCheck.colorCheck(widget.themeColour),
                                     ),
                                   )
                               ),
@@ -268,7 +285,7 @@ class _CardSettingsState extends State<CardSettings> {
                               elevation: 3.0,
                               onPressed: showAreYouSureDialog,
                               child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                              color: Theme.of(context).errorColor,
+                              color: ThemeCheck.errorColorOfColor(widget.themeColour),
 
                               textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(widget.themeColour)),
                             ),

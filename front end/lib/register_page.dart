@@ -1,3 +1,4 @@
+import 'package:Athena/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'request_manager.dart';
@@ -43,130 +44,139 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
 
     //text input field for the user's first name
-    final firstName = new TextFormField(
-      focusNode: firstNameFocusNode,
-      keyboardType: TextInputType.text,
-      autofocus: false,
-      controller: firstNameController,
-
-      onFieldSubmitted: (String value) {
-        FocusScope.of(context).requestFocus(secondNameFocusNode);
-      },
-
-      decoration: InputDecoration(
-          hintText: "First Name",
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero
-          )
+    final firstName = new Theme(
+      data: ThemeData(
+          highlightColor: Color.fromRGBO(94, 185, 255, 1)
       ),
+      child: new TextFormField(
+        focusNode: firstNameFocusNode,
+        keyboardType: TextInputType.text,
+        autofocus: false,
+        controller: firstNameController,
+
+        onFieldSubmitted: (String value) {
+          FocusScope.of(context).requestFocus(secondNameFocusNode);
+        },
+
+        decoration: InputDecoration(
+            hintText: "First Name",
+            contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.zero
+            )
+        ),
+      )
     );
 
     //text input field for the user's second name
-    final secondName = new TextFormField(
-      keyboardType: TextInputType.text,
-      focusNode: secondNameFocusNode,
-      autofocus: false,
-      controller: secondNameController,
-
-      onFieldSubmitted: (String value) {
-        FocusScope.of(context).requestFocus(emailFocusNode);
-      },
-
-      decoration: InputDecoration(
-          hintText: "Second Name",
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero
-          )
+    final secondName = new Theme(
+      data: ThemeData(
+          highlightColor: Color.fromRGBO(94, 185, 255, 1)
       ),
+      child: new TextFormField(
+        keyboardType: TextInputType.text,
+        focusNode: secondNameFocusNode,
+        autofocus: false,
+        controller: secondNameController,
+
+        onFieldSubmitted: (String value) {
+          FocusScope.of(context).requestFocus(emailFocusNode);
+        },
+
+        decoration: InputDecoration(
+            hintText: "Second Name",
+            contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.zero
+            )
+        ),
+      )
     );
 
     //text input field for the user's email
-    final email = new TextFormField(
-      focusNode: emailFocusNode,
-      keyboardType: TextInputType.emailAddress,
-      autofocus: false,
-      controller: emailController,
-
-      onFieldSubmitted: (String value) {
-        FocusScope.of(context).requestFocus(passwordFocusNode);
-      },
-
-      decoration: InputDecoration(
-          hintText: "Email",
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero
-          )
+    final email = new Theme(
+      data: ThemeData(
+          highlightColor: Color.fromRGBO(94, 185, 255, 1)
       ),
+      child: new TextFormField(
+        focusNode: emailFocusNode,
+        keyboardType: TextInputType.emailAddress,
+        autofocus: false,
+        controller: emailController,
+
+        onFieldSubmitted: (String value) {
+          FocusScope.of(context).requestFocus(passwordFocusNode);
+        },
+
+        decoration: InputDecoration(
+            hintText: "Email",
+            contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.zero
+            )
+        ),
+      )
     );
 
     //text input field for the user's password name
-    final password = new TextFormField(
-      autofocus: false,
-      focusNode: passwordFocusNode,
-      obscureText: true,
-      controller: passwordController,
-
-      onFieldSubmitted: (String value) {
-        FocusScope.of(context).requestFocus(reEnteredPasswordFocusNode);
-      },
-
-      decoration: InputDecoration(
-          hintText: "Password",
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero
-          )
+    final password = new Theme(
+      data: ThemeData(
+          highlightColor: Color.fromRGBO(94, 185, 255, 1)
       ),
+      child: new TextFormField(
+        autofocus: false,
+        focusNode: passwordFocusNode,
+        obscureText: true,
+        controller: passwordController,
+
+        onFieldSubmitted: (String value) {
+          FocusScope.of(context).requestFocus(reEnteredPasswordFocusNode);
+        },
+
+        decoration: InputDecoration(
+            hintText: "Password",
+            contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.zero
+            )
+        ),
+      )
     );
 
     //text input field for the user to re-enter their password
-    final reEnterPassword = new TextFormField(
-      focusNode: reEnteredPasswordFocusNode,
-      autofocus: false,
-      controller: reEnteredPasswordController,
-      obscureText: true,
-
-      onFieldSubmitted: (String value) {
-        FocusScope.of(context).requestFocus(new FocusNode());
-      },
-
-      decoration: InputDecoration(
-          hintText: "Re-Enter Password",
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero
-          )
+    final reEnterPassword = new Theme(
+      data: ThemeData(
+          highlightColor: Color.fromRGBO(94, 185, 255, 1)
       ),
+      child: new TextFormField(
+        focusNode: reEnteredPasswordFocusNode,
+        autofocus: false,
+        controller: reEnteredPasswordController,
+        obscureText: true,
+
+        onFieldSubmitted: (String value) {
+          FocusScope.of(context).requestFocus(new FocusNode());
+        },
+
+        decoration: InputDecoration(
+            hintText: "Re-Enter Password",
+            contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.zero
+            )
+        ),
+      )
     );
 
     //button which when pressed, will submit the user's inputted data
     final registerButton = ButtonTheme(
         minWidth: MediaQuery.of(context).size.width * 0.95,
-        height: 46.0,
+        height: 50.0*ThemeCheck.orientatedScaleFactor(context),
         child: new RaisedButton(
-            child: new Text("Register", style: new TextStyle(color: Colors.white, fontSize: 20.0)),
-            color: Colors.red,
+            child: new Text("Register", style: new TextStyle(color: Colors.white, fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context))),
+            color: ThemeCheck.errorColorOfColor(Color.fromRGBO(94, 185, 255, 1)),
             onPressed: () => registerUser(firstNameController.text, secondNameController.text, emailController.text, passwordController.text, reEnteredPasswordController.text)
         )
-    );
-
-    //a circular progress indicator widget. which is centered on the screen
-    final centeredIndicator = new Center(
-      child: new Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new SizedBox(
-              height: 60.0,
-              width: 60.0,
-              child: new CircularProgressIndicator(
-                strokeWidth: 7.0,
-              ),
-            )
-        ]
-      )
     );
 
     //container which houses all the widgets previously instantiated
@@ -175,16 +185,20 @@ class _RegisterPageState extends State<RegisterPage> {
       child: new Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
+            new Container(
+              child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+            ),
+            SizedBox(height: 75.0*ThemeCheck.orientatedScaleFactor(context)),
             firstName,
-            SizedBox(height: 30.0),
+            SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
             secondName,
-            SizedBox(height: 30.0),
+            SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
             email,
-            SizedBox(height: 30.0),
+            SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
             password,
-            SizedBox(height: 30.0),
+            SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
             reEnterPassword,
-            SizedBox(height: 30.0),
+            SizedBox(height: 30.0*ThemeCheck.orientatedScaleFactor(context)),
             registerButton
         ],
       ),
@@ -193,14 +207,25 @@ class _RegisterPageState extends State<RegisterPage> {
     //a stack widget, which has the registerForm container as a child (this will allow for widgets to be put on-top of the stack(
     final pageStack = new Stack(
       children: <Widget>[
-        submitting ? centeredIndicator : new Container(),
-        registerForm
+        registerForm,
+        submitting ? new Container(
+          height: MediaQuery.of(context).size.height,
+          child: new Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              new Container(
+                  child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(ThemeCheck.errorColorOfColor(Color.fromRGBO(94, 185, 255, 1)))))
+            ],
+          ),
+        )
+        : new Container(),
       ],
     );
 
     //scaffold which includes the appbar, and the stack within a centered container
     final page = Scaffold(
         appBar: new AppBar(
+          backgroundColor: Color.fromRGBO(94, 185, 255, 1),
           title: new Text(widget.pageTitle),
         ),
         body: new Center(
