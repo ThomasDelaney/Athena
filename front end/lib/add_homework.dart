@@ -60,6 +60,8 @@ class _AddHomeworkState extends State<AddHomework> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
+
     if (widget.currentHomework != null) {
       homeworkDescriptionController.text = widget.currentHomework.description;
       completedValue = widget.currentHomework.isCompleted;
@@ -72,6 +74,12 @@ class _AddHomeworkState extends State<AddHomework> {
   }
 
   @override
+  void didUpdateWidget(AddHomework oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
         onWillPop: exitCheck,
@@ -81,10 +89,21 @@ class _AddHomeworkState extends State<AddHomework> {
               resizeToAvoidBottomPadding: false,
               backgroundColor: widget.backgroundColour,
               appBar: new AppBar(
-                actions: <Widget>[
+                actions: recorder.recording ? <Widget>[
+                  // action button
                   IconButton(
-                      icon: Icon(Icons.home),
-                      onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                    icon: Icon(Icons.close),
+                    onPressed: () {setState(() {recorder.cancelRecording();});},
+                  ),
+                ] : <Widget>[
+                // else display the mic button and settings button
+                  IconButton(
+                    icon: Icon(Icons.home),
+                    onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.mic),
+                    onPressed: () {setState(() {recorder.recordAudio(context);});},
                   ),
                 ],
                 backgroundColor: Color(int.tryParse(widget.subject.colour)),
@@ -98,100 +117,115 @@ class _AddHomeworkState extends State<AddHomework> {
                   )
                 ),
               ),
-              body: new SingleChildScrollView(
-                child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    SizedBox(height: 20.0),
-                    new Card(
-                      color: widget.cardColour,
-                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      elevation: 3.0,
-                      child: new Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          new Container(
+              body: new Stack(
+                children: <Widget>[
+                  new SingleChildScrollView(
+                    child: new Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        SizedBox(height: 20.0),
+                        new Card(
+                            color: widget.cardColour,
                             margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: TextFormField(
-                              focusNode: homeworkDescriptionFocusNode,
-                              keyboardType: TextInputType.text,
-                              autofocus: false,
-                              controller: homeworkDescriptionController,
-                              style: TextStyle(
-                                  fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                  fontFamily: widget.fontData.font,
-                                  color: widget.fontData.color
-                              ),
-                              decoration: InputDecoration(
-                                  hintText: "Homework Description",
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: widget.themeColour),
+                            elevation: 3.0,
+                            child: new Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: TextFormField(
+                                    focusNode: homeworkDescriptionFocusNode,
+                                    keyboardType: TextInputType.text,
+                                    autofocus: false,
+                                    controller: homeworkDescriptionController,
+                                    style: TextStyle(
+                                        fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                        fontFamily: widget.fontData.font,
+                                        color: widget.fontData.color
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: "Homework Description",
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(color: widget.themeColour),
+                                      ),
+                                    ),
                                   ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 20.0),
-                          new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                      child: new Text("Is this Homework already completed?", style: TextStyle(
-                                          fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                          fontFamily: widget.fontData.font,
-                                          color: widget.fontData.color
+                                ),
+                                SizedBox(height: 20.0),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Container(
+                                            child: new Text("Is this Homework already completed?", style: TextStyle(
+                                                fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                fontFamily: widget.fontData.font,
+                                                color: widget.fontData.color
+                                            )
+                                            )
+                                        ),
+                                        SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)),
+                                        Container(
+                                            width: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                            height: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                            child: Transform.scale(
+                                              alignment: Alignment.center,
+                                              scale: 1.25*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                              child: new Checkbox(
+                                                materialTapTargetSize: MaterialTapTargetSize.padded,
+                                                activeColor: Color(int.tryParse(widget.subject.colour)),
+                                                value: completedValue,
+                                                onChanged: (newVal) {
+                                                  setState(() {
+                                                    completedValue = newVal;
+                                                  });
+                                                },
+                                              ),
+                                            )
                                         )
-                                      )
-                                  ),
-                                  SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context)),
-                                  Container(
-                                    width: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
-                                    height: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
-                                    child: Transform.scale(
-                                      alignment: Alignment.center,
-                                      scale: 1.25*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
-                                      child: new Checkbox(
-                                        materialTapTargetSize: MaterialTapTargetSize.padded,
-                                        activeColor: Color(int.tryParse(widget.subject.colour)),
-                                        value: completedValue,
-                                        onChanged: (newVal) {
-                                          setState(() {
-                                            completedValue = newVal;
-                                          });
-                                        },
+                                      ],
+                                    )
+                                ),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                    child: ButtonTheme(
+                                      height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                      child: RaisedButton(
+                                        elevation: 3.0,
+                                        onPressed: showAreYouSureDialog,
+                                        child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                                        color: Color(int.tryParse(widget.subject.colour)),
+
+                                        textColor: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))),
                                       ),
                                     )
-                                  )
-                                ],
-                              )
-                          ),
+                                )
+                              ],
+                            )
+                        )
+                      ],
+                    ),
+                  ),
+                  new Container(
+                      child: recorder.recording ?
+                      new Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
                           new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: ButtonTheme(
-                                height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                                child: RaisedButton(
-                                  elevation: 3.0,
-                                  onPressed: showAreYouSureDialog,
-                                  child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                                  color: Color(int.tryParse(widget.subject.colour)),
-
-                                  textColor: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))),
-                                ),
-                              )
-                          )
-                        ],
-                      )
-                    )
-                  ],
-                ),
-              ),
+                              child: new ModalBarrier(
+                                color: Colors.black54, dismissible: false,)),
+                          recorder.drawRecordingCard(context, widget.fontData, widget.cardColour, widget.themeColour, widget.iconData)
+                        ],) : new Container()
+                  ),
+                ],
+              )
             ),
             submitting ? new Stack(
               alignment: Alignment.center,
               children: <Widget>[
                 new Container(
-                    margin: MediaQuery.of(context).padding,
+                    margin: MediaQuery.of(context).viewInsets,
                     child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()

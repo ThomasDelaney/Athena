@@ -2,6 +2,7 @@ import 'package:Athena/font_data.dart';
 import 'package:Athena/request_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:video_player/video_player.dart';
 
 class ThemeCheck
 {
@@ -68,6 +69,11 @@ class ThemeCheck
 
     HSLColor newHSLColour = new HSLColor.fromAHSL(hslColor.alpha, hslColor.hue, hslColor.saturation, hslColor.lightness * multiplier);
     return newHSLColour.toColor();
+  }
+
+  static void getThumbnailFromVideoURL(String url){
+    dynamic cap = VideoPlayerController.network('http://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_20mb.mp4').initialize().asStream().first;
+    print(cap);
   }
 
   //scale factor based on orientation

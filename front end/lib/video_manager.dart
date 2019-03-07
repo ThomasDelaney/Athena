@@ -1,3 +1,4 @@
+import 'package:Athena/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
@@ -82,9 +83,7 @@ class _VideoManagerState extends State<VideoManager> {
   @override
   Widget build(BuildContext context) {
 
-     double scaleFactorLandscape = (MediaQuery.of(context).size.height/MediaQuery.of(context).size.width)*1.85;
-     double scaleFactorPortrait = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
-     double scaleFactor = (MediaQuery.of(context).orientation == Orientation.portrait ? scaleFactorLandscape : scaleFactorPortrait);
+    print("poggers: "+_aspectRatio.toString());
 
     _chewieController = new ChewieController(
       videoPlayerController: _controller,
@@ -97,7 +96,7 @@ class _VideoManagerState extends State<VideoManager> {
     if (!_controller.value.initialized) {
       _controller.initialize().then((_) {
         setState(() {
-          _aspectRatio = (_controller.value.size.height / _controller.value.size.width) / scaleFactor * 1.5;
+          _aspectRatio = (_controller.value.size.width / _controller.value.size.height);
         });
       });
 
@@ -108,7 +107,7 @@ class _VideoManagerState extends State<VideoManager> {
           alignment: Alignment.center,
           children: <Widget>[
             new Container(
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
           ],
         ),
       );

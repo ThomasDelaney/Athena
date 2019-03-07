@@ -34,13 +34,6 @@ class _RegisterPageState extends State<RegisterPage> {
   FocusNode reEnteredPasswordFocusNode = new FocusNode();
 
   @override
-  void didChangeDependencies() {
-    FocusScope.of(context).requestFocus(firstNameFocusNode);
-    super.didChangeDependencies();
-  }
-
-
-  @override
   Widget build(BuildContext context) {
 
     //text input field for the user's first name

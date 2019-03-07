@@ -1,4 +1,6 @@
+import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/font_data.dart';
+import 'package:Athena/recording_manager.dart';
 import 'package:Athena/subject.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/home_page.dart';
@@ -8,10 +10,11 @@ import 'request_manager.dart';
 
 class AddTag extends StatefulWidget {
 
-  AddTag({Key key, this.tag, this.fontData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
+  AddTag({Key key, this.tag, this.fontData, this.cardColour, this.themeColour, this.backgroundColour, this.iconData}) : super(key: key);
 
   final Tag tag;
   final FontData fontData;
+  final AthenaIconData iconData;
 
   final Color backgroundColour;
   final Color cardColour;
@@ -24,6 +27,7 @@ class AddTag extends StatefulWidget {
 class _AddTagState extends State<AddTag> {
 
   RequestManager requestManager = RequestManager.singleton;
+  RecordingManger recorder = RecordingManger.singleton;
 
   final tagController = new TextEditingController();
   FocusNode tagFocusNode;
@@ -34,8 +38,13 @@ class _AddTagState extends State<AddTag> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
+
     if (widget.tag != null){
       oldTag = widget.tag.tag;
+      tagController.text = widget.tag.tag;
+    }else {
+      tagController.text = "";
     }
 
     tagFocusNode = new FocusNode();
@@ -43,18 +52,9 @@ class _AddTagState extends State<AddTag> {
   }
 
   @override
-  void didChangeDependencies() {
-
-    if (widget.tag == null) {
-      tagController.text = "";
-    }
-    else {
-
-      tagController.text = widget.tag.tag;
-    }
-
-    FocusScope.of(context).requestFocus(tagFocusNode);
-    super.didChangeDependencies();
+  void didUpdateWidget(AddTag oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   bool isFileEdited() {
@@ -94,64 +94,89 @@ class _AddTagState extends State<AddTag> {
                 iconTheme: IconThemeData(
                     color: ThemeCheck.colorCheck(widget.themeColour)
                 ),
-                actions: <Widget>[
+                actions: recorder.recording ? <Widget>[
+                  // action button
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {setState(() {recorder.cancelRecording();});},
+                  ),
+                ] : <Widget>[
+                  // else display the mic button and settings button
                   IconButton(
                       icon: Icon(Icons.home),
                       onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                   ),
+                  IconButton(
+                    icon: Icon(Icons.mic),
+                    onPressed: () {setState(() {recorder.recordAudio(context);});},
+                  ),
                 ],
               ),
-              body: new Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              body: new Stack(
                 children: <Widget>[
-                  SizedBox(height: 20.0),
-                  new Card(
-                      color: widget.cardColour,
-                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      elevation: 3.0,
-                      child: new Column(
+                  new Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      SizedBox(height: 20.0),
+                      new Card(
+                          color: widget.cardColour,
+                          margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          elevation: 3.0,
+                          child: new Column(
+                            children: <Widget>[
+                              new Container(
+                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                child: TextFormField(
+                                  focusNode: tagFocusNode,
+                                  keyboardType: TextInputType.text,
+                                  autofocus: false,
+                                  controller: tagController,
+                                  style: TextStyle(
+                                      fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                      fontFamily: widget.fontData.font,
+                                      color: widget.fontData.color
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: "Tag",
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(color: widget.themeColour),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20.0),
+                            ],
+                          )
+                      ),
+                      SizedBox(height: 10.0),
+                      new Container(
+                          margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          child: ButtonTheme(
+                            height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                            child: RaisedButton(
+                              elevation: 3.0,
+                              onPressed: showAreYouSureDialog,
+                              child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                              color: widget.themeColour,
+
+                              textColor: ThemeCheck.colorCheck(widget.themeColour),
+                            ),
+                          )
+                      )
+                    ],
+                  ),
+                  new Container(
+                      child: recorder.recording ?
+                      new Stack(
+                        alignment: Alignment.center,
                         children: <Widget>[
                           new Container(
-                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: TextFormField(
-                              focusNode: tagFocusNode,
-                              keyboardType: TextInputType.text,
-                              autofocus: false,
-                              controller: tagController,
-                              style: TextStyle(
-                                  fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                  fontFamily: widget.fontData.font,
-                                  color: widget.fontData.color
-                              ),
-                              decoration: InputDecoration(
-                                  hintText: "Tag",
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: widget.themeColour),
-                                  ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 20.0),
-                        ],
-                      )
+                              margin: MediaQuery.of(context).viewInsets,
+                              child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context, widget.fontData, widget.cardColour, widget.themeColour, widget.iconData)],
+                      ) : new Container()
                   ),
-                  SizedBox(height: 10.0),
-                  new Container(
-                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      child: ButtonTheme(
-                        height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                        child: RaisedButton(
-                          elevation: 3.0,
-                          onPressed: showAreYouSureDialog,
-                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                          color: widget.themeColour,
-
-                          textColor: ThemeCheck.colorCheck(widget.themeColour),
-                        ),
-                      )
-                  )
                 ],
-              ),
+              )
             ),
             submitting ? new Stack(
               alignment: Alignment.center,

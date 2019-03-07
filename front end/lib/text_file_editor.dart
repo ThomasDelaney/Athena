@@ -96,15 +96,7 @@ class TextFileEditorState extends State<TextFileEditor> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () async {
-
-          if(await exitCheck() == null){
-            Navigator.pop(context, true);
-          }
-          else{
-            Navigator.pop(context, false);
-          }
-        },
+        onWillPop: exitCheck,
         child: new Stack(children: <Widget>[
             Scaffold(
                 backgroundColor: widget.backgroundColour,
@@ -126,12 +118,7 @@ class TextFileEditorState extends State<TextFileEditor> {
                       IconButton(
                           icon: Icon(Icons.home),
                           iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context),
-                          onPressed: () async {
-
-                            if(await exitCheck() == null){
-                              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false);
-                            }
-                          }
+                          onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                       ),
                       IconButton(
                         icon: Icon(Icons.local_offer),
@@ -286,7 +273,12 @@ class TextFileEditorState extends State<TextFileEditor> {
       backgroundColor: widget.cardColour,
       content: new Text("Do you want to SAVE this Note?", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font)),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0*widget.fontData.size,
+            fontFamily: widget.fontData.font,
+            color: widget.fontData.color
+        ),)),
         new FlatButton(onPressed: () async {
             if (fileNameController.text == "") {
               Navigator.pop(context);
@@ -298,7 +290,12 @@ class TextFileEditorState extends State<TextFileEditor> {
               await uploadNote();
               submit(false);
             }
-          }, child: new Text("YES", style: TextStyle(fontSize: 18.0*widget.fontData.size, fontFamily: widget.fontData.font, fontWeight: FontWeight.bold,),)),
+          }, child: new Text("YES", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size,
+          fontFamily: widget.fontData.font,
+          fontWeight: FontWeight.bold,
+          color: widget.fontData.color
+        ),)),
       ],
     );
 

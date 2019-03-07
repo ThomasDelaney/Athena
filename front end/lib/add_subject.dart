@@ -1,5 +1,7 @@
+import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
+import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
@@ -9,10 +11,11 @@ import 'package:flutter_swiper/flutter_swiper.dart';
 
 class AddSubject extends StatefulWidget {
 
-  AddSubject({Key key, this.subject, this.fontData, this.themeColour, this.backgroundColour, this.cardColour}) : super(key: key);
+  AddSubject({Key key, this.subject, this.fontData, this.themeColour, this.backgroundColour, this.cardColour, this.iconData}) : super(key: key);
 
   final FontData fontData;
   final Subject subject;
+  final AthenaIconData iconData;
 
   final Color backgroundColour;
   final Color cardColour;
@@ -30,10 +33,15 @@ class _AddSubjectState extends State<AddSubject> {
   FocusNode subjectFocusNode;
   Color currentColor;
 
+  //Recording Manager Object
+  RecordingManger recorder = RecordingManger.singleton;
+
   bool submitting = false;
 
   @override
   void initState() {
+    recorder.assignParent(this);
+
     subjectFocusNode = new FocusNode();
 
     if (widget.subject != null) {
@@ -42,6 +50,12 @@ class _AddSubjectState extends State<AddSubject> {
     }
 
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(AddSubject oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   ValueChanged<Color> onColorChanged;
@@ -93,196 +107,222 @@ class _AddSubjectState extends State<AddSubject> {
                 ),
                 backgroundColor: widget.themeColour,
                 title: widget.subject == null ? new Text("Add a New Subject", style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),) : new Text(widget.subject.name),
-                actions: <Widget>[
+                actions: recorder.recording ? <Widget>[
+                  // action button
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {setState(() {recorder.cancelRecording();});},
+                  ),
+                ] : <Widget>[
+                  // else display the mic button and settings button
                   IconButton(
                       icon: Icon(Icons.home),
-                      onPressed: () async {
-
-                        if(await exitCheck() == null){
-                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false);
-                        }
-                      }
+                      onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.mic),
+                    onPressed: () {setState(() {recorder.recordAudio(context);});},
                   ),
                 ],
               ),
-              body: SingleChildScrollView(
-                child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    SizedBox(height: 20.0),
-                    new Card(
-                      color: widget.cardColour,
-                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      elevation: 3.0,
-                      child: new Column(
-                        children: <Widget>[
-                          new Container(
+              body: new Stack(
+                children: <Widget>[
+                  SingleChildScrollView(
+                    child: new Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        SizedBox(height: 20.0),
+                        new Card(
+                            color: widget.cardColour,
                             margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              controller: subjectController,
-                              onFieldSubmitted: (String value) {
-                                setState(() {
-                                  FocusScope.of(context).requestFocus(new FocusNode());
-                                });
-                              },
-                              style: TextStyle(
-                                  color: widget.fontData.color,
-                                  fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
-                                  fontFamily: widget.fontData.font
-                              ),
-                              decoration: InputDecoration(
-                                  hintText: "Subject Name",
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: widget.themeColour),
+                            elevation: 3.0,
+                            child: new Column(
+                              children: <Widget>[
+                                new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.text,
+                                    controller: subjectController,
+                                    onFieldSubmitted: (String value) {
+                                      setState(() {
+                                        FocusScope.of(context).requestFocus(new FocusNode());
+                                      });
+                                    },
+                                    style: TextStyle(
+                                        color: widget.fontData.color,
+                                        fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                        fontFamily: widget.fontData.font
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: "Subject Name",
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(color: widget.themeColour),
+                                      ),
+                                    ),
                                   ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 20.0),
-                          new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: ButtonTheme(
-                                height: 50.0,
-                                child: RaisedButton(
-                                  elevation: 3.0,
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Container(
-                                            height: MediaQuery.of(context).size.height*0.8,
-                                            width: MediaQuery.of(context).size.width*0.985,
-                                            child: Card(
-                                              color: widget.cardColour,
-                                              child: Container(
-                                                padding: EdgeInsets.symmetric(horizontal: 30.0*ThemeCheck.orientatedScaleFactor(context)),
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                  children: <Widget>[
-                                                    new SizedBox(height: 20.0,),
-                                                    Text(
-                                                        'Select a Colour for the Subject',
-                                                        style: TextStyle(
-                                                            fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                                            color: widget.fontData.color,
-                                                            fontFamily: widget.fontData.font,
-                                                            fontWeight: FontWeight.bold
-                                                        )
-                                                    ),
-                                                    new SizedBox(height: 20.0,),
-                                                    Flexible(
-                                                      child: Container(
-                                                        width: MediaQuery.of(context).size.width,
-                                                        child: Swiper(
-                                                          outer: true,
-                                                          viewportFraction: 0.99999,
-                                                          scale: 0.9,
-                                                          pagination: new SwiperPagination(
-                                                              builder: DotSwiperPaginationBuilder(
-                                                                size: 20.0,
-                                                                activeSize: 20.0,
-                                                                space: 10.0,
-                                                                activeColor: widget.themeColour
+                                ),
+                                SizedBox(height: 20.0),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                    child: ButtonTheme(
+                                      height: 50.0,
+                                      child: RaisedButton(
+                                        elevation: 3.0,
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return Container(
+                                                  height: MediaQuery.of(context).size.height*0.8,
+                                                  width: MediaQuery.of(context).size.width*0.985,
+                                                  child: Card(
+                                                    color: widget.cardColour,
+                                                    child: Container(
+                                                      padding: EdgeInsets.symmetric(horizontal: 30.0*ThemeCheck.orientatedScaleFactor(context)),
+                                                      child: Column(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                        children: <Widget>[
+                                                          new IconButton(
+                                                              iconSize: 32*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                                              icon: Icon(Icons.close),
+                                                              color: ThemeCheck.colorCheck(widget.cardColour),
+                                                              onPressed: () => Navigator.pop(context)
+                                                          ),
+                                                          new SizedBox(height: 20.0,),
+                                                          Text(
+                                                              'Select a Colour for the Subject',
+                                                              style: TextStyle(
+                                                                  fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                                  color: widget.fontData.color,
+                                                                  fontFamily: widget.fontData.font,
+                                                                  fontWeight: FontWeight.bold
                                                               )
                                                           ),
-                                                          scrollDirection: Axis.horizontal,
-                                                          control: SwiperControl(
-                                                              color: widget.themeColour,
-                                                              padding: EdgeInsets.zero,
-                                                              size: 24*ThemeCheck.orientatedScaleFactor(context)
+                                                          new SizedBox(height: 20.0,),
+                                                          Flexible(
+                                                            child: Container(
+                                                              width: MediaQuery.of(context).size.width,
+                                                              child: Swiper(
+                                                                outer: true,
+                                                                viewportFraction: 0.99999,
+                                                                scale: 0.9,
+                                                                pagination: new SwiperPagination(
+                                                                    builder: DotSwiperPaginationBuilder(
+                                                                        size: 20.0,
+                                                                        activeSize: 20.0,
+                                                                        space: 10.0,
+                                                                        activeColor: widget.themeColour
+                                                                    )
+                                                                ),
+                                                                scrollDirection: Axis.horizontal,
+                                                                control: SwiperControl(
+                                                                    color: widget.themeColour,
+                                                                    padding: EdgeInsets.zero,
+                                                                    size: 24*ThemeCheck.orientatedScaleFactor(context)
+                                                                ),
+                                                                itemCount: 2,
+                                                                itemBuilder: (BuildContext context, int index){
+                                                                  if (index == 0) {
+                                                                    return Column(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: <Widget>[
+                                                                        Text(
+                                                                            "Basic Colours",
+                                                                            style: TextStyle(
+                                                                                fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                                                color: widget.fontData.color,
+                                                                                fontFamily: widget.fontData.font
+                                                                            )
+                                                                        ),
+                                                                        new SizedBox(height: 20.0,),
+                                                                        Flexible(
+                                                                            child: Container(
+                                                                              height: MediaQuery.of(context).size.height,
+                                                                              child: BlockPicker(
+                                                                                pickerColor: currentColor,
+                                                                                onColorChanged: changeColorAndPopout,
+                                                                              ),
+                                                                            )
+                                                                        )
+                                                                      ],
+                                                                    );
+                                                                  }
+                                                                  else {
+                                                                    return Column(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: <Widget>[
+                                                                        Text(
+                                                                            "Colourblind Friendly Colours",
+                                                                            style: TextStyle(
+                                                                                fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                                                color: widget.fontData.color,
+                                                                                fontFamily: widget.fontData.font
+                                                                            )
+                                                                        ),
+                                                                        new SizedBox(height: 20.0,),
+                                                                        Flexible(
+                                                                            child: Container(
+                                                                              height: MediaQuery.of(context).size.height,
+                                                                              child: BlockPicker(
+                                                                                availableColors: ThemeCheck.colorBlindFriendlyColours(),
+                                                                                pickerColor: currentColor,
+                                                                                onColorChanged: changeColorAndPopout,
+                                                                              ),
+                                                                            )
+                                                                        )
+                                                                      ],
+                                                                    );
+                                                                  }
+                                                                },
+                                                              ),
+                                                            ),
                                                           ),
-                                                          itemCount: 2,
-                                                          itemBuilder: (BuildContext context, int index){
-                                                            if (index == 0) {
-                                                              return Column(
-                                                                mainAxisSize: MainAxisSize.min,
-                                                                children: <Widget>[
-                                                                  Text(
-                                                                      "Basic Colours",
-                                                                      style: TextStyle(
-                                                                          fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                                                          color: widget.fontData.color,
-                                                                          fontFamily: widget.fontData.font
-                                                                      )
-                                                                  ),
-                                                                  new SizedBox(height: 20.0,),
-                                                                  Flexible(
-                                                                      child: Container(
-                                                                        height: MediaQuery.of(context).size.height,
-                                                                        child: BlockPicker(
-                                                                          pickerColor: currentColor,
-                                                                          onColorChanged: changeColorAndPopout,
-                                                                        ),
-                                                                      )
-                                                                  )
-                                                                ],
-                                                              );
-                                                            }
-                                                            else {
-                                                              return Column(
-                                                                mainAxisSize: MainAxisSize.min,
-                                                                children: <Widget>[
-                                                                  Text(
-                                                                      "Colourblind Friendly Colours",
-                                                                      style: TextStyle(
-                                                                          fontSize: 20.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                                                          color: widget.fontData.color,
-                                                                          fontFamily: widget.fontData.font
-                                                                      )
-                                                                  ),
-                                                                  new SizedBox(height: 20.0,),
-                                                                  Flexible(
-                                                                      child: Container(
-                                                                        height: MediaQuery.of(context).size.height,
-                                                                        child: BlockPicker(
-                                                                          availableColors: ThemeCheck.colorBlindFriendlyColours(),
-                                                                          pickerColor: currentColor,
-                                                                          onColorChanged: changeColorAndPopout,
-                                                                        ),
-                                                                      )
-                                                                  )
-                                                                ],
-                                                              );
-                                                            }
-                                                          },
-                                                        ),
+                                                        ],
                                                       ),
                                                     ),
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                        );},
-                                    );},
-                                  child: Align(alignment: Alignment.centerLeft, child: Text('Select Subject Colour', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font))),
-                                  color: currentColor != null ? currentColor : widget.themeColour,
+                                                  )
+                                              );},
+                                          );},
+                                        child: Align(alignment: Alignment.centerLeft, child: Text('Select Subject Colour', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font))),
+                                        color: currentColor != null ? currentColor : widget.themeColour,
 
-                                  textColor: ThemeCheck.colorCheck(currentColor != null ? currentColor : widget.themeColour),
+                                        textColor: ThemeCheck.colorCheck(currentColor != null ? currentColor : widget.themeColour),
+                                      ),
+                                    )
                                 ),
-                              )
-                          ),
-                          SizedBox(height: 20.0),
-                        ],
-                      )
-                    ),
-                    SizedBox(height: 10.0),
-                    new Container(
-                        margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                        child: ButtonTheme(
-                          height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                          child: RaisedButton(
-                            elevation: 3.0,
-                            onPressed: showAreYouSureDialog,
-                            child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                            color: ThemeCheck.errorColorOfColor(widget.themeColour),
+                                SizedBox(height: 20.0),
+                              ],
+                            )
+                        ),
+                        SizedBox(height: 10.0),
+                        new Container(
+                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                            child: ButtonTheme(
+                              height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                              child: RaisedButton(
+                                elevation: 3.0,
+                                onPressed: showAreYouSureDialog,
+                                child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                                color: ThemeCheck.errorColorOfColor(widget.themeColour),
 
-                            textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(widget.themeColour)),
-                          ),
+                                textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(widget.themeColour)),
+                              ),
+                            )
                         )
-                    )
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
+                  new Container(
+                      child: recorder.recording ?
+                      new Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          new Container(
+                              margin: MediaQuery.of(context).viewInsets,
+                              child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context, widget.fontData, widget.cardColour, widget.themeColour, widget.iconData)],
+                      ) : new Container()
+                  ),
+                ],
               )
             ),
             submitting ? new Stack(
@@ -290,7 +330,7 @@ class _AddSubjectState extends State<AddSubject> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],

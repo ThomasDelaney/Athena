@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:dio/dio.dart';
@@ -17,7 +20,9 @@ class RecordingManger
 
   RecordingManger._internal();
 
-  State<dynamic> parent;
+  State<dynamic> _parent;
+
+  set parent (State<dynamic> newParent) => _parent = newParent;
 
   bool _recorderLoading = false;
   bool _recording = false;
@@ -33,8 +38,6 @@ class RecordingManger
   //object used to access the devices microphone
   FlutterSound flutterSound = new FlutterSound();
 
-  String font = "";
-
   //Dio object, used to make rich HTTP requests
   Dio dio = new Dio();
 
@@ -44,8 +47,10 @@ class RecordingManger
   //method that records audio
   void recordAudio(BuildContext context) async
   {
-    this._recorderLoading = true;
-    this._recording = true;
+    _parent.setState((){
+      this._recorderLoading = true;
+      this._recording = true;
+    });
 
     //get the file URI and start recording
     this.uri =  await flutterSound.startRecorder(null);
@@ -60,7 +65,7 @@ class RecordingManger
       await flutterSound.stopRecorder();
     }
 
-    parent.setState((){this._recording = false;});
+    _parent.setState((){this._recording = false;});
 
     //cancel the audio subscription
     if (audioSubscription != null) {
@@ -74,12 +79,14 @@ class RecordingManger
   }
 
   //method called when the user manually stops the recording for their command to be processed
-  void stopRecording(BuildContext context) async
+  void stopRecording(BuildContext context, FontData fontData, Color cardColour, Color themeColour) async
   {
     //stop the recorder
     await flutterSound.stopRecorder();
 
-    parent.setState((){this._recorderLoading = false;});
+    _parent.setState((){
+      this._recorderLoading = false;
+    });
 
     //cancel the audio subscription
     if (audioSubscription != null) {
@@ -89,24 +96,23 @@ class RecordingManger
       var result = await requestManager.command(uri, context);
 
       if (result == "error") {
-        showCannotUnderstandError(context);
+        showCannotUnderstandError(context, fontData, cardColour, themeColour);
       }
       else {
         if (result.data['function'] == "timetable") {
 
-          parent.setState((){this._recording = false;});
+          _parent.setState((){this._recording = false;});
 
           //static list of days
           List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-          print(result.data['option']);
-
           //if the day from the response object is not in the list, then display and error saying the user does not have classes for that day
           if (!weekdays.contains(result.data['option'])) {
             AlertDialog cannotUnderstand = new AlertDialog(
-              content: new Text("You don't have any classes for this day", style: TextStyle(fontFamily: font),),
+              backgroundColor: cardColour,
+              content: new Text("You don't have any classes for this day", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
               actions: <Widget>[
-                new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font)))
+                new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: themeColour)))
               ],
             );
 
@@ -119,7 +125,7 @@ class RecordingManger
           }
         }
         else if (result.data['function'] == "notes") {
-          parent.setState((){this._recording = false;});
+          _parent.setState((){this._recording = false;});
 
           List<Tag> reqTags = await requestManager.getTags();
           List<String> tagValues = reqTags.map((tag) => tag.tag.toLowerCase()).toList();
@@ -128,9 +134,10 @@ class RecordingManger
           if (!tagValues.contains(result.data['option'].toString().toLowerCase())) {
 
             AlertDialog cannotUnderstand = new AlertDialog(
-              content: new Text("You don't have any notes or files with this tag or this tag does not exist", style: TextStyle(fontFamily: font),),
+              backgroundColor: cardColour,
+              content: new Text("You don't have any notes or files with this tag or this tag does not exist", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
               actions: <Widget>[
-                new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font)))
+                new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: themeColour)))
               ],
             );
 
@@ -142,61 +149,80 @@ class RecordingManger
         }
         else{
           //else display cannot understand error
-          showCannotUnderstandError(context);
+          showCannotUnderstandError(context, fontData, cardColour, themeColour);
         }
       }
     }
   }
 
   //alert dialog thats displayed when the recorder could not understand your command
-  void showCannotUnderstandError(BuildContext context)
+  void showCannotUnderstandError(BuildContext context, FontData fontData, Color cardColour, Color themeColour)
   {
-    parent.setState((){this._recording = false;});
+    _parent.setState((){this._recording = false;});
     //cancel the recording
     cancelRecording();
 
     AlertDialog cannotUnderstand = new AlertDialog(
-      content: new Text("Sorry, I could not understand you! Please try again", style: TextStyle(fontFamily: font),),
+      backgroundColor: cardColour,
+      content: new Text("Sorry, I could not understand you! Please try again", style: TextStyle(
+          fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: fontData.font,
+          color: fontData.color),
+      ),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font),))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text(
+          "OK",
+          style: TextStyle(
+              fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: fontData.font,
+              fontWeight: FontWeight.bold,
+              color: themeColour
+          ),
+        ))
       ],
     );
 
     showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
   }
 
-  //alert dialog that notifies the user if an error has occurred
-  void showErrorDialog(BuildContext context)
-  {
-    AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again", style: TextStyle(fontFamily: font),),
-      actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font),))
-      ],
-    );
-
-    showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
-  }
-
-  Card drawRecordingCard(BuildContext context)
+  Card drawRecordingCard(BuildContext context, FontData fontData, Color cardColour, Color themeColour, AthenaIconData iconData)
   {
     return Card(
         child: Container(
-          padding: EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0*ThemeCheck.orientatedScaleFactor(context)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Padding(padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 15.0), child: new Text("Recording", textAlign: TextAlign.center, textScaleFactor: 1.5, style: TextStyle(fontFamily: font),)),
+              Padding(
+                  padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 15.0*ThemeCheck.orientatedScaleFactor(context)),
+                  child: new Text("Recording",
+                    textAlign: TextAlign.center, style:
+                    TextStyle(
+                        fontSize: 24.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                        fontFamily: fontData.font,
+                        color: fontData.color),
+                  )
+              ),
               //if the user has stopped the recorder then display a circular progress indicator, else display a large stop button
               recorderLoading ?
               IconButton(
-                iconSize: 80.0,
+                iconSize: 100.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
                 color: Colors.red,
                 icon: Icon(Icons.stop),
                 //if the stop button is pressed then stop the recording
-                onPressed: () => stopRecording(context),
-              ) : new Padding(padding: EdgeInsets.all(20.0), child: new SizedBox(width: 45.0, height: 45.0, child: new CircularProgressIndicator(strokeWidth: 5.0))),
+                onPressed: () => stopRecording(context, fontData, cardColour, themeColour),
+              ) : new Padding(
+                  padding: EdgeInsets.all(20.0*ThemeCheck.orientatedScaleFactor(context)),
+                  child: new SizedBox(
+                      width: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                      height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                      child: new CircularProgressIndicator(
+                          strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context),
+                          valueColor: AlwaysStoppedAnimation<Color>(themeColour)
+                      )
+                  )
+              ),
             ],
           ),
         )

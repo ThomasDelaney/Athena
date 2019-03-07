@@ -1,3 +1,4 @@
+import 'package:Athena/athena_icon_data.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
@@ -12,12 +13,13 @@ class AddResult extends StatefulWidget {
   final Subject subject;
   final TestResult currentResult;
   final FontData fontData;
+  final AthenaIconData iconData;
 
   final Color cardColour;
   final Color backgroundColour;
   final Color themeColour;
 
-  AddResult({Key key, this.subject, this.currentResult, this.fontData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
+  AddResult({Key key, this.subject, this.currentResult, this.fontData, this.cardColour, this.themeColour, this.backgroundColour, this.iconData}) : super(key: key);
 
   @override
   _AddResultState createState() => _AddResultState();
@@ -58,6 +60,8 @@ class _AddResultState extends State<AddResult> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
+
     if (widget.currentResult != null) {
       testTitleController.text = widget.currentResult.title;
       resultValue = widget.currentResult.score;
@@ -67,6 +71,12 @@ class _AddResultState extends State<AddResult> {
     }
 
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(AddResult oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -87,110 +97,136 @@ class _AddResultState extends State<AddResult> {
                   fontFamily: widget.fontData.font,
                   color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour
                 ))))),
-                actions: <Widget>[
+                actions: recorder.recording ? <Widget>[
+                  // action button
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {setState(() {recorder.cancelRecording();});},
+                  ),
+                ] : <Widget>[
+                  // else display the mic button and settings button
                   IconButton(
                       icon: Icon(Icons.home),
                       onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
                   ),
+                  IconButton(
+                    icon: Icon(Icons.mic),
+                    onPressed: () {setState(() {recorder.recordAudio(context);});},
+                  ),
                 ],
               ),
-              body: new SingleChildScrollView(
-                child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    SizedBox(height: 20.0),
-                    new Card(
-                        color: widget.cardColour,
-                        margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                        elevation: 3.0,
-                        child: new Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: TextFormField(
-                                focusNode: testTitleFocusNode,
-                                keyboardType: TextInputType.text,
-                                autofocus: false,
-                                controller: testTitleController,
-                                style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.fontData.color),
-                                decoration: InputDecoration(
-                                    hintText: "Test Title",
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: widget.themeColour),
+              body: new Stack(
+                children: <Widget>[
+                  new SingleChildScrollView(
+                    child: new Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        SizedBox(height: 20.0),
+                        new Card(
+                            color: widget.cardColour,
+                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                            elevation: 3.0,
+                            child: new Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: TextFormField(
+                                    focusNode: testTitleFocusNode,
+                                    keyboardType: TextInputType.text,
+                                    autofocus: false,
+                                    controller: testTitleController,
+                                    style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                    decoration: InputDecoration(
+                                      hintText: "Test Title",
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(color: widget.themeColour),
+                                      ),
                                     ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            SizedBox(height: 20.0),
-                            new Container(
-                                margin: EdgeInsets.fromLTRB(0.0, 10.0, 20.0, 10.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Container(
-                                        margin: EdgeInsets.fromLTRB(20.0*ThemeCheck.orientatedScaleFactor(context), 0.0, 0.0, 0.0),
-                                        child: new Text("Result out of 100", style: TextStyle(
-                                            fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                                            fontFamily: widget.fontData.font,
-                                            color: widget.fontData.color
-                                          )
+                                SizedBox(height: 20.0),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(0.0, 10.0, 20.0, 10.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Container(
+                                            margin: EdgeInsets.fromLTRB(20.0*ThemeCheck.orientatedScaleFactor(context), 0.0, 0.0, 0.0),
+                                            child: new Text("Result out of 100", style: TextStyle(
+                                                fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                                                fontFamily: widget.fontData.font,
+                                                color: widget.fontData.color
+                                            )
+                                            )
+                                        ),
+                                        SizedBox(height: 10.0),
+                                        Container(
+                                          margin: EdgeInsets.fromLTRB(5.0*ThemeCheck.orientatedScaleFactor(context), 0.0, 0.0, 0.0),
+                                          child: new Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              new Slider(
+                                                activeColor: Color(int.tryParse(widget.subject.colour)),
+                                                value: resultValue,
+                                                min: 0.0,
+                                                onChanged: (newVal) {
+                                                  setState(() {
+                                                    resultValue = newVal;
+                                                  });
+                                                },
+                                                max: 100.0,
+                                              ),
+                                              new Container(
+                                                margin: EdgeInsets.fromLTRB(15.0*ThemeCheck.orientatedScaleFactor(context), 0.0, 0.0, 0.0),
+                                                child: Text(
+                                                    resultValue.round().toString()+"/100%",
+                                                    style: TextStyle(
+                                                        fontSize: 20.0*widget.fontData.size,
+                                                        fontFamily: widget.fontData.font,
+                                                        color: widget.fontData.color
+                                                    )
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         )
-                                    ),
-                                    SizedBox(height: 10.0),
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(5.0*ThemeCheck.orientatedScaleFactor(context), 0.0, 0.0, 0.0),
-                                      child: new Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          new Slider(
-                                            activeColor: Color(int.tryParse(widget.subject.colour)),
-                                            value: resultValue,
-                                            min: 0.0,
-                                            onChanged: (newVal) {
-                                              setState(() {
-                                                resultValue = newVal;
-                                              });
-                                            },
-                                            max: 100.0,
-                                          ),
-                                          new Container(
-                                            margin: EdgeInsets.fromLTRB(15.0*ThemeCheck.orientatedScaleFactor(context), 0.0, 0.0, 0.0),
-                                            child: Text(
-                                                resultValue.round().toString()+"/100%",
-                                                style: TextStyle(
-                                                    fontSize: 20.0*widget.fontData.size,
-                                                    fontFamily: widget.fontData.font,
-                                                    color: widget.fontData.color
-                                                )
-                                            ),
-                                          ),
-                                        ],
+                                      ],
+                                    )
+                                ),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                    child: ButtonTheme(
+                                      height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                      child: RaisedButton(
+                                        elevation: 3.0,
+                                        onPressed: showAreYouSureDialog,
+                                        child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                                        color: ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour))),
+
+                                        textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour)))),
                                       ),
                                     )
-                                  ],
                                 )
-                            ),
-                            new Container(
-                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                child: ButtonTheme(
-                                  height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                                  child: RaisedButton(
-                                    elevation: 3.0,
-                                    onPressed: showAreYouSureDialog,
-                                    child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                                    color: ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour))),
-
-                                    textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour)))),
-                                  ),
-                                )
+                              ],
                             )
-                          ],
                         )
-                    )
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
+                  new Container(
+                      child: recorder.recording ?
+                      new Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          new Container(
+                              child: new ModalBarrier(
+                                color: Colors.black54, dismissible: false,)),
+                          recorder.drawRecordingCard(context, widget.fontData, widget.cardColour, widget.themeColour, widget.iconData)
+                        ],) : new Container()
+                  ),
+                ],
               )
             ),
             submitting ? new Stack(

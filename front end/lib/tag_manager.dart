@@ -1,19 +1,12 @@
 import 'package:Athena/athena_icon_data.dart';
-import 'package:Athena/background_settings.dart';
-import 'package:Athena/card_settings.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
-import 'package:Athena/icon_settings.dart';
-import 'package:Athena/sign_out.dart';
 import 'package:Athena/theme_check.dart';
-import 'package:Athena/theme_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'recording_manager.dart';
 import 'add_tag.dart';
-import 'font_settings.dart';
 import 'tag.dart';
 
 class TagManager extends StatefulWidget {
@@ -119,8 +112,15 @@ class _TagManagerState extends State<TagManager> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
     retrieveData();
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(TagManager oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   void retrieveData() {
@@ -178,6 +178,7 @@ class _TagManagerState extends State<TagManager> {
                 tag: tagList[position],
                 fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                 cardColour: cardColour,
+                iconData: iconData,
                 backgroundColour: backgroundColour,
                 themeColour: themeColour,
               ))).whenComplete(retrieveData),
@@ -260,6 +261,7 @@ class _TagManagerState extends State<TagManager> {
                       MaterialPageRoute(builder: (context) => AddTag(
                         fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                         cardColour: cardColour,
+                        iconData: iconData,
                         backgroundColour: backgroundColour,
                         themeColour: themeColour,
                       )))
@@ -306,7 +308,7 @@ class _TagManagerState extends State<TagManager> {
                         new Container(
                             child: new ModalBarrier(
                               color: Colors.black54, dismissible: false,)),
-                        recorder.drawRecordingCard(context)
+                        recorder.drawRecordingCard(context, fontData, cardColour, themeColour, iconData)
                       ],) : new Container()
                 ),
               ],

@@ -1,5 +1,7 @@
+import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
+import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
@@ -10,12 +12,13 @@ import 'timetable_slot.dart';
 
 class AddTimeslot extends StatefulWidget {
 
-  AddTimeslot({Key key, this.day, this.lastTime, this.currentTimeslot, this.fontData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
+  AddTimeslot({Key key, this.day, this.lastTime, this.currentTimeslot, this.fontData, this.cardColour, this.themeColour, this.backgroundColour, this.iconData}) : super(key: key);
 
   final String day;
   final String lastTime;
   final TimetableSlot currentTimeslot;
   final FontData fontData;
+  final AthenaIconData iconData;
 
   final Color cardColour;
   final Color backgroundColour;
@@ -28,6 +31,7 @@ class AddTimeslot extends StatefulWidget {
 class _AddTimeslotState extends State<AddTimeslot> {
 
   RequestManager requestManager = RequestManager.singleton;
+  RecordingManger recorder = RecordingManger.singleton;
 
   final timeController = new TextEditingController();
   final teacherController = new TextEditingController();
@@ -50,6 +54,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
 
     if (widget.currentTimeslot != null) {
       currentTime = widget.currentTimeslot.time;
@@ -66,8 +71,9 @@ class _AddTimeslotState extends State<AddTimeslot> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void didUpdateWidget(AddTimeslot oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   bool isFileEdited() {
@@ -113,160 +119,185 @@ class _AddTimeslotState extends State<AddTimeslot> {
                         fontFamily: widget.fontData.font
                     ),
                 ),
-                  actions: <Widget>[
+                  actions: recorder.recording ? <Widget>[
+                    // action button
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () {setState(() {recorder.cancelRecording();});},
+                    ),
+                  ] : <Widget>[
+                    // else display the mic button and settings button
                     IconButton(
                         icon: Icon(Icons.home),
                         onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.mic),
+                      onPressed: () {setState(() {recorder.recordAudio(context);});},
                     ),
                     widget.currentTimeslot != null ? IconButton(
                       icon: Icon(Icons.delete),
                       onPressed: deleteTimeslotDialog,
                     ): new Container()
-                  ]
+                  ],
               ),
               resizeToAvoidBottomPadding: false,
-              body: new ListView(
+              body: new Stack(
                 children: <Widget>[
-                  SizedBox(height: 20.0),
-                  new Card(
-                      color: widget.cardColour,
-                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      elevation: 3.0,
-                      child: new Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          new Container(
-                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: !submitting ?
-                            new Container(
-                                child: ButtonTheme(
-                                  height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                                  child: RaisedButton(
-                                    elevation: 3.0,
-                                    onPressed: () => showSubjectList(),
-                                    child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                            selectedSubject == null ? 'Choose a Subject' : selectedSubject.name,
-                                            style: TextStyle(
-                                              fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
-                                              fontFamily: widget.fontData.font,
+                  new ListView(
+                    children: <Widget>[
+                      SizedBox(height: 20.0),
+                      new Card(
+                          color: widget.cardColour,
+                          margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          elevation: 3.0,
+                          child: new Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              new Container(
+                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                child: !submitting ?
+                                new Container(
+                                    child: ButtonTheme(
+                                      height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                      child: RaisedButton(
+                                        elevation: 3.0,
+                                        onPressed: () => showSubjectList(),
+                                        child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                                selectedSubject == null ? 'Choose a Subject' : selectedSubject.name,
+                                                style: TextStyle(
+                                                  fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                                  fontFamily: widget.fontData.font,
+                                                )
                                             )
-                                        )
-                                    ),
-                                    color: widget.themeColour,
-                                    textColor: ThemeCheck.colorCheck(widget.themeColour),
-                                  ),
-                                )
-                            ) : new Container(),
-                          ),
-                          SizedBox(height: 10.0),
-                          new Container(
-                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: Theme(
-                                data: ThemeData(
-                                  primaryColor: widget.themeColour,
-                                ),
-                                child: TextFormField(
-                                  focusNode: roomFocusNode,
-                                  keyboardType: TextInputType.text,
-                                  autofocus: false,
-                                  controller: roomController,
-                                  style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
-                                  onFieldSubmitted: (String value) {
-                                    FocusScope.of(context).requestFocus(teacherFocusNode);
-                                  },
-                                  decoration: InputDecoration(
-                                    hintText: "What's the Room name?",
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: widget.themeColour),
-                                    ),
-                                  ),
-                                  cursorColor: widget.themeColour,
-                                ),
-                            )
-                          ),
-                          SizedBox(height: 20.0),
-                          new Container(
-                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                            child: Theme(
-                              data: ThemeData(
-                                primaryColor: widget.themeColour,
+                                        ),
+                                        color: widget.themeColour,
+                                        textColor: ThemeCheck.colorCheck(widget.themeColour),
+                                      ),
+                                    )
+                                ) : new Container(),
                               ),
-                              child: TextFormField(
-                                focusNode: teacherFocusNode,
-                                keyboardType: TextInputType.text,
-                                autofocus: false,
-                                controller: teacherController,
-                                style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
-                                onFieldSubmitted: (String value) {
-                                  FocusScope.of(context).requestFocus(new FocusNode());
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "What's the Teacher's name?",
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: widget.themeColour),
-                                  ),
-                                ),
-                                cursorColor: widget.themeColour,
+                              SizedBox(height: 10.0),
+                              new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: Theme(
+                                    data: ThemeData(
+                                      primaryColor: widget.themeColour,
+                                    ),
+                                    child: TextFormField(
+                                      focusNode: roomFocusNode,
+                                      keyboardType: TextInputType.text,
+                                      autofocus: false,
+                                      controller: roomController,
+                                      style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                      onFieldSubmitted: (String value) {
+                                        FocusScope.of(context).requestFocus(teacherFocusNode);
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText: "What's the Room name?",
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(color: widget.themeColour),
+                                        ),
+                                      ),
+                                      cursorColor: widget.themeColour,
+                                    ),
+                                  )
                               ),
-                            )
-                          ),
-                          SizedBox(height: 20.0),
-                          new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: new Theme(
-                                  data: ThemeData(
-                                    accentColor: widget.themeColour,
-                                    dialogBackgroundColor: widget.cardColour,
-                                    primaryColor: widget.themeColour,
-                                    primaryColorDark: widget.themeColour
-                                  ),
-                                  child: DateTimePickerFormField(
-                                      controller: timeController,
-                                      initialValue: widget.currentTimeslot == null ? null :
-                                      DateTime(2000, 03, 07, int.tryParse(widget.currentTimeslot.time.split(':')[0]), int.tryParse(widget.currentTimeslot.time.split(':')[1])),
-                                      format: DateFormat("HH:mm"),
-                                      inputType: InputType.time,
-                                      editable: false,
-                                      onChanged: (DateTime dt) {
-                                        setState(() =>
-                                        dt != null ? currentTime = (dt.hour.toString()+":"+dt.minute.toString()) : null
-                                        );
-
+                              SizedBox(height: 20.0),
+                              new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: Theme(
+                                    data: ThemeData(
+                                      primaryColor: widget.themeColour,
+                                    ),
+                                    child: TextFormField(
+                                      focusNode: teacherFocusNode,
+                                      keyboardType: TextInputType.text,
+                                      autofocus: false,
+                                      controller: teacherController,
+                                      style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                      onFieldSubmitted: (String value) {
                                         FocusScope.of(context).requestFocus(new FocusNode());
                                       },
-                                      style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
                                       decoration: InputDecoration(
-                                        hintText: "What Time is the class at?",
-                                        hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font),
-                                        hasFloatingPlaceholder: false,
+                                        hintText: "What's the Teacher's name?",
+                                        focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(color: widget.themeColour),
+                                        ),
                                       ),
-                                      initialTime: null
+                                      cursorColor: widget.themeColour,
+                                    ),
                                   )
-                              )
-                          ),
-                          SizedBox(height: 20.0),
-                        ],
-                      )
-                  ),
-                  SizedBox(height: 10.0),
-                  new Container(
-                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                      child: ButtonTheme(
-                        height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                        child: RaisedButton(
-                          elevation: 3.0,
-                          onPressed: showAreYouSureDialog,
-                          child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size))),
-                          color: ThemeCheck.errorColorOfColor(widget.themeColour),
+                              ),
+                              SizedBox(height: 20.0),
+                              new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: new Theme(
+                                      data: ThemeData(
+                                          accentColor: widget.themeColour,
+                                          dialogBackgroundColor: widget.cardColour,
+                                          primaryColor: widget.themeColour,
+                                          primaryColorDark: widget.themeColour
+                                      ),
+                                      child: DateTimePickerFormField(
+                                          controller: timeController,
+                                          initialValue: widget.currentTimeslot == null ? null :
+                                          DateTime(2000, 03, 07, int.tryParse(widget.currentTimeslot.time.split(':')[0]), int.tryParse(widget.currentTimeslot.time.split(':')[1])),
+                                          format: DateFormat("HH:mm"),
+                                          inputType: InputType.time,
+                                          editable: false,
+                                          onChanged: (DateTime dt) {
+                                            setState(() =>
+                                            dt != null ? currentTime = (dt.hour.toString()+":"+dt.minute.toString()) : null
+                                            );
 
-                          textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(widget.themeColour)),
-                        ),
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                          },
+                                          style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                          decoration: InputDecoration(
+                                            hintText: "What Time is the class at?",
+                                            hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font),
+                                            hasFloatingPlaceholder: false,
+                                          ),
+                                          initialTime: null
+                                      )
+                                  )
+                              ),
+                              SizedBox(height: 20.0),
+                            ],
+                          )
+                      ),
+                      SizedBox(height: 10.0),
+                      new Container(
+                          margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                          child: ButtonTheme(
+                            height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                            child: RaisedButton(
+                              elevation: 3.0,
+                              onPressed: showAreYouSureDialog,
+                              child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size))),
+                              color: ThemeCheck.errorColorOfColor(widget.themeColour),
+
+                              textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(widget.themeColour)),
+                            ),
+                          )
                       )
-                  )
+                    ],
+                  ),
+                  new Container(
+                      child: recorder.recording ?
+                      new Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          new Container(
+                              margin: MediaQuery.of(context).viewInsets,
+                              child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context, widget.fontData, widget.cardColour, widget.themeColour, widget.iconData)],
+                      ) : new Container()
+                  ),
                 ],
-              ),
+              )
             ),
             submitting ? new Stack(
               alignment: Alignment.center,

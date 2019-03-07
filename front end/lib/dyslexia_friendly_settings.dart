@@ -52,8 +52,15 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
     retrieveData();
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(DyslexiaFriendlySettings oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   void retrieveData() async {
@@ -182,85 +189,100 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
               ],
             ),
             resizeToAvoidBottomPadding: false,
-            body: loaded && fontLoaded && iconLoaded && themeColourLoaded && cardColourLoaded && backgroundColourLoaded ? new ListView(
+            body: new Stack(
               children: <Widget>[
-                SizedBox(height: 20.0),
-                new Card(
-                  color: cardColour,
-                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                  elevation: 3.0,
-                  child: new Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                loaded && fontLoaded && iconLoaded && themeColourLoaded && cardColourLoaded && backgroundColourLoaded ? new ListView(
+                  children: <Widget>[
+                    SizedBox(height: 20.0),
+                    new Card(
+                      color: cardColour,
+                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                      elevation: 3.0,
+                      child: new Container(
+                        margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                        child: new Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            new Container(
+                                child: Text(
+                                    "Tap the Switch to Turn on Dylsexia Friendly Mode!",
+                                    style: TextStyle(
+                                        fontFamily: this.fontData.font,
+                                        color: fontData.color != null ? fontData.color : Colors.black,
+                                        fontSize: fontData.size != null ? 24.0*fontData.size : 35.0
+                                    ))
+                            ),
+                            SizedBox(height: 20.0*ThemeCheck.orientatedScaleFactor(context)),
+                            Container(
+                              alignment: Alignment.center,
+                              width: 35*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                              height: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                              child: Transform.scale(
+                                alignment: Alignment.center,
+                                scale: 1.5*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                                child: new Switch(
+                                  value: enabled,
+                                  activeColor: themeColour,
+                                  inactiveThumbColor: ThemeCheck.lightColorOfColor(themeColour),
+                                  onChanged: ((value) async {
+
+                                    setState(() {
+                                      enabled = value;
+
+                                      if (value){
+                                        enableDyslexiaFriendlyColours().whenComplete((){
+                                          submit(true);
+                                          retrieveData();
+                                          submit(false);
+                                        });
+                                      }
+                                      else if (!value){
+                                        disableDyslexiaFriendlyColours().whenComplete((){
+                                          submit(true);
+                                          retrieveData();
+                                          submit(false);
+                                        });
+                                      }
+                                    });
+                                  })
+                                )
+                              )
+                            )
+                          ],
+                        ),
+                      )
+                    ),
+                  ],
+                ) : new Stack(
+                    alignment: Alignment.center,
                     children: <Widget>[
                       new Container(
-                          margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                          child: Text(
-                              "Tap the Switch to Turn on Dylsexia Friendly Mode!",
-                              style: TextStyle(
-                                  fontFamily: this.fontData.font,
-                                  color: fontData.color != null ? fontData.color : Colors.black,
-                                  fontSize: fontData.size != null ? 24.0*fontData.size : 35.0
-                              ))
-                      ),
-                      SizedBox(height: 10.0),
-                      Container(
-                          margin: EdgeInsets.fromLTRB(15.0, 10.0, 20.0, 10.0),
-                          width: 40*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                          height: 35*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                          child: Transform.scale(
-                            alignment: Alignment.center,
-                            scale: 1.50*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                            child: new Switch(
-                              value: enabled,
-                              activeColor: themeColour,
-                              inactiveThumbColor: ThemeCheck.lightColorOfColor(themeColour),
-                              materialTapTargetSize: MaterialTapTargetSize.padded,
-                              onChanged: ((value) async {
-
-                                setState(() {
-                                  enabled = value;
-
-                                  if (value){
-                                    enableDyslexiaFriendlyColours().whenComplete((){
-                                      submit(true);
-                                      retrieveData();
-                                      submit(false);
-                                    });
-                                  }
-                                  else if (!value){
-                                    disableDyslexiaFriendlyColours().whenComplete((){
-                                      submit(true);
-                                      retrieveData();
-                                      submit(false);
-                                    });
-                                  }
-                                });
-                              })
-                            ),
+                          margin: MediaQuery.of(context).viewInsets,
+                          child: new Stack(
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                new Container(
+                                  child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
+                                ),
+                                new ModalBarrier(color: Colors.black54, dismissible: false,),
+                              ]
                           )
-                      )
-                    ],
-                  )
+                      ),
+                      new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
+                    ]
                 ),
-              ],
-            ) : new Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              new Container(
-                  margin: MediaQuery.of(context).viewInsets,
-                  child: new Stack(
+                new Container(
+                    alignment: Alignment.center,
+                    child: recorder.recording ?
+                    new Stack(
                       alignment: Alignment.center,
                       children: <Widget>[
                         new Container(
-                          child: Image.asset("assets/icon/icon3.png", width: 200*ThemeCheck.orientatedScaleFactor(context), height: 200*ThemeCheck.orientatedScaleFactor(context),),
-                        ),
-                        new ModalBarrier(color: Colors.black54, dismissible: false,),
-                      ]
-                  )
-              ),
-              new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white),))
-            ]
-          )
+                            margin: MediaQuery.of(context).viewInsets,
+                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context, fontData, cardColour, themeColour, iconData)],) : new Container()
+                ),
+              ],
+            )
         ),
         submitting ? new Stack(
           alignment: Alignment.center,

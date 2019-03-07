@@ -46,22 +46,31 @@ def register_user():
             "secondName": request.form['secondName']
         }
 
-
         # upload their first name and second name to the database
-        results = db.child("users").child(user['localId']).child("userDetails").set(data, user['idToken'])
+        db.child("users").child(user['localId']).child("userDetails").set(data, user['idToken'])
 
-        """
         #add initial colour settings
         fontData = {
-            "font": 'request.form['font']',
-            "fontColour": request.form['fontColour'],
-            "fontSize": request.form['fontSize']
+            "font": 'Roboto',
+            "fontColour": '4278190080',
+            "fontSize": '1.0'
         }
 
         # set posted font under the design node
-        result = db.child("users").child(user['userId']).child("design").child("font").set(data, user['idToken'])
-		
-		"""
+        db.child("users").child(user['localId']).child("design").child("font").set(fontData, user['idToken'])
+
+        iconData = {
+            "iconColour": '4278190080',
+            "iconSize": '1.0'
+        }
+
+        # set posted font under the design node
+        db.child("users").child(user['localId']).child("design").child("icon").set(iconData, user['idToken'])
+        db.child("users").child(user['localId']).child("design").child("themeColour").set('4285641955', user['idToken'])
+        db.child("users").child(user['localId']).child("design").child("cardColour").set('4294967295', user['idToken'])
+        db.child("users").child(user['localId']).child("design").child("backgroundColour").set('4294967295', user['idToken'])
+        db.child("users").child(user['localId']).child("design").child("dyslexiaFriendlyEnabled").set('false', user['idToken'])
+
         # return success message
         return jsonify(message="User Created Successfully")
     # catch exception and handle error

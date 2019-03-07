@@ -1,4 +1,14 @@
 import 'dart:async';
+import 'package:Athena/athena_icon_data.dart';
+import 'package:Athena/background_settings.dart';
+import 'package:Athena/card_settings.dart';
+import 'package:Athena/dyslexia_friendly_settings.dart';
+import 'package:Athena/font_data.dart';
+import 'package:Athena/icon_settings.dart';
+import 'package:Athena/sign_out.dart';
+import 'package:Athena/tag_manager.dart';
+import 'package:Athena/theme_check.dart';
+import 'package:Athena/theme_settings.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
@@ -33,8 +43,6 @@ class _ByTagViewerState extends State<ByTagViewer> {
   //Recording Manager Object
   RecordingManger recorder = RecordingManger.singleton;
 
-  String font = "";
-
   Map<Subject, Note> notesList = new Map<Subject, Note>();
 
   //list for image urls, will be general files in final version
@@ -46,15 +54,84 @@ class _ByTagViewerState extends State<ByTagViewer> {
   bool loaded = false;
 
   //size of file card
-  double fileCardSize = 150.0;
+  double fileCardSize = 185.0;
+
+  FontData fontData;
+  bool fontLoaded = false;
+
+  AthenaIconData iconData;
+  bool iconLoaded = false;
+
+  bool cardColourLoaded = false;
+  bool backgroundColourLoaded = false;
+  bool themeColourLoaded = false;
+
+  Color themeColour;
+  Color backgroundColour;
+  Color cardColour;
 
   //get current font from shared preferences if present
-  void getFont() async
+  void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (this.mounted) {
-      this.setState((){font = prefs.getString("font");});
+      this.setState((){
+        fontLoaded = true;
+        fontData = new FontData(prefs.getString("font"), Color(prefs.getInt("fontColour")), prefs.getDouble("fontSize"));
+      });
+    }
+  }
+
+  //get current font from shared preferences if present
+  void getCardColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        cardColourLoaded = true;
+        cardColour = Color(prefs.getInt("cardColour"));
+      });
+    }
+  }
+
+  void getBackgroundColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        backgroundColourLoaded = true;
+        backgroundColour = Color(prefs.getInt("backgroundColour"));
+      });
+    }
+  }
+
+  void getThemeColour() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        themeColourLoaded = true;
+        themeColour = Color(prefs.getInt("themeColour"));
+      });
+    }
+  }
+
+  //get current icon settings from shared preferences if present
+  void getIconData() async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (this.mounted) {
+      this.setState(() {
+        iconLoaded = true;
+        iconData = new AthenaIconData(
+            Color(prefs.getInt("iconColour")),
+            prefs.getDouble("iconSize"));
+      });
     }
   }
 
@@ -70,20 +147,33 @@ class _ByTagViewerState extends State<ByTagViewer> {
     });
   }
 
-  void retrieveData() async {
+  void retrieveData() {
+    iconLoaded = false;
+    loaded = false;
+    cardColourLoaded = false;
+    backgroundColourLoaded = false;
+    themeColourLoaded = false;
     subjectFiles.clear();
     notesList.clear();
-    noteKeys.clear();
-    fileKeys.clear();
-    loaded = false;
-    getFont();
+    getBackgroundColour();
+    getThemeColour();
+    getCardColour();
     getNotesAndFiles();
+    getFontData();
+    getIconData();
   }
 
   //method called before the page is rendered
   void initState() {
+    recorder.assignParent(this);
     retrieveData();
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(ByTagViewer oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -108,9 +198,13 @@ class _ByTagViewerState extends State<ByTagViewer> {
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new Text("You have no Files tagged with this Tag", textAlign: TextAlign.center, style: TextStyle(fontFamily: font),),
+                          new Text("You have no Files tagged with this Tag", textAlign: TextAlign.center, style: TextStyle(
+                              fontFamily: fontData.font,
+                              color: fontData.color,
+                              fontSize: fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size
+                          ),),
                           new SizedBox(height: 15.0,),
-                          new Icon(Icons.local_offer, size: 40.0, color: Colors.grey,)
+                          new Icon(Icons.local_offer, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,)
                         ]
                     ),
                   ),
@@ -151,8 +245,8 @@ class _ByTagViewerState extends State<ByTagViewer> {
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles.values.elementAt(index).url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(),
                                       imageUrl: subjectFiles.values.elementAt(index).url,
-                                      height: fileCardSize,
-                                      width: fileCardSize,
+                                      height: fileCardSize* ThemeCheck.orientatedScaleFactor(context),
+                                      width: fileCardSize* ThemeCheck.orientatedScaleFactor(context),
                                       fit: BoxFit.cover
                                   ) : FileTypeManger.getFileTypeFromURL(subjectFiles.values.elementAt(index).url) == "video" ? new Stack(children: <Widget>[
                                     new Chewie(
@@ -165,19 +259,21 @@ class _ByTagViewerState extends State<ByTagViewer> {
                                         autoInitialize: true,
                                         showControls: false,
                                         looping: false,
-                                        placeholder: new Center(child: new CircularProgressIndicator(backgroundColor: Theme.of(context).accentColor,)),
+                                        placeholder: new Center(child: new CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
                                       ),
                                     ),
-                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0, color: Color.fromRGBO(255, 255, 255, 0.85),)),
+                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: Color.fromRGBO(255, 255, 255, 0.85),)),
                                   ],) : FileTypeManger.getFileTypeFromURL(subjectFiles.values.elementAt(index).url) == "audio" ?
                                   new Container(
+                                    width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
                                     child: new Column(
                                       children: <Widget>[
-                                        new SizedBox(height: 27.5,),
-                                        new Icon(Icons.volume_up, size: 70.0, color: Colors.red),
+                                        new SizedBox(height: 40*ThemeCheck.orientatedScaleFactor(context),),
+                                        new Icon(Icons.volume_up, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: themeColour),
                                         new Flexible(
                                             child: Marquee(
-                                              text: subjectFiles.values.elementAt(index).fileName,
+                                              text: subjectFiles[index].fileName,
                                               scrollAxis: Axis.horizontal,
                                               velocity: 50.0,
                                               pauseAfterRound: Duration(seconds: 2),
@@ -194,8 +290,8 @@ class _ByTagViewerState extends State<ByTagViewer> {
                         )
                     ),
                     //Keeps the card the same size when the image is loading
-                    width: fileCardSize,
-                    height: fileCardSize,
+                    width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
                   ),
                 );
               }
@@ -204,7 +300,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
     }
     else{
       //display a circular progress indicator when the image list is loading
-      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0), child: new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0))));
+      subjectList = new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour)))));
     }
 
     ListView textFileList;
@@ -222,9 +318,13 @@ class _ByTagViewerState extends State<ByTagViewer> {
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        new Text("You have no Notes tagged with this Tag", textAlign: TextAlign.center, style: TextStyle(fontFamily: font, fontSize: 24.0), ),
-                        new SizedBox(height: 10.0,),
-                        new Icon(Icons.local_offer, size: 40.0, color: Colors.grey,),
+                        new Text("You have no Notes tagged with this Tag", textAlign: TextAlign.center,  style: TextStyle(
+                            fontFamily: fontData.font,
+                            color: fontData.color,
+                            fontSize: fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size
+                        ), ),
+                        new SizedBox(height: 10.0*ThemeCheck.orientatedScaleFactor(context),),
+                        new Icon(Icons.local_offer, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,),
                       ]
                   ),
                 ),
@@ -241,21 +341,32 @@ class _ByTagViewerState extends State<ByTagViewer> {
             margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
             elevation: 3.0,
             child: new ListTile(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(note: notesList.values.elementAt(position), subject: notesList.keys.elementAt(position)))).whenComplete(retrieveData),
-              contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(
+                  note: notesList.values.elementAt(position),
+                  subject: notesList.keys.elementAt(position),
+                  fontData: fontData,
+                  backgroundColour: backgroundColour,
+                  themeColour: themeColour,
+                  cardColour: cardColour,
+              ))).whenComplete(retrieveData),
+              contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0*ThemeCheck.orientatedScaleFactor(context)),
               leading: Container(
                 padding: EdgeInsets.only(right: 12.0),
                 decoration: new BoxDecoration(
                     border: new Border(right: new BorderSide(width: 1.0, color: Colors.white24))
                 ),
-                child: Icon(Icons.insert_drive_file, color: Colors.redAccent, size: 32.0,),
+                child: Icon(
+                  Icons.insert_drive_file,
+                  color: themeColour,
+                  size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                ),
               ),
               title: Text(
-                notesList.values.elementAt(position).fileName,
-                style: TextStyle(fontSize: 20.0, fontFamily: font),
+                notesList[position].fileName,
+                style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color),
               ),
               trailing: GestureDetector(
-                  child: Icon(Icons.delete, size: 32.0, color: Color.fromRGBO(70, 68, 71, 1)),
+                  child: Icon(Icons.delete, size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: ThemeCheck.errorColorOfColor(iconData.color)),
                   onTap: () => deleteNoteDialog(notesList.values.elementAt(position), notesList.keys.elementAt(position))
               ),
             ),
@@ -267,40 +378,226 @@ class _ByTagViewerState extends State<ByTagViewer> {
 
     return Scaffold(
         key: _scaffoldKey,
+        backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
+        resizeToAvoidBottomPadding: false,
         //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-        endDrawer: new Drawer(
-          child: ListView(
-            //Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              //drawer header
-              DrawerHeader(
-                child: Text('Settings', style: TextStyle(fontSize: 25.0, fontFamily: font)),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                ),
+        endDrawer: new SizedBox(
+          width: MediaQuery.of(context).size.width * 0.95,
+          child: new Drawer(
+            child: new Container(
+              color: cardColour,
+              child: ListView(
+                //Remove any padding from the ListView.
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  //drawer header
+                  DrawerHeader(
+                    child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
+                    decoration: BoxDecoration(
+                      color: themeColour,
+                    ),
+                  ),
+                  //fonts option
+                  ListTile(
+                    leading: Icon(
+                      Icons.font_download,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Fonts',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                        retrieveData();
+                        recorder.assignParent(this);
+                      });
+                    },
+                  ),
+                  new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                  ListTile(
+                    leading: Icon(
+                      Icons.insert_emoticon,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Icons',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                        retrieveData();
+                        recorder.assignParent(this);
+                      });
+                    },
+                  ),
+                  new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                  ListTile(
+                    leading: Icon(
+                      Icons.color_lens,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Theme Colour',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(
+                        backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
+                        cardColour: cardColourLoaded ? cardColour : Colors.white,
+                        fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
+                        iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
+                      ))).whenComplete((){
+                        retrieveData();
+                        recorder.assignParent(this);
+                      });
+                    },
+                  ),
+                  new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                  ListTile(
+                    leading: Icon(
+                      Icons.format_paint,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Background Colour',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(
+                        cardColour: cardColourLoaded ? cardColour : Colors.white,
+                        fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
+                        themeColour: themeColourLoaded ? themeColour : Colors.white,
+                        iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
+                      ))).whenComplete((){
+                        retrieveData();
+                        recorder.assignParent(this);
+                      });
+                    },
+                  ),
+                  new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                  ListTile(
+                    leading: Icon(
+                      Icons.colorize,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Card Colour',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(
+                        fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
+                        themeColour: themeColourLoaded ? themeColour : Colors.white,
+                        backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
+                        iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
+                      ))).whenComplete((){
+                        retrieveData();
+                        recorder.assignParent(this);
+                      });
+                    },
+                  ),
+                  new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                  ListTile(
+                    leading: Icon(
+                      Icons.invert_colors,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Dyslexia Friendly Mode',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                        retrieveData();
+                        recorder.assignParent(this);
+                      });
+                    },
+                  ),
+                  new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                  ListTile(
+                    leading: Icon(
+                      Icons.local_offer,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    ),
+                    title: Text(
+                        'Tags',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                        retrieveData();
+                        recorder.assignParent(this);
+                      });
+                    },
+                  ),
+                  new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                  //sign out option
+                  ListTile(
+                    leading: Icon(
+                      Icons.exit_to_app,
+                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),),
+                    title: Text(
+                        'Sign Out',
+                        style: TextStyle(
+                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontLoaded ? fontData.font : "",
+                          color: fontLoaded ? fontData.color : Colors.black,
+                        )
+                    ),
+                    onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
+                  ),
+                ],
               ),
-              //fonts option
-              ListTile(
-                leading: Icon(Icons.font_download),
-                title: Text('Fonts', style: TextStyle(fontSize: 20.0, fontFamily: font)),
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings()));
-                },
-              ),
-              //sign out option
-              ListTile(
-                leading: Icon(Icons.exit_to_app),
-                title: Text('Sign Out', style: TextStyle(fontSize: 20.0, fontFamily: font)),
-                onTap: () {
-                  //signOut();
-                },
-              ),
-            ],
+            ),
           ),
         ),
         appBar: new AppBar(
-          title: new Text("Tag - "+widget.tag, style: TextStyle(fontFamily: font),),
+          iconTheme: IconThemeData(
+              color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
+          ),
+          backgroundColor: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
+          title: new Text("Tag - "+widget.tag, style: TextStyle(
+              fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: fontLoaded ? fontData.font : "",
+              color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
+          ),),
           //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
           actions: recorder.recording ? <Widget>[
             // action button
@@ -327,23 +624,51 @@ class _ByTagViewerState extends State<ByTagViewer> {
         body: LayoutBuilder(
           builder: (context, constraints) =>
           //stack to display the main widgets; the notes and images
-          Stack(
+          MediaQuery.of(context).orientation == Orientation.portrait ?
+          Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 new Container(
-                  //note container, which is 63% the size of the screen
-                  height: MediaQuery.of(context).size.height * 0.63,
+                  //note container, which is 60% the size of the screen
+                  height: ThemeCheck.orientatedScaleFactor(context) > 0.70 ?
+                  MediaQuery.of(context).size.height * 3.5 * (1-ThemeCheck.orientatedScaleFactor(context)).abs() :
+                  MediaQuery.of(context).size.height * 0.80 * ThemeCheck.orientatedScaleFactor(context),
                   alignment: loaded ? Alignment.topCenter : Alignment.center,
-                  child: loaded ? textFileList : new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)),
+                  child: loaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
                 ),
                 new Container(
                   //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
                   alignment: Alignment.bottomCenter,
-                  child: new Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      //display the image list
-                      subjectList,
-                    ],
+                  child: subjectList,
+                ),
+                //container for the recording card, show if recording, show blank container if not
+                new Container(
+                    alignment: Alignment.center,
+                    child: recorder.recording ?
+                    new Stack(
+                      alignment: Alignment.center,
+                      children: <Widget>[
+                        new Container(
+                            margin: MediaQuery.of(context).viewInsets,
+                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context, fontData, cardColour, themeColour, iconData)],) : new Container()
+                ),
+              ]
+          ) :
+          Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                new Container(
+                  width: MediaQuery.of(context).size.width * 0.50,
+                  alignment: loaded ? Alignment.topCenter : Alignment.center,
+                  child: loaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
+                ),
+                new Flexible(
+                  child: Container(
+                    //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
+                    alignment: Alignment.center,
+                    child: subjectList,
                   ),
                 ),
                 //container for the recording card, show if recording, show blank container if not
@@ -354,10 +679,9 @@ class _ByTagViewerState extends State<ByTagViewer> {
                       alignment: Alignment.center,
                       children: <Widget>[
                         new Container(
-                            margin: MediaQuery.of(context).padding,
-                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
+                            margin: MediaQuery.of(context).viewInsets,
+                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context, fontData, cardColour, themeColour, iconData)],) : new Container()
                 ),
-                //container for the circular progress indicator when submitting an image, show if submitting, show blank container if not
               ]
           ),
         )
@@ -368,9 +692,20 @@ class _ByTagViewerState extends State<ByTagViewer> {
   void showErrorDialog()
   {
     AlertDialog errorDialog = new AlertDialog(
-      content: new Text("An Error has occured. Please try again", style: TextStyle(fontFamily: font),),
+      backgroundColor: cardColour,
+      content: new Text("An Error has occured. Please try again", style: TextStyle(
+          fontFamily: fontData.font,
+          fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          color: fontData.color
+      ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontFamily: font),))
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text(
+          "OK", style: TextStyle(
+            fontFamily: fontData.font,
+            fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontWeight: FontWeight.bold,
+            color: themeColour
+        ),))
       ],
     );
 
@@ -379,12 +714,26 @@ class _ByTagViewerState extends State<ByTagViewer> {
 
   void deleteNoteDialog(Note note, Subject subject) {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to DELETE this note?", /*style: TextStyle(fontFamily: font),*/),
+      backgroundColor: cardColour,
+      content: new Text("Do you want to DELETE this Note?", style: TextStyle(
+          fontFamily: fontData.font,
+          fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          color: fontData.color
+      ),),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(
+            fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: fontData.font,
+            color: themeColour
+        ),)),
         new FlatButton(onPressed: () {
           deleteNote(note, subject);
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES", style: TextStyle(
+            fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontWeight: FontWeight.bold,
+            fontFamily: fontData.font,
+            color: themeColour
+        ),)),
       ],
     );
 
@@ -395,22 +744,46 @@ class _ByTagViewerState extends State<ByTagViewer> {
     var response = await requestManager.deleteNote(note.id, subject.id);
 
     //if null, then the request was a success, retrieve the information
-    if (response ==  "success"){
+    if (response == "success") {
       Navigator.pop(context);
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Deleted!')));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text(
+        'Note Deleted!',
+        style: TextStyle(
+            fontSize: 18 * fontData.size *
+                ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: fontData.font,
+            color: fontData.color
+        ),)));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
-    else{
+    else {
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response']),
+        backgroundColor: cardColour,
+        content: new Text(
+            "An Error has occured. Please try again", style: TextStyle(
+            fontFamily: fontData.font,
+            fontSize: 18.0 * fontData.size *
+                ThemeCheck.orientatedScaleFactor(context),
+            color: fontData.color
+        )),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); /*submit(false);*/}, child: new Text("OK"))
+          new FlatButton(onPressed: () {
+            Navigator.pop(context);
+          }, child: new Text("OK", style: TextStyle(
+              fontFamily: fontData.font,
+              fontSize: 18.0 * fontData.size *
+                  ThemeCheck.orientatedScaleFactor(context),
+              fontWeight: FontWeight.bold,
+              color: themeColour
+          )))
         ],
       );
 
-      showDialog(context: context, barrierDismissible: true, builder: (_) => responseDialog);
+      showDialog(context: context,
+          barrierDismissible: true,
+          builder: (_) => responseDialog);
     }
   }
 }

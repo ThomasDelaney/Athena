@@ -138,7 +138,12 @@ class FileViewerState extends State<FileViewer>
                   itemCount: widget.fromTagMap == null ? widget.list.length : widget.fromTagMap.length,
                   pagination: new SwiperPagination(
                     builder: MediaQuery.of(context).orientation == Orientation.portrait && FileTypeManger.getFileTypeFromURL(
-                        widget.fromTagMap == null ? widget.list[currentIndex].url : widget.fromTagMap.values.elementAt(currentIndex).url) == "video" ? SwiperPagination.dots : SwiperPagination.rect
+                        widget.fromTagMap == null ? widget.list[currentIndex].url : widget.fromTagMap.values.elementAt(currentIndex).url) == "video" ? DotSwiperPaginationBuilder(
+                        size: 20.0,
+                        activeSize: 20.0,
+                        space: 10.0,
+                        activeColor: widget.themeColour
+                    ) : SwiperPagination.rect
                   ),
                   control: new SwiperControl(color: Colors.white70),
                   //start the wiper on the index of the image selected
@@ -156,7 +161,7 @@ class FileViewerState extends State<FileViewer>
             children: <Widget>[
               new Container(
                   margin: MediaQuery.of(context).padding,
-                  child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                  child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
             ],
           ): new Container()
         ]
@@ -272,14 +277,27 @@ class FileViewerState extends State<FileViewer>
 
   void deleteFileDialog() {
     AlertDialog areYouSure = new AlertDialog(
-      content: new Text("Do you want to DELETE this File?", /*style: TextStyle(fontFamily: font),*/),
+      content: new Text("Do you want to DELETE this File?", style: TextStyle(
+          fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+      )),
       actions: <Widget>[
-        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("NO", style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            color: widget.themeColour
+        ),)),
         new FlatButton(onPressed: () async {
           submit(true);
           Navigator.pop(context);
           await deleteFile();
-        }, child: new Text("YES", style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,),)),
+        }, child: new Text("YES",  style: TextStyle(
+            fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+            fontFamily: widget.fontData.font,
+            fontWeight: FontWeight.bold,
+            color: widget.themeColour
+        ),)),
       ],
     );
 
@@ -302,9 +320,18 @@ class FileViewerState extends State<FileViewer>
     else{
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text("An error has occured, please try again"),
+        content: new Text("An error has occured, please try again", style: TextStyle(
+        fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+          fontFamily: widget.fontData.font,
+          color: widget.fontData.color
+        ),),
         actions: <Widget>[
-          new FlatButton(onPressed: () {Navigator.pop(context); /*submit(false);*/}, child: new Text("OK"))
+          new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(
+              fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
+              fontFamily: widget.fontData.font,
+              fontWeight: FontWeight.bold,
+              color: widget.themeColour
+          )))
         ],
       );
 

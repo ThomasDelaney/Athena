@@ -139,8 +139,15 @@ class _MaterialsState extends State<Materials> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
     retrieveData();
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(Materials oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -165,7 +172,10 @@ class _MaterialsState extends State<Materials> {
                       cardColour: cardColourLoaded ? cardColour : Colors.white,
                       themeColour: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
                       backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
-                  ))).whenComplete(retrieveData);},
+                  ))).whenComplete((){
+                    retrieveData();
+                    recorder.assignParent(this);
+                  });},
                   child: new Card(
                     color: cardColour,
                     child: new Column(
@@ -202,7 +212,10 @@ class _MaterialsState extends State<Materials> {
                   cardColour: cardColourLoaded ? cardColour : Colors.white,
                   themeColour: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
                   backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
-            ))).whenComplete(retrieveData),
+            ))).whenComplete((){
+              retrieveData();
+              recorder.assignParent(this);
+            }),
             child: new Column(
               children: <Widget>[
                 SizedBox(height: 10.0),
@@ -266,164 +279,210 @@ class _MaterialsState extends State<Materials> {
           key: _scaffoldKey,
           backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
           //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-          endDrawer: new Drawer(
-            child: new Container(
-              color: cardColour,
-              child: ListView(
-                //Remove any padding from the ListView.
-                padding: EdgeInsets.zero,
-                children: <Widget>[
-                  //drawer header
-                  DrawerHeader(
-                    child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
-                    decoration: BoxDecoration(
-                      color: themeColour,
+          endDrawer: new SizedBox(
+            width: MediaQuery.of(context).size.width * 0.95,
+            child: new Drawer(
+              child: new Container(
+                color: cardColour,
+                child: ListView(
+                  //Remove any padding from the ListView.
+                  padding: EdgeInsets.zero,
+                  children: <Widget>[
+                    //drawer header
+                    DrawerHeader(
+                      child: Text('Settings', style: TextStyle(fontSize: 25.0*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white)),
+                      decoration: BoxDecoration(
+                        color: themeColour,
+                      ),
                     ),
-                  ),
-                  //fonts option
-                  ListTile(
-                    leading: Icon(
-                      Icons.font_download,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    //fonts option
+                    ListTile(
+                      leading: Icon(
+                        Icons.font_download,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                      ),
+                      title: Text(
+                          'Fonts',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                          retrieveData();
+                          recorder.assignParent(this);
+                        });
+                      },
                     ),
-                    title: Text(
-                        'Fonts',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
+                    new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                    ListTile(
+                      leading: Icon(
+                        Icons.insert_emoticon,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                      ),
+                      title: Text(
+                          'Icons',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                          retrieveData();
+                          recorder.assignParent(this);
+                        });
+                      },
                     ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(retrieveData);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.insert_emoticon,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                    ListTile(
+                      leading: Icon(
+                        Icons.color_lens,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                      ),
+                      title: Text(
+                          'Theme Colour',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(
+                          backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
+                          cardColour: cardColourLoaded ? cardColour : Colors.white,
+                          fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
+                          iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
+                        ))).whenComplete((){
+                          retrieveData();
+                          recorder.assignParent(this);
+                        });
+                      },
                     ),
-                    title: Text(
-                        'Icons',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
+                    new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                    ListTile(
+                      leading: Icon(
+                        Icons.format_paint,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                      ),
+                      title: Text(
+                          'Background Colour',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(
+                          cardColour: cardColourLoaded ? cardColour : Colors.white,
+                          fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
+                          themeColour: themeColourLoaded ? themeColour : Colors.white,
+                          iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
+                        ))).whenComplete((){
+                          retrieveData();
+                          recorder.assignParent(this);
+                        });
+                      },
                     ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(retrieveData);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.color_lens,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                    ListTile(
+                      leading: Icon(
+                        Icons.colorize,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                      ),
+                      title: Text(
+                          'Card Colour',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(
+                          fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
+                          themeColour: themeColourLoaded ? themeColour : Colors.white,
+                          backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
+                          iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
+                        ))).whenComplete((){
+                          retrieveData();
+                          recorder.assignParent(this);
+                        });
+                      },
                     ),
-                    title: Text(
-                        'Theme Colour',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
+                    new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                    ListTile(
+                      leading: Icon(
+                        Icons.invert_colors,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                      ),
+                      title: Text(
+                          'Dyslexia Friendly Mode',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                          retrieveData();
+                          recorder.assignParent(this);
+                        });
+                      },
                     ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour,))).whenComplete(retrieveData);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.format_paint,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                    new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                    ListTile(
+                      leading: Icon(
+                        Icons.local_offer,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
+                      ),
+                      title: Text(
+                          'Tags',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                          retrieveData();
+                          recorder.assignParent(this);
+                        });
+                      },
                     ),
-                    title: Text(
-                        'Background Colour',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
+                    new SizedBox(height: iconLoaded ? 5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 5*ThemeCheck.orientatedScaleFactor(context),),
+                    //sign out option
+                    ListTile(
+                      leading: Icon(
+                        Icons.exit_to_app,
+                        size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
+                        color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),),
+                      title: Text(
+                          'Sign Out',
+                          style: TextStyle(
+                            fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
+                            fontFamily: fontLoaded ? fontData.font : "",
+                            color: fontLoaded ? fontData.color : Colors.black,
+                          )
+                      ),
+                      onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
                     ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(fontData: fontData, themeColour: themeColour, cardColour: cardColour,))).whenComplete(retrieveData);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.colorize,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
-                    ),
-                    title: Text(
-                        'Card Colour',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
-                    ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(fontData: fontData, themeColour: themeColourLoaded ? themeColour : Colors.white, backgroundColour: backgroundColour,))).whenComplete(retrieveData);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.invert_colors,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 20.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
-                    ),
-                    title: Text(
-                        'Dyslexia Friendly Mode',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
-                    ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete(retrieveData);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.local_offer,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),
-                    ),
-                    title: Text(
-                        'Tags',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
-                    ),
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager()));
-                    },
-                  ),
-                  //sign out option
-                  ListTile(
-                    leading: Icon(
-                      Icons.exit_to_app,
-                      size: iconLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 24.0,
-                      color: iconLoaded ? iconData.color : Color.fromRGBO(113, 180, 227, 1),),
-                    title: Text(
-                        'Sign Out',
-                        style: TextStyle(
-                          fontSize: fontLoaded ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 24.0*ThemeCheck.orientatedScaleFactor(context),
-                          fontFamily: fontLoaded ? fontData.font : "",
-                          color: fontLoaded ? fontData.color : Colors.black,
-                        )
-                    ),
-                    onTap: () => SignOut.signOut(context, fontData, cardColour, themeColour),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -454,7 +513,10 @@ class _MaterialsState extends State<Materials> {
                   cardColour: cardColourLoaded ? cardColour : Colors.white,
                   themeColour: themeColourLoaded ? themeColour : Color.fromRGBO(113, 180, 227, 1),
                   backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
-                ))).whenComplete(retrieveData);},
+                ))).whenComplete((){
+                  retrieveData();
+                  recorder.assignParent(this);
+                });},
               ),
               // else display the mic button and settings button
               IconButton(
@@ -499,8 +561,8 @@ class _MaterialsState extends State<Materials> {
                       alignment: Alignment.center,
                       children: <Widget>[
                         new Container(
-                            margin: MediaQuery.of(context).padding,
-                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context)],) : new Container()
+                            margin: MediaQuery.of(context).viewInsets,
+                            child: new ModalBarrier(color: Colors.black54, dismissible: false,)), recorder.drawRecordingCard(context, fontData, cardColour, themeColour, iconData)],) : new Container()
                 ),
               ]
           ),
@@ -510,7 +572,7 @@ class _MaterialsState extends State<Materials> {
           alignment: Alignment.center,
           children: <Widget>[
             new Container(
-                margin: MediaQuery.of(context).padding,
+                margin: MediaQuery.of(context).viewInsets,
                 child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
           ],
         ): new Container()

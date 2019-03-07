@@ -68,12 +68,19 @@ class _AddMaterialState extends State<AddMaterial> {
 
   @override
   void initState() {
+    recorder.assignParent(this);
 
     if (widget.currentMaterial != null) {
       fileName = widget.currentMaterial.fileName;
       materialNameController.text = widget.currentMaterial.name;
     }
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(AddMaterial oldWidget) {
+    recorder.assignParent(this);
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -172,10 +179,21 @@ class _AddMaterialState extends State<AddMaterial> {
                 iconTheme: IconThemeData(
                   color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
                 ),
-                actions: <Widget>[
+                actions: recorder.recording ? <Widget>[
+                  // action button
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {setState(() {recorder.cancelRecording();});},
+                  ),
+                ] : <Widget>[
+                  // else display the mic button and settings button
                   IconButton(
                       icon: Icon(Icons.home),
                       onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.mic),
+                    onPressed: () {setState(() {recorder.recordAudio(context);});},
                   ),
                 ],
                 backgroundColor: Color(int.tryParse(widget.subject.colour)),
@@ -185,107 +203,122 @@ class _AddMaterialState extends State<AddMaterial> {
                   )
                 ),
               ),
-              body: SingleChildScrollView(
-                child: new Column(
-                  children: <Widget>[
-                    SizedBox(height: 20.0),
-                    new Card(
-                        color: widget.cardColour,
-                        margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                        elevation: 3.0,
-                        child: new Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            new Container(
-                              margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                              child: TextFormField(
-                                focusNode: materialNameFocusNode,
-                                keyboardType: TextInputType.text,
-                                autofocus: false,
-                                controller: materialNameController,
-                                style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
-                                decoration: InputDecoration(
-                                    hintText: "Material Name",
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: widget.themeColour),
+              body: new Stack(
+                children: <Widget>[
+                  SingleChildScrollView(
+                    child: new Column(
+                      children: <Widget>[
+                        SizedBox(height: 20.0),
+                        new Card(
+                            color: widget.cardColour,
+                            margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                            elevation: 3.0,
+                            child: new Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                new Container(
+                                  margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                  child: TextFormField(
+                                    focusNode: materialNameFocusNode,
+                                    keyboardType: TextInputType.text,
+                                    autofocus: false,
+                                    controller: materialNameController,
+                                    style: TextStyle(fontSize: 24.0*widget.fontData.size, fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                    decoration: InputDecoration(
+                                      hintText: "Material Name",
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(color: widget.themeColour),
+                                      ),
                                     ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 20.0),
-                            new Container(
-                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                child: new Wrap(
-                                    children: <Widget>[
-                                      new IconButton(
-                                        color: Color(int.tryParse(widget.subject.colour)),
-                                        iconSize: 35.0*widget.iconData.size,
-                                        icon: Icon(Icons.photo_library),
-                                        onPressed: () => getImage(),
-                                      ),
-                                      new IconButton(
-                                        color: Color(int.tryParse(widget.subject.colour)),
-                                        iconSize: 35.0*widget.iconData.size,
-                                        icon: Icon(Icons.camera_alt),
-                                        onPressed: () => getCameraImage(),
-                                      ),
-                                      fileName != "" ? new IconButton(
-                                        color: Color(int.tryParse(widget.subject.colour)),
-                                        iconSize: 35.0*widget.iconData.size,
-                                        icon: Icon(Icons.close),
-                                        onPressed: () => setState((){
-                                          fileChanged = true;
-                                          fileName = "";
-                                          materialImage = GestureDetector(
-                                              onTap: () => getImage(),
-                                              child: new Card(
-                                                color: widget.cardColour,
-                                                elevation: 3,
-                                                child: Container(
-                                                  padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
-                                                  child: new Column(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: <Widget>[
-                                                        new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(
-                                                            fontFamily: widget.fontData.font,
-                                                            color: widget.fontData.color,
-                                                            fontSize: widget.fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size),
-                                                        ),
-                                                        new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
-                                                      ]
-                                                  ),
-                                                ),
-                                              )
-                                          );
-                                        }),
-                                      ) : new Container()
-                                    ]
-                                )
-                            ),
-                            new Container(
-                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                child: materialImage
-                            ),
-                            new Container(
-                                margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                child: ButtonTheme(
-                                  height: 50.0*ThemeCheck.orientatedScaleFactor(context),
-                                  child: RaisedButton(
-                                    elevation: 3.0,
-                                    onPressed: showAreYouSureDialog,
-                                    child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
-                                    color: ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour))),
-
-                                    textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour)))),
                                   ),
+                                ),
+                                SizedBox(height: 20.0),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                    child: new Wrap(
+                                        children: <Widget>[
+                                          new IconButton(
+                                            color: Color(int.tryParse(widget.subject.colour)),
+                                            iconSize: 35.0*widget.iconData.size,
+                                            icon: Icon(Icons.photo_library),
+                                            onPressed: () => getImage(),
+                                          ),
+                                          new IconButton(
+                                            color: Color(int.tryParse(widget.subject.colour)),
+                                            iconSize: 35.0*widget.iconData.size,
+                                            icon: Icon(Icons.camera_alt),
+                                            onPressed: () => getCameraImage(),
+                                          ),
+                                          fileName != "" ? new IconButton(
+                                            color: Color(int.tryParse(widget.subject.colour)),
+                                            iconSize: 35.0*widget.iconData.size,
+                                            icon: Icon(Icons.close),
+                                            onPressed: () => setState((){
+                                              fileChanged = true;
+                                              fileName = "";
+                                              materialImage = GestureDetector(
+                                                  onTap: () => getImage(),
+                                                  child: new Card(
+                                                    color: widget.cardColour,
+                                                    elevation: 3,
+                                                    child: Container(
+                                                      padding: EdgeInsets.all(25 * ThemeCheck.orientatedScaleFactor(context)),
+                                                      child: new Column(
+                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: <Widget>[
+                                                            new Text("Add Photos of the Material!", textAlign: TextAlign.center, style: TextStyle(
+                                                                fontFamily: widget.fontData.font,
+                                                                color: widget.fontData.color,
+                                                                fontSize: widget.fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size),
+                                                            ),
+                                                            new Icon(Icons.cloud_upload, size: 40.0, color: Colors.grey,)
+                                                          ]
+                                                      ),
+                                                    ),
+                                                  )
+                                              );
+                                            }),
+                                          ) : new Container()
+                                        ]
+                                    )
+                                ),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                    child: materialImage
+                                ),
+                                new Container(
+                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                    child: ButtonTheme(
+                                      height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                      child: RaisedButton(
+                                        elevation: 3.0,
+                                        onPressed: showAreYouSureDialog,
+                                        child: Align(alignment: Alignment.centerLeft, child: Text('Submit', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font,))),
+                                        color: ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour))),
+
+                                        textColor: ThemeCheck.colorCheck(ThemeCheck.errorColorOfColor(Color(int.tryParse(widget.subject.colour)))),
+                                      ),
+                                    )
                                 )
+                              ],
                             )
-                          ],
                         )
-                    )
-                  ],
-                ),
-              ),
+                      ],
+                    ),
+                  ),
+                  new Container(
+                      child: recorder.recording ?
+                      new Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          new Container(
+                              child: new ModalBarrier(
+                                color: Colors.black54, dismissible: false,)),
+                          recorder.drawRecordingCard(context, widget.fontData, widget.cardColour, widget.themeColour, widget.iconData)
+                        ],) : new Container()
+                  ),
+                ],
+              )
             ),
             submitting ? new Stack(
               alignment: Alignment.center,

@@ -66,7 +66,20 @@ class SubjectHubTile extends StatelessWidget {
                           icon: Icon(Icons.edit),
                           iconSize: 30.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
                           color: ThemeCheck.colorCheck(Color(int.tryParse(subject.colour))),
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddSubject(subject: subject, fontData: fontData, backgroundColour: backgroundColour, cardColour: cardColour, themeColour: themeColour))).whenComplete(state.retrieveData)
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => AddSubject(
+                                  subject: subject,
+                                  fontData: fontData,
+                                  iconData: iconData,
+                                  backgroundColour: backgroundColour,
+                                  cardColour: cardColour,
+                                  themeColour: themeColour
+                              ))
+                          ).whenComplete(() {
+                            state.retrieveData();
+                            state.recorder.assignParent(state);
+                          })
                       ),
                       IconButton(
                           icon: Icon(Icons.delete),
@@ -85,7 +98,11 @@ class SubjectHubTile extends StatelessWidget {
                 Column(
                   children: <Widget>[
                     GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: subject,))).whenComplete(state.retrieveData),
+                      onTap: () => Navigator.push(
+                          context, MaterialPageRoute(builder: (context) => Materials(subject: subject,))).whenComplete(() {
+                            state.retrieveData();
+                            state.recorder.assignParent(state);
+                          }),
                       child: Card(
                           color: cardColour,
                           elevation: 3.0,
@@ -103,7 +120,10 @@ class SubjectHubTile extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: subject,))).whenComplete(state.retrieveData),
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: subject,))).whenComplete(() {
+                          state.retrieveData();
+                          state.recorder.assignParent(state);
+                        }),
                         child: Card(
                             elevation: 3.0,
                             color: cardColour,
@@ -125,7 +145,10 @@ class SubjectHubTile extends StatelessWidget {
                 Column(
                   children: <Widget>[
                     GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: subject,))).whenComplete(state.retrieveData),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: subject,))).whenComplete(() {
+                        state.retrieveData();
+                        state.recorder.assignParent(state);
+                      }),
                       child: Card(
                           elevation: 3.0,
                           color: cardColour,
@@ -143,7 +166,10 @@ class SubjectHubTile extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeworkPage(subject: subject,))).whenComplete(state.retrieveData),
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => HomeworkPage(subject: subject,))).whenComplete(() {
+                        state.retrieveData();
+                        state.recorder.assignParent(state);
+                      }),
                       child: Container(
                         child: Card(
                             elevation: 3.0,
@@ -165,7 +191,10 @@ class SubjectHubTile extends StatelessWidget {
                   ],
                 ),
                 new GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => VirtualHardback(subject: subject,))).whenComplete(state.retrieveData),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => VirtualHardback(subject: subject,))).whenComplete(() {
+                      state.retrieveData();
+                      state.recorder.assignParent(state);
+                    }),
                     child: Container(
                       child: Card(
                         elevation: 3.0,
