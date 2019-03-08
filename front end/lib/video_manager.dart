@@ -83,8 +83,6 @@ class _VideoManagerState extends State<VideoManager> {
   @override
   Widget build(BuildContext context) {
 
-    print("poggers: "+_aspectRatio.toString());
-
     _chewieController = new ChewieController(
       videoPlayerController: _controller,
       aspectRatio: _aspectRatio,

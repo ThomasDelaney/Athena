@@ -188,21 +188,21 @@ class _ProgressState extends State<Progress> {
   @override
   Widget build(BuildContext context) {
 
-    double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
+    //double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
 
     List<Widget> chartList = [
       Container(
-        width: MediaQuery.of(context).size.width/scaleFactor,
-        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/scaleFactor : MediaQuery.of(context).size.height/scaleFactor*1.25,
+        width: MediaQuery.of(context).size.width/ThemeCheck.orientatedScaleFactor(context),
+        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/ThemeCheck.orientatedScaleFactor(context) : MediaQuery.of(context).size.height/ThemeCheck.orientatedScaleFactor(context)*1.25,
         child: charts.PieChart(
             currentDesc == 0 ? resultsForChart : homeworkForChart,
             animate: true,
             defaultRenderer: new charts.ArcRendererConfig(
-                arcWidth: (90*scaleFactor).round(),
+                arcWidth: (90*ThemeCheck.orientatedScaleFactor(context)).round(),
                 arcRendererDecorators: [new charts.ArcLabelDecorator(
                   labelPosition: charts.ArcLabelPosition.inside,
                   insideLabelStyleSpec: new charts.TextStyleSpec(
-                    fontSize: ((450/scaleFactor)/30).round(),
+                    fontSize: ((450/ThemeCheck.orientatedScaleFactor(context))/30).round(),
                     color: charts.Color(r: fontData.color.red, g: fontData.color.green, b: fontData.color.blue, a: fontData.color.alpha),
                   ),
                 )]
@@ -210,15 +210,15 @@ class _ProgressState extends State<Progress> {
         ),
       ),
       Container(
-        width: MediaQuery.of(context).size.width/scaleFactor,
-        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/scaleFactor : MediaQuery.of(context).size.height/scaleFactor*1.25,
+        width: MediaQuery.of(context).size.width/ThemeCheck.orientatedScaleFactor(context),
+        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/ThemeCheck.orientatedScaleFactor(context) : MediaQuery.of(context).size.height/ThemeCheck.orientatedScaleFactor(context)*1.25,
         child: charts.BarChart(
             currentDesc == 0 ? resultsForChart : homeworkForChart,
             animate: true,
             domainAxis: new charts.OrdinalAxisSpec(
                 renderSpec: new charts.SmallTickRendererSpec(
                     labelStyle: new charts.TextStyleSpec(
-                      fontSize: ((450/scaleFactor)/40).round(),
+                      fontSize: ((450/ThemeCheck.orientatedScaleFactor(context))/40).round(),
                       color: charts.Color(r: fontData.color.red, g: fontData.color.green, b: fontData.color.blue, a: fontData.color.alpha),
                     )
                 )
@@ -227,15 +227,15 @@ class _ProgressState extends State<Progress> {
               renderSpec: new charts.GridlineRendererSpec(
                 labelStyle: new charts.TextStyleSpec(
                   color: charts.Color(r: fontData.color.red, g: fontData.color.green, b: fontData.color.blue, a: fontData.color.alpha),
-                  fontSize: ((450/scaleFactor)/30).round(),
+                  fontSize: ((450/ThemeCheck.orientatedScaleFactor(context))/30).round(),
                 ),
               )
             )
         )
       ),
       Container(
-        width: MediaQuery.of(context).size.width/scaleFactor,
-        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/scaleFactor : MediaQuery.of(context).size.height/scaleFactor*1.25,
+        width: MediaQuery.of(context).size.width/ThemeCheck.orientatedScaleFactor(context),
+        height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/ThemeCheck.orientatedScaleFactor(context) : MediaQuery.of(context).size.height/ThemeCheck.orientatedScaleFactor(context)*1.25,
         child: charts.LineChart(
             currentDesc == 0 ? resultsForLineChart : homeworkForLineChart,
             animate: true,
@@ -530,7 +530,7 @@ class _ProgressState extends State<Progress> {
                         child: new Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            new SizedBox(height: 25.0/scaleFactor,),
+                            new SizedBox(height: 25.0/ThemeCheck.orientatedScaleFactor(context),),
                             new Text(statsDescription[currentDesc],
                               textAlign: TextAlign.center,
                               style: TextStyle(

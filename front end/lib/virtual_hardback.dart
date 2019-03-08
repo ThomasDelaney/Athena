@@ -68,7 +68,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
   bool notesLoaded = false;
 
   //size of file card
-  double fileCardSize = 185.0;
+  double fileCardSize = 180.0;
 
   FontData fontData;
   bool fontLoaded = false;
@@ -205,15 +205,16 @@ class VirtualHardbackState extends State<VirtualHardback> {
   @override
   Widget build(BuildContext context) {
 
-    ThemeCheck.getThumbnailFromVideoURL("");
-
     Container subjectList;
+
+    double iconFactor = iconData.size*0.875;
+    double iconScale = (ThemeCheck.orientatedScaleFactor(context))/(iconData.size/iconFactor);
 
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
     if (subjectFiles.length == 0 && filesLoaded) {
       subjectList = new Container(
         alignment: Alignment.center,
-        height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+        height:(fileCardSize * iconScale),
         child: new ListView(
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
@@ -223,7 +224,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                   margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                   child: new SizedBox(
                     width: MediaQuery.of(context).size.width * 0.95,
-                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                    height: (fileCardSize * iconScale),
                     child: GestureDetector(
                       onTap: () => getImage(),
                       child: new Card(
@@ -256,7 +257,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
     //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the images cover the card
     else if (filesLoaded){
       subjectList =  new Container(
-          height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+          height: (fileCardSize * iconScale),
           child: new ListView.builder (
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
@@ -301,45 +302,51 @@ class VirtualHardbackState extends State<VirtualHardback> {
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour)),
                                       imageUrl: subjectFiles[index].url,
-                                      height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
-                                      width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                                      height: (fileCardSize * iconScale),
+                                      width: (fileCardSize * iconScale),
                                       fit: BoxFit.cover
-                                  ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "video" ? new Stack(children: <Widget>[
-                                    new Chewie(
-                                      controller: new ChewieController(
-                                        videoPlayerController: new VideoPlayerController.network(
-                                            subjectFiles[index].url
-                                        ),
-                                        aspectRatio: 1.15,
-                                        autoPlay: false,
-                                        autoInitialize: true,
-                                        showControls: false,
-                                        looping: false,
-                                        placeholder: new Center(child: new CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour),)),
-                                      ),
-                                    ),
-                                    new Center(
-                                      child: new Container(
-                                        width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
-                                        height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
-                                        child: new Icon(Icons.play_circle_filled, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: Color.fromRGBO(255, 255, 255, 0.85),),
-                                      )
-                                    )
-                                  ],) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
-                                  new Container(
+                                  ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "video" ? new Container(
                                     decoration: new BoxDecoration(
                                         border: new Border.all(color: Colors.white12)
                                     ),
-                                    width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
-                                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                                    width: (fileCardSize * iconScale),
+                                    height: (fileCardSize * iconScale),
                                     child: new Column(
                                       children: <Widget>[
-                                        new SizedBox(height: 40*ThemeCheck.orientatedScaleFactor(context),),
-                                        new Icon(Icons.volume_up, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: Color(int.tryParse(widget.subject.colour))),
+                                        new SizedBox(height: 40*iconScale,),
+                                        new Icon(Icons.play_circle_filled, size: 70.0*iconScale, color: Color(int.tryParse(widget.subject.colour))),
                                         new Flexible(
                                             child: Marquee(
                                               text: subjectFiles[index].fileName,
                                               scrollAxis: Axis.horizontal,
+                                              velocity: 50.0,
+                                              style: TextStyle(
+                                                  fontSize: 18*iconScale
+                                              ),
+                                              pauseAfterRound: Duration(seconds: 2),
+                                              blankSpace: 20.0,
+                                            )
+                                        )
+                                      ],
+                                    ),
+                                  ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
+                                  new Container(
+                                    decoration: new BoxDecoration(
+                                        border: new Border.all(color: Colors.white12)
+                                    ),
+                                    width: (fileCardSize * iconScale),
+                                    height: (fileCardSize * iconScale),
+                                    child: new Column(
+                                      children: <Widget>[
+                                        new SizedBox(height: 40*iconScale),
+                                        new Icon(Icons.volume_up, size: 70.0*iconScale, color: Color(int.tryParse(widget.subject.colour))),
+                                        new Flexible(
+                                            child: Marquee(
+                                              text: subjectFiles[index].fileName,
+                                              scrollAxis: Axis.horizontal,
+                                              style: TextStyle(
+                                                fontSize: 18*iconScale
+                                              ),
                                               velocity: 50.0,
                                               pauseAfterRound: Duration(seconds: 2),
                                               blankSpace: 20.0,
@@ -355,8 +362,8 @@ class VirtualHardbackState extends State<VirtualHardback> {
                         )
                     ),
                     //Keeps the card the same size when the image is loading
-                    width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
-                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                    width: (fileCardSize * iconScale),
+                    height: (fileCardSize * iconScale),
                   ),
                 );
               }
@@ -463,8 +470,8 @@ class VirtualHardbackState extends State<VirtualHardback> {
           );
         },
       );
-
     }
+
     //scaffold to encapsulate all the widgets
     final page = Scaffold(
       backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
@@ -693,14 +700,14 @@ class VirtualHardbackState extends State<VirtualHardback> {
         actions: recorder.recording ? <Widget>[
           // action button
           IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
-          ),
-          IconButton(
             icon: Icon(Icons.close),
             onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
           ),
         ] : <Widget>[
+          IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
+          ),
           IconButton(
             icon: Icon(Icons.note_add),
             onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => TextFileEditor(
@@ -745,44 +752,43 @@ class VirtualHardbackState extends State<VirtualHardback> {
         //stack to display the main widgets; the notes and images
         MediaQuery.of(context).orientation == Orientation.portrait ?
         Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               new Container(
                 //note container, which is 60% the size of the screen
-                height: ThemeCheck.orientatedScaleFactor(context) > 0.70 ?
-                MediaQuery.of(context).size.height * 3.5 * (1-ThemeCheck.orientatedScaleFactor(context)).abs() :
-                MediaQuery.of(context).size.height * 0.80 * ThemeCheck.orientatedScaleFactor(context),
+                height:  MediaQuery.of(context).size.height * 0.50,
                 alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
                 child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
               ),
-              new Container(
-                //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
-                alignment: Alignment.bottomCenter,
-                child: new Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    new Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          new IconButton(
-                            color: Color(int.tryParse(widget.subject.colour)),
-                            iconSize: iconLoaded ? 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 35.0*ThemeCheck.orientatedScaleFactor(context),
-                            icon: Icon(Icons.add_to_photos),
-                            onPressed: () => getImage(),
-                          ),
-                          new IconButton(
-                            color: Color(int.tryParse(widget.subject.colour)),
-                            iconSize: iconLoaded ? 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 35.0*ThemeCheck.orientatedScaleFactor(context),
-                            icon: Icon(Icons.camera_alt),
-                            onPressed: () => getCameraImage(),
-                          )
-                        ]
+              new Expanded(
+                  child: new Container(
+                    //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
+                    child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              new IconButton(
+                                color: Color(int.tryParse(widget.subject.colour)),
+                                iconSize: iconLoaded ? 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 35.0*ThemeCheck.orientatedScaleFactor(context),
+                                icon: Icon(Icons.add_to_photos),
+                                onPressed: () => getImage(),
+                              ),
+                              new IconButton(
+                                color: Color(int.tryParse(widget.subject.colour)),
+                                iconSize: iconLoaded ? 35.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 35.0*ThemeCheck.orientatedScaleFactor(context),
+                                icon: Icon(Icons.camera_alt),
+                                onPressed: () => getCameraImage(),
+                              )
+                            ]
+                        ),
+                        //display the image list
+                        subjectList,
+                      ],
                     ),
-                    //display the image list
-                    subjectList,
-                  ],
-                ),
+                  ),
               ),
               //container for the recording card, show if recording, show blank container if not
               new Container(
