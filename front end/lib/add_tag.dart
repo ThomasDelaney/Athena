@@ -33,7 +33,7 @@ class _AddTagState extends State<AddTag> {
   FocusNode tagFocusNode;
 
   bool submitting = false;
-  String font = "";
+
   String oldTag = "";
 
   @override

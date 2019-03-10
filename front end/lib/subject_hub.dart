@@ -224,7 +224,7 @@ class SubjectHubState extends State<SubjectHub> {
             //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
             backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
             //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-            endDrawer: new SizedBox(
+            endDrawer: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && subjectsLoaded ? new SizedBox(
               width: MediaQuery.of(context).size.width * 0.95,
               child: new Drawer(
                 child: new Container(
@@ -257,6 +257,7 @@ class SubjectHubState extends State<SubjectHub> {
                         ),
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                            Navigator.pop(context);
                             retrieveData();
                             recorder.assignParent(this);
                           });
@@ -279,6 +280,7 @@ class SubjectHubState extends State<SubjectHub> {
                         ),
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                            Navigator.pop(context);
                             retrieveData();
                             recorder.assignParent(this);
                           });
@@ -306,6 +308,7 @@ class SubjectHubState extends State<SubjectHub> {
                             fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                             iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                           ))).whenComplete((){
+                            Navigator.pop(context);
                             retrieveData();
                             recorder.assignParent(this);
                           });
@@ -333,6 +336,7 @@ class SubjectHubState extends State<SubjectHub> {
                             themeColour: themeColourLoaded ? themeColour : Colors.white,
                             iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                           ))).whenComplete((){
+                            Navigator.pop(context);
                             retrieveData();
                             recorder.assignParent(this);
                           });
@@ -360,6 +364,7 @@ class SubjectHubState extends State<SubjectHub> {
                             backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
                             iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                           ))).whenComplete((){
+                            Navigator.pop(context);
                             retrieveData();
                             recorder.assignParent(this);
                           });
@@ -382,6 +387,7 @@ class SubjectHubState extends State<SubjectHub> {
                         ),
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                            Navigator.pop(context);
                             retrieveData();
                             recorder.assignParent(this);
                           });
@@ -404,6 +410,7 @@ class SubjectHubState extends State<SubjectHub> {
                         ),
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                            Navigator.pop(context);
                             retrieveData();
                             recorder.assignParent(this);
                           });
@@ -430,7 +437,7 @@ class SubjectHubState extends State<SubjectHub> {
                   ),
                 ),
               ),
-            ),
+            ) : new Container(),
             appBar: new AppBar(
               iconTheme: IconThemeData(
                   color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
@@ -449,11 +456,11 @@ class SubjectHubState extends State<SubjectHub> {
                   },
                 ),
               ] : <Widget>[
-                IconButton(
+                fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && subjectsLoaded ? IconButton(
                   icon: Icon(Icons.home),
                   onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
-                ),
-                IconButton(
+                ) : new Container(),
+                fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && subjectsLoaded ? IconButton(
                   icon: Icon(Icons.add_circle),
                   onPressed: () => Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddSubject(
@@ -467,23 +474,23 @@ class SubjectHubState extends State<SubjectHub> {
                     retrieveData();
                     recorder.assignParent(this);
                   }),
-                ),
+                ) : new Container(),
                 // else display the mic button and settings button
-                IconButton(
+                fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && subjectsLoaded ? IconButton(
                   icon: Icon(Icons.mic),
                   onPressed: () {
                     setState(() {
                       recorder.recordAudio(context);
                     });
                   },
-                ),
-                Builder(
+                ) : new Container(),
+                fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && subjectsLoaded ? Builder(
                   builder: (context) =>
                       IconButton(
                         icon: Icon(Icons.settings),
                         onPressed: () => Scaffold.of(context).openEndDrawer(),
                       ),
-                ),
+                ) : new Container(),
               ],
             ),
             body: new Stack(

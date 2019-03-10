@@ -159,7 +159,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
                                 child: !submitting ?
                                 new Container(
                                     child: ButtonTheme(
-                                      height: 50.0*ThemeCheck.orientatedScaleFactor(context),
+                                      height: 60.0*ThemeCheck.orientatedScaleFactor(context),
                                       child: RaisedButton(
                                         elevation: 3.0,
                                         onPressed: () => showSubjectList(),
@@ -168,7 +168,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
                                             child: Text(
                                                 selectedSubject == null ? 'Choose a Subject' : selectedSubject.name,
                                                 style: TextStyle(
-                                                  fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
+                                                  fontSize: 28.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size,
                                                   fontFamily: widget.fontData.font,
                                                 )
                                             )

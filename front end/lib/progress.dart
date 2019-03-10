@@ -190,7 +190,7 @@ class _ProgressState extends State<Progress> {
 
     //double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
 
-    List<Widget> chartList = [
+    List<Widget> chartList = fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && dataLoaded ? [
       Container(
         width: MediaQuery.of(context).size.width/ThemeCheck.orientatedScaleFactor(context),
         height: MediaQuery.of(context).orientation == Orientation.portrait ? (MediaQuery.of(context).size.height/1.75)/ThemeCheck.orientatedScaleFactor(context) : MediaQuery.of(context).size.height/ThemeCheck.orientatedScaleFactor(context)*1.25,
@@ -242,7 +242,7 @@ class _ProgressState extends State<Progress> {
             defaultRenderer: new charts.LineRendererConfig(includePoints: true)
         ),
       )
-    ];
+    ] : [new Container()];
 
     return Stack(
       children: <Widget>[
@@ -250,7 +250,8 @@ class _ProgressState extends State<Progress> {
           key: _scaffoldKey,
           backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
           //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-          endDrawer: new SizedBox(
+          endDrawer: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && dataLoaded ?
+          new SizedBox(
             width: MediaQuery.of(context).size.width * 0.95,
             child: new Drawer(
               child: new Container(
@@ -283,6 +284,7 @@ class _ProgressState extends State<Progress> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -305,6 +307,7 @@ class _ProgressState extends State<Progress> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -332,6 +335,7 @@ class _ProgressState extends State<Progress> {
                           fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -359,6 +363,7 @@ class _ProgressState extends State<Progress> {
                           themeColour: themeColourLoaded ? themeColour : Colors.white,
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -386,6 +391,7 @@ class _ProgressState extends State<Progress> {
                           backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -408,6 +414,7 @@ class _ProgressState extends State<Progress> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -430,6 +437,7 @@ class _ProgressState extends State<Progress> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -456,7 +464,7 @@ class _ProgressState extends State<Progress> {
                 ),
               ),
             ),
-          ),
+          ) : new Container(),
           appBar: new AppBar(
             backgroundColor: Color(int.tryParse(widget.subject.colour)),
             title: Text("Progress", style: TextStyle(fontFamily: fontLoaded ? fontData.font : "", color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour))))),
@@ -468,26 +476,26 @@ class _ProgressState extends State<Progress> {
                 onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
               ),
             ] : <Widget>[
-              IconButton(
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && dataLoaded ? IconButton(
                   icon: Icon(Icons.home),
                   onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
-              ),
+              ) : new Container(),
               // else display the mic button and settings button
-              IconButton(
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && dataLoaded ? IconButton(
                 icon: Icon(Icons.mic),
                 onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
-              ),
-              Builder(
+              ) : new Container(),
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && dataLoaded ? Builder(
                 builder: (context) => IconButton(
                   icon: Icon(Icons.settings),
                   onPressed: () => Scaffold.of(context).openEndDrawer(),
                 ),
-              ),
+              ) : new Container(),
             ],
           ),
           bottomNavigationBar: new Theme(
             data: ThemeData(
-              canvasColor: cardColour
+              canvasColor: cardColourLoaded ? cardColour : Colors.white
             ),
             child: BottomNavigationBar(
               fixedColor: Color(int.tryParse(widget.subject.colour)),
@@ -499,19 +507,19 @@ class _ProgressState extends State<Progress> {
               currentIndex: currentDesc, // this will be set when a new tab is tapped
               items: [
                 BottomNavigationBarItem(
-                  icon: new Icon(Icons.school, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
+                  icon: new Icon(Icons.school, size: iconLoaded ? 26*iconData.size*ThemeCheck.orientatedScaleFactor(context) : 26*ThemeCheck.orientatedScaleFactor(context),),
                   title: new Text(statsDescription[0], style: TextStyle(
-                      fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
-                      fontFamily: fontData.font,
-                      color: fontData.color
+                      fontSize: fontLoaded ? 16*fontData.size*ThemeCheck.orientatedScaleFactor(context) : 16*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black
                   ),),
                 ),
                 BottomNavigationBarItem(
-                  icon: new Icon(Icons.library_books, size: 26*iconData.size*ThemeCheck.orientatedScaleFactor(context),),
+                  icon: new Icon(Icons.library_books, size: fontLoaded ? 26*iconData.size*ThemeCheck.orientatedScaleFactor(context) : 26*ThemeCheck.orientatedScaleFactor(context),),
                   title: new Text(statsDescription[1], style: TextStyle(
-                      fontSize: 16.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size,
-                      fontFamily: fontData.font,
-                      color: fontData.color
+                      fontSize: fontLoaded ? 16*fontData.size*ThemeCheck.orientatedScaleFactor(context) : 16*ThemeCheck.orientatedScaleFactor(context),
+                      fontFamily: fontLoaded ? fontData.font : "",
+                      color: fontLoaded ? fontData.color : Colors.black
                   )),
                 ),
               ],
@@ -520,7 +528,7 @@ class _ProgressState extends State<Progress> {
           body: Stack(
               children: <Widget>[
                 new Center(
-                  child: dataLoaded && fontLoaded && iconLoaded ?
+                  child: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && dataLoaded ?
                   new SingleChildScrollView(
                     child: new Container(
                       width: MediaQuery.of(context).size.width,

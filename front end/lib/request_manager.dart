@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:Athena/athena_notification.dart';
 import 'package:Athena/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/athena_icon_data.dart';
@@ -69,6 +70,9 @@ class RequestManager
   final String getThemeColourUrl = url+"/getThemeColour";
   final String putIsDyslexiaModeEnabledUrl = url+"/setIsDyslexiaModeEnabled";
   final String getIsDyslexiaModeEnabledUrl = url+"/getIsDyslexiaModeEnabled";
+  final String deleteNotificationURL = url+"/deleteNotification";
+  final String putNotificationURL = url+"/putNotification";
+  final String getNotificationsURL = url+"/getNotifications";
 
   Dio dio = new Dio();
 
@@ -78,7 +82,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getFilesUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+    Response response = await dio.get(getFilesUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store files in a SubjectFile list
     if (response.data['files']?.values != null) {
@@ -201,7 +205,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getFontUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getFontUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['data']?.values != null) {
@@ -280,7 +284,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getIconUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getIconUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['data']?.values != null) {
@@ -354,7 +358,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getCardColourUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getCardColourUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['data'] != null) {
@@ -418,7 +422,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getIsDyslexiaModeEnabledUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getIsDyslexiaModeEnabledUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['data'] != null) {
@@ -473,7 +477,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getBackgroundColourUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getBackgroundColourUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['data'] != null) {
@@ -537,7 +541,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getThemeColourUrl, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getThemeColourUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['data'] != null) {
@@ -631,7 +635,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getSubjectsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getSubjectsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['subjects']?.values != null) {
@@ -714,7 +718,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getTagsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getTagsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['tags']?.values != null) {
@@ -736,7 +740,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getNotesAndFilesWithTagURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "tag": tag});
+    Response response = await dio.get(getNotesAndFilesWithTagURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "tag": tag});
 
     //print(response.data['notes']);
 
@@ -875,7 +879,7 @@ class RequestManager
 
     try {
       //post the request and retrieve the response data
-      Response response = await dio.get(getTagForNoteURL, data: {
+      Response response = await dio.get(getTagForNoteURL, queryParameters: {
         "id": await prefs.getString("id"),
         "nodeID": jsonMap['id'],
         "subjectID": jsonMap['subjectID'],
@@ -939,7 +943,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user notes
-    Response response = await dio.get(getNotesURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+    Response response = await dio.get(getNotesURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store images in a string list
     if (response.data['notes']?.values != null) {
@@ -1058,7 +1062,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getTimeslotsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+    Response response = await dio.get(getTimeslotsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
     //store images in a string list
     if (response.data['timeslots']?.values != null) {
@@ -1187,7 +1191,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user notes
-    Response response = await dio.get(getTestResultsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+    Response response = await dio.get(getTestResultsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store images in a string list
     if (response.data['results']?.values != null) {
@@ -1271,7 +1275,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user notes
-    Response response = await dio.get(getHomeworkURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+    Response response = await dio.get(getHomeworkURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store images in a string list
     if (response.data['homework']?.values != null) {
@@ -1322,7 +1326,7 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user notes
-    Response response = await dio.get(getMaterialsURL, data: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+    Response response = await dio.get(getMaterialsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
     //store images in a string list
     if (response.data['materials']?.values != null) {
@@ -1387,6 +1391,90 @@ class RequestManager
     try {
       //post the request and retrieve the response data
       var responseObj = await dio.post(deleteMaterialURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  dynamic putNotification(Map jsonMap) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": jsonMap['id'],
+      "refreshToken": await prefs.getString("refreshToken"),
+      "description": jsonMap['description'],
+      "time": jsonMap['time'],
+    });
+
+    print(formData);
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(putNotificationURL, data: formData);
+
+      //if the refresh token is null, then print the error in the logs and show an error dialog
+      if(responseObj.data['refreshToken'] == null) {
+        return "error";
+      }
+      else {
+        await prefs.setString("refreshToken", responseObj.data['refreshToken']);
+        return "success";
+      }
+    }
+    //catch error and display error doalog
+    on DioError catch(e)
+    {
+      return "error";
+    }
+  }
+
+  Future<List<AthenaNotification>> getNotifications() async
+  {
+    List<AthenaNotification> reqNotifs = new List<AthenaNotification>();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    //get user notes
+    Response response = await dio.get(getNotificationsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
+
+    //store images in a string list
+    if (response.data['notifications']?.values != null) {
+
+      response.data['notifications'].forEach((key, values) {
+        AthenaNotification n = AthenaNotification(key, values['description'], values['time']);
+        reqNotifs.add(n);
+      });
+    }
+
+    return reqNotifs;
+  }
+
+  dynamic deleteNotification(String id) async
+  {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    FormData formData = new FormData.from({
+      "id": await prefs.getString("id"),
+      "nodeID": id,
+      "refreshToken": await prefs.getString("refreshToken"),
+    });
+
+    try {
+      //post the request and retrieve the response data
+      var responseObj = await dio.post(deleteNotificationURL, data: formData);
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {

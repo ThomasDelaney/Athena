@@ -303,7 +303,8 @@ class _HomeworkPageState extends State<HomeworkPage> {
           key: _scaffoldKey,
           backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
           //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-          endDrawer: new SizedBox(
+          endDrawer: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && homeworkLoaded ?
+          new SizedBox(
             width: MediaQuery.of(context).size.width * 0.95,
             child: new Drawer(
               child: new Container(
@@ -336,6 +337,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -358,6 +360,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -385,6 +388,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                           fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -412,6 +416,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                           themeColour: themeColourLoaded ? themeColour : Colors.white,
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -439,6 +444,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                           backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -461,6 +467,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -483,6 +490,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -509,7 +517,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                 ),
               ),
             ),
-          ),
+          ) : new Container(),
           appBar: new AppBar(
             iconTheme: IconThemeData(
                 color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
@@ -524,11 +532,11 @@ class _HomeworkPageState extends State<HomeworkPage> {
                 onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
               ),
             ] : <Widget>[
-              IconButton(
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && homeworkLoaded ? IconButton(
                   icon: Icon(Icons.home),
                   onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
-              ),
-              IconButton(
+              ) : new Container(),
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && homeworkLoaded ? IconButton(
                 icon: Icon(Icons.add_circle),
                 onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddHomework(
                     subject: widget.subject,
@@ -541,24 +549,24 @@ class _HomeworkPageState extends State<HomeworkPage> {
                   retrieveData();
                   recorder.assignParent(this);
                 });},
-              ),
+              ) : new Container(),
               // else display the mic button and settings button
-              IconButton(
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && homeworkLoaded ? IconButton(
                 icon: Icon(Icons.mic),
                 onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
-              ),
-              Builder(
+              ) : new Container(),
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && homeworkLoaded ? Builder(
                 builder: (context) => IconButton(
                   icon: Icon(Icons.settings),
                   onPressed: () => Scaffold.of(context).openEndDrawer(),
                 ),
-              ),
+              ) : new Container(),
             ],
           ),
           body: Stack(
               children: <Widget>[
                 new Center(
-                  child: homeworkLoaded ? hList : new Stack(
+                  child: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && homeworkLoaded ? hList : new Stack(
                       alignment: Alignment.center,
                       children: <Widget>[
                         new Container(

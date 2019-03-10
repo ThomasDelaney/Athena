@@ -215,11 +215,11 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
                             SizedBox(height: 20.0*ThemeCheck.orientatedScaleFactor(context)),
                             Container(
                               alignment: Alignment.center,
-                              width: 35*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
-                              height: 18*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                              width: ThemeCheck.orientatedScaleFactor(context) >= 1 ? 35*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 35*1.85*iconData.size,
+                              height: ThemeCheck.orientatedScaleFactor(context) >= 1 ? 18*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 18*1.85*iconData.size,
                               child: Transform.scale(
                                 alignment: Alignment.center,
-                                scale: 1.5*ThemeCheck.orientatedScaleFactor(context)*iconData.size,
+                                scale: ThemeCheck.orientatedScaleFactor(context) >= 1 ? 1.5*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 1.5*iconData.size,
                                 child: new Switch(
                                   value: enabled,
                                   activeColor: themeColour,

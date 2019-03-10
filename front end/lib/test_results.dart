@@ -277,7 +277,8 @@ class _TestResultsState extends State<TestResults> {
           backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
           key: _scaffoldKey,
             //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-          endDrawer: new SizedBox(
+          endDrawer: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && resultsLoaded ?
+          new SizedBox(
             width: MediaQuery.of(context).size.width * 0.95,
             child: new Drawer(
               child: new Container(
@@ -310,6 +311,7 @@ class _TestResultsState extends State<TestResults> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -332,6 +334,7 @@ class _TestResultsState extends State<TestResults> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -359,6 +362,7 @@ class _TestResultsState extends State<TestResults> {
                           fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -386,6 +390,7 @@ class _TestResultsState extends State<TestResults> {
                           themeColour: themeColourLoaded ? themeColour : Colors.white,
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -413,6 +418,7 @@ class _TestResultsState extends State<TestResults> {
                           backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
                           iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                         ))).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -435,6 +441,7 @@ class _TestResultsState extends State<TestResults> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -457,6 +464,7 @@ class _TestResultsState extends State<TestResults> {
                       ),
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                          Navigator.pop(context);
                           retrieveData();
                           recorder.assignParent(this);
                         });
@@ -483,7 +491,7 @@ class _TestResultsState extends State<TestResults> {
                 ),
               ),
             ),
-          ),
+          ) : new Container(),
           appBar: new AppBar(
             iconTheme: IconThemeData(
                 color: ThemeCheck.colorCheck(Color(int.tryParse(widget.subject.colour)))
@@ -504,11 +512,11 @@ class _TestResultsState extends State<TestResults> {
                 onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
               ),
             ] : <Widget>[
-              IconButton(
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && resultsLoaded ? IconButton(
                   icon: Icon(Icons.home),
                   onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
-              ),
-              IconButton(
+              ) : new Container(),
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && resultsLoaded ? IconButton(
                 icon: Icon(Icons.add_circle),
                 onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => AddResult(
                     subject: widget.subject,
@@ -521,24 +529,24 @@ class _TestResultsState extends State<TestResults> {
                   retrieveData();
                   recorder.assignParent(this);
                 });},
-              ),
+              ) : new Container(),
               // else display the mic button and settings button
-              IconButton(
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && resultsLoaded ? IconButton(
                 icon: Icon(Icons.mic),
                 onPressed: () {if(this.mounted){setState(() {recorder.recordAudio(context);});}},
-              ),
-              Builder(
+              ) : new Container(),
+              fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && resultsLoaded ? Builder(
                 builder: (context) => IconButton(
                   icon: Icon(Icons.settings),
                   onPressed: () => Scaffold.of(context).openEndDrawer(),
                 ),
-              ),
+              ) : new Container(),
             ],
           ),
           body: Stack(
             children: <Widget>[
               new Center(
-              child: resultsLoaded ? rList : new Stack(
+              child: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && resultsLoaded ? rList : new Stack(
                   alignment: Alignment.center,
                   children: <Widget>[
                     new Container(

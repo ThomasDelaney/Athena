@@ -235,9 +235,9 @@ class _TagManagerState extends State<TagManager> {
             //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
             appBar: new AppBar(
               iconTheme: IconThemeData(
-                  color: ThemeCheck.colorCheck(themeColour)
+                  color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
               ),
-              backgroundColor: themeColour,
+              backgroundColor: themeColourLoaded ? themeColour : Colors.white,
               title: new Text("Tags", style: TextStyle(fontFamily: fontLoaded ? fontData.font : "", color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white),),
               //if recording then just display an X icon in the app bar, which when pressed will stop the recorder
               actions: recorder.recording ? <Widget>[

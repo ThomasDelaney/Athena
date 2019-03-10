@@ -1,5 +1,6 @@
 import 'package:Athena/background_settings.dart';
 import 'package:Athena/dyslexia_friendly_settings.dart';
+import 'package:Athena/notifications.dart';
 import 'package:Athena/sign_out.dart';
 import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +86,8 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
       //drawer for the settings, can be accessed by swiping inwards from the right hand side of the screen or by pressing the settings icon
-      endDrawer: new SizedBox(
+      endDrawer: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded ?
+      new SizedBox(
         width: MediaQuery.of(context).size.width * 0.95,
         child: new Drawer(
           child: new Container(
@@ -118,6 +120,7 @@ class HomePageState extends State<HomePage> {
                   ),
                   onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                      Navigator.pop(context);
                       retrieveData();
                       recorder.assignParent(this);
                     });
@@ -140,6 +143,7 @@ class HomePageState extends State<HomePage> {
                   ),
                   onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                      Navigator.pop(context);
                       retrieveData();
                       recorder.assignParent(this);
                     });
@@ -167,6 +171,7 @@ class HomePageState extends State<HomePage> {
                       fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                       iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                     ))).whenComplete((){
+                      Navigator.pop(context);
                       retrieveData();
                       recorder.assignParent(this);
                     });
@@ -194,6 +199,7 @@ class HomePageState extends State<HomePage> {
                       themeColour: themeColourLoaded ? themeColour : Colors.white,
                       iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                     ))).whenComplete((){
+                      Navigator.pop(context);
                       retrieveData();
                       recorder.assignParent(this);
                     });
@@ -221,6 +227,7 @@ class HomePageState extends State<HomePage> {
                       backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
                       iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                     ))).whenComplete((){
+                      Navigator.pop(context);
                       retrieveData();
                       recorder.assignParent(this);
                     });
@@ -243,6 +250,7 @@ class HomePageState extends State<HomePage> {
                   ),
                   onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                      Navigator.pop(context);
                       retrieveData();
                       recorder.assignParent(this);
                     });
@@ -265,6 +273,7 @@ class HomePageState extends State<HomePage> {
                   ),
                   onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                      Navigator.pop(context);
                       retrieveData();
                       recorder.assignParent(this);
                     });
@@ -291,7 +300,7 @@ class HomePageState extends State<HomePage> {
             ),
           ),
         ),
-      ),
+      ) : new Container(),
       appBar: new AppBar(
         iconTheme: IconThemeData(
           color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
@@ -307,16 +316,16 @@ class HomePageState extends State<HomePage> {
           ),
         ] : <Widget>[
           // else display the mic button and settings button
-          IconButton(
+          fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded? IconButton(
             icon: Icon(Icons.mic),
             onPressed: () {setState(() {recorder.recordAudio(context);});},
-          ),
-          Builder(
+          ) : new Container(),
+          fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded ? Builder(
             builder: (context) => IconButton(
               icon: Icon(Icons.settings),
               onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
-          ),
+          ) : new Container(),
         ],
       ),
       body: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded ? new Stack(
@@ -334,6 +343,14 @@ class HomePageState extends State<HomePage> {
                   new Container(
                     padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
                     child: new HomeTile(title: "Subject Hub",  icon: Icons.school, route: SubjectHub(), fontData: fontData, iconData: iconData, themeColour: themeColour, state: this,),
+                  ),
+                  new Container(
+                    padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
+                    child: new HomeTile(title: "Journal",  icon: Icons.import_contacts, route: SubjectHub(), fontData: fontData, iconData: iconData, themeColour: themeColour, state: this,),
+                  ),
+                  new Container(
+                    padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
+                    child: new HomeTile(title: "Notifications",  icon: Icons.notifications_active, route: Notifications(), fontData: fontData, iconData: iconData, themeColour: themeColour, state: this,),
                   )
                 ],
               ),

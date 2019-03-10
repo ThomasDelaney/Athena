@@ -17,7 +17,6 @@ import binascii
 # create flask app
 app = Flask(__name__)
 
-
 # initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -239,7 +238,6 @@ def get_command_keywords():
         # use the audio recorder to convert the new wav file as raw audio
         with sr.AudioFile(wav_path) as source:
             audio = r.record(source)
-
 
         option = ""
         funct = ""
@@ -1034,7 +1032,66 @@ def delete_test_result():
         parsedError = new[new.index("{"):]
         return jsonify(response=parsedError)
 
+@app.route('/putNotification', methods=['POST'])
+def put_notification():
+    auth = firebase.auth()
 
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        data = {
+            "description": request.form['description'],
+            "time": request.form['time'],
+        }
+
+        result = db.child("users").child(user['userId']).child("notifications").child(request.form['nodeID']).set(data, user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+@app.route('/getNotifications', methods=['GET'])
+def get_notifications():
+    auth = firebase.auth()
+
+    try:
+        db = firebase.database()
+
+        user = auth.refresh(request.args['refreshToken'])
+
+        # get all image urls from database for the specific user
+        results = db.child("users").child(user['userId']).child("notifications").get(user['idToken'])
+
+        # return the images as a list
+        return jsonify(notifications=results.val(), refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
+
+ # route to delete test result file
+@app.route('/deleteNotification', methods=['POST'])
+def delete_notification():
+    auth = firebase.auth()
+
+    try:
+        user = auth.refresh(request.form['refreshToken'])
+
+        db = firebase.database()
+
+        result = db.child("users").child(user['userId']).child("notifications").child(request.form['nodeID']).remove(user['idToken'])
+
+        # return refresh token if successfull
+        return jsonify(refreshToken=user['refreshToken'])
+    except requests.exceptions.HTTPError as e:
+        new = str(e).replace("\n", '')
+        parsedError = new[new.index("{"):]
+        return jsonify(response=parsedError)
 
 
 @app.route('/putHomework', methods=['POST'])

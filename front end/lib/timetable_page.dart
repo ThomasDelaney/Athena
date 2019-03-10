@@ -186,7 +186,8 @@ class _TimetablePageState extends State<TimetablePage> {
             Scaffold(
                 key: _scaffoldKey,
                 backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
-                endDrawer: new SizedBox(
+                endDrawer: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && slotsLoaded ?
+                new SizedBox(
                   width: MediaQuery.of(context).size.width * 0.95,
                   child: new Drawer(
                     child: new Container(
@@ -219,6 +220,7 @@ class _TimetablePageState extends State<TimetablePage> {
                             ),
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete((){
+                                Navigator.pop(context);
                                 retrieveData();
                                 recorder.assignParent(this);
                               });
@@ -241,6 +243,7 @@ class _TimetablePageState extends State<TimetablePage> {
                             ),
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete((){
+                                Navigator.pop(context);
                                 retrieveData();
                                 recorder.assignParent(this);
                               });
@@ -268,6 +271,7 @@ class _TimetablePageState extends State<TimetablePage> {
                                 fontData: fontLoaded ? fontData : new FontData("", Colors.black, 24.0),
                                 iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                               ))).whenComplete((){
+                                Navigator.pop(context);
                                 retrieveData();
                                 recorder.assignParent(this);
                               });
@@ -295,6 +299,7 @@ class _TimetablePageState extends State<TimetablePage> {
                                 themeColour: themeColourLoaded ? themeColour : Colors.white,
                                 iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                               ))).whenComplete((){
+                                Navigator.pop(context);
                                 retrieveData();
                                 recorder.assignParent(this);
                               });
@@ -322,6 +327,7 @@ class _TimetablePageState extends State<TimetablePage> {
                                 backgroundColour: backgroundColourLoaded ? backgroundColour : Colors.white,
                                 iconData: iconLoaded ? iconData : new AthenaIconData(Colors.black, 24.0),
                               ))).whenComplete((){
+                                Navigator.pop(context);
                                 retrieveData();
                                 recorder.assignParent(this);
                               });
@@ -344,6 +350,7 @@ class _TimetablePageState extends State<TimetablePage> {
                             ),
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete((){
+                                Navigator.pop(context);
                                 retrieveData();
                                 recorder.assignParent(this);
                               });
@@ -366,6 +373,7 @@ class _TimetablePageState extends State<TimetablePage> {
                             ),
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => TagManager())).whenComplete((){
+                                Navigator.pop(context);
                                 retrieveData();
                                 recorder.assignParent(this);
                               });
@@ -392,7 +400,7 @@ class _TimetablePageState extends State<TimetablePage> {
                       ),
                     ),
                   ),
-                ),
+                ) : new Container(),
                 appBar: AppBar(
                   iconTheme: IconThemeData(
                       color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
@@ -412,25 +420,25 @@ class _TimetablePageState extends State<TimetablePage> {
                     ),
                   ] : <Widget>[
                     // else display the mic button and settings button
-                    IconButton(
+                    fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && slotsLoaded ? IconButton(
                         icon: Icon(Icons.home),
                         onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
-                    ),
-                    IconButton(
+                    ) : new Container(),
+                    fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && slotsLoaded ? IconButton(
                       icon: Icon(Icons.mic),
                       onPressed: () {
                         setState(() {
                           recorder.recordAudio(context);
                         });
                       },
-                    ),
-                    Builder(
+                    ) : new Container(),
+                    fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && slotsLoaded ? Builder(
                       builder: (context) =>
                           IconButton(
                             icon: Icon(Icons.settings),
                             onPressed: () => Scaffold.of(context).openEndDrawer(),
                           ),
-                    ),
+                    ) : new Container(),
                   ],
                   bottom: TabBar(
                     indicatorWeight: 5*ThemeCheck.orientatedScaleFactor(context),
