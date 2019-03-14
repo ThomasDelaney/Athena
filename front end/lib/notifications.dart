@@ -3,6 +3,7 @@ import 'package:Athena/athena_notification.dart';
 import 'package:Athena/background_settings.dart';
 import 'package:Athena/card_settings.dart';
 import 'package:Athena/dyslexia_friendly_settings.dart';
+import 'package:Athena/notification_plugin.dart';
 import 'package:Athena/sign_out.dart';
 import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
@@ -38,8 +39,6 @@ class _NotificationsState extends State<Notifications> {
   RecordingManger recorder = RecordingManger.singleton;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  String font = "";
 
   List<AthenaNotification> notifsList = new List<AthenaNotification>();
   bool notifsLoaded = false;
@@ -227,29 +226,36 @@ class _NotificationsState extends State<Notifications> {
                             child: new ConstrainedBox(
                               constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
                               child: new Wrap(
-                                alignment: WrapAlignment.start,
-                                runAlignment: WrapAlignment.start,
+                                alignment: WrapAlignment.spaceBetween,
+                                runAlignment: WrapAlignment.spaceBetween,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: <Widget>[
-                                  Icon(Icons.notifications_active, color: iconData.color, size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,),
-                                  new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context),),
-                                  new Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  new Wrap(
+                                    crossAxisAlignment: WrapCrossAlignment.center,
                                     children: <Widget>[
-                                      Text(
-                                        notifsList[position].description,
-                                        style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color),
+                                      Icon(Icons.notifications_active, color: iconData.color, size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,),
+                                      new SizedBox(width: 15.0*ThemeCheck.orientatedScaleFactor(context),),
+                                      new Column(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            notifsList[position].description,
+                                            style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color),
+                                          ),
+                                          SizedBox(height: 5.0*ThemeCheck.orientatedScaleFactor(context)),
+                                          Container(
+                                            child: Text(
+                                              notifsList[position].time,
+                                              style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color, fontWeight: FontWeight.bold),
+                                            ),
+                                          )
+                                        ],
                                       ),
-                                      SizedBox(height: 5.0*ThemeCheck.orientatedScaleFactor(context)),
-                                      Container(
-                                        child: Text(
-                                          notifsList[position].time,
-                                          style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color, fontWeight: FontWeight.bold),
-                                        ),
-                                      )
                                     ],
-                                  )
+                                  ),
+                                  DateTime.parse(notifsList[position].time).compareTo(DateTime.now()) == -1 ?
+                                  Icon(Icons.done, color: iconData.color, size: 32.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size,) : new Container(),
                                 ],
                               ),
                             ),
@@ -587,7 +593,7 @@ class _NotificationsState extends State<Notifications> {
                 margin: MediaQuery.of(context).viewInsets,
                 child: new ModalBarrier(color: Colors.black54, dismissible: false,)
             ),
-            new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,)
+            new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
             )
           ],
         ): new Container()
@@ -604,6 +610,10 @@ class _NotificationsState extends State<Notifications> {
   }
 
   void deleteNotification(AthenaNotification notification) async {
+
+    NotificationPlugin notificationPlugin = NotificationPlugin.singleton;
+    await notificationPlugin.localNotificationPlugin.cancel(int.tryParse(notification.id));
+    
     var response = await requestManager.deleteNotification(notification.id);
 
     //if null, then the request was a success, retrieve the information

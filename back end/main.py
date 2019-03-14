@@ -17,6 +17,7 @@ import binascii
 # create flask app
 app = Flask(__name__)
 
+
 # initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -132,20 +133,36 @@ def upload_file():
 
         user = auth.refresh(request.form['refreshToken'])
 
-        # stiore posted image under posted filename
-        results = storage.child("users").child(user['userId']).child(request.form['subjectID']).child(request.files['file'].filename).put(request.files['file'], user['idToken'])
-        # get url from posted image
-        url = storage.child(results['name']).get_url(results['downloadTokens'])
+        if (request.form['date'] != "null"):
+            # get all image urls from database for the specific user
+            results = storage.child("users").child(user['userId']).child(request.form['subjectID']).child(request.form['date']).child(request.files['file'].filename).put(request.files['file'], user['idToken'])
+            # get url from posted image
+            url = storage.child(results['name']).get_url(results['downloadTokens'])
 
-        data = {
-            "fileName": request.files['file'].filename,
-            "url": str(url),
-            "tag": "No Tag"
-        }
+            data = {
+                "fileName": request.files['file'].filename,
+                "url": str(url),
+                "tag": "No Tag"
+            }
 
-        # add the url to the database under the images node for the user, give
-        # random int as the node for now, will be changed later
-        addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").push(data, user['idToken'])
+            # add the url to the database under the images node for the user, give
+            # random int as the node for now, will be changed later
+            addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("files").push(data, user['idToken'])
+        else:
+            # get all image urls from database for the specific user
+            results = storage.child("users").child(user['userId']).child(request.form['subjectID']).child(request.files['file'].filename).put(request.files['file'], user['idToken'])
+            # get url from posted image
+            url = storage.child(results['name']).get_url(results['downloadTokens'])
+
+            data = {
+                "fileName": request.files['file'].filename,
+                "url": str(url),
+                "tag": "No Tag"
+            }
+
+            # add the url to the database under the images node for the user, give
+            # random int as the node for now, will be changed later
+            addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").push(data, user['idToken'])
 
         # return the refresh token and the image url
         return jsonify(refreshToken=user['refreshToken'], url=url, fileName=request.files['file'].filename, key=addUrl['name'])
@@ -165,10 +182,17 @@ def delete_file():
         storage = firebase.storage()
         db = firebase.database()
 
-        # delete file from storage
-        storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/"+request.form['fileName'])
-        
-        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").child(request.form['nodeID']).remove(user['idToken'])
+        if (request.form['date'] != "null"):
+            # delete file from storage
+            storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/"+request.form['date']+"/"+request.form['fileName'])
+            
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("files").child(request.form['nodeID']).remove(user['idToken'])
+
+        else: 
+            # delete file from storage
+            storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/"+request.form['fileName'])
+            
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").child(request.form['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -187,7 +211,10 @@ def put_tag_on_file():
 
         db = firebase.database()
 
-        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
+        if (request.form['date'] != "null"):
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("files").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
+        else:
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -197,8 +224,6 @@ def put_tag_on_file():
         return jsonify(response=parsedError)
 
 # route to get all user photos
-
-
 @app.route('/getFiles', methods=['GET'])
 def get_files():
     auth = firebase.auth()
@@ -208,8 +233,11 @@ def get_files():
 
         user = auth.refresh(request.args['refreshToken'])
 
-        # get all image urls from database for the specific user
-        results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("files").get(user['idToken'])
+        if (request.args['date'] != "null"):
+            # get all image urls from database for the specific user
+            results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child(request.args['date']).child("files").get(user['idToken'])
+        else:
+            results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("files").get(user['idToken'])
 
         # return the images as a list
         return jsonify(files=results.val(), refreshToken=user['refreshToken'])
@@ -243,6 +271,7 @@ def get_command_keywords():
         funct = ""
 
         try:
+
             # use google speech to text api to retrieve the text from the audio
             text = r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS)
 
@@ -538,9 +567,15 @@ def put_note():
         }
 
         if (request.form['nodeID'] == 'null'):
-            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").push(data, user['idToken'])
+            if (request.form['date'] != "null"):
+                result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("notes").push(data, user['idToken'])
+            else:
+                result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").push(data, user['idToken'])
         else:
-            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).set(data, user['idToken'])
+            if (request.form['date'] != "null"):
+                result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("notes").child(request.form['nodeID']).set(data, user['idToken'])
+            else:
+                result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).set(data, user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -561,29 +596,13 @@ def put_tag_on_note():
 
         db = firebase.database()
 
-        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
+        if (request.form['date'] != "null"):
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("notes").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
+        else:
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).child("tag").set(request.form['tag'], user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
-    except requests.exceptions.HTTPError as e:
-        new = str(e).replace("\n", '')
-        parsedError = new[new.index("{"):]
-        return jsonify(response=parsedError)
-
-# route to put text file
-@app.route('/getTagForNote', methods=['GET'])
-def get_tag_for_note():
-    auth = firebase.auth()
-
-    try:
-        user = auth.refresh(request.args['refreshToken'])
-
-        db = firebase.database()
-
-        result = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("notes").child(request.args['nodeID']).child("tag").get(user['idToken'])
-
-        # return refresh token if successfull
-        return jsonify(tag=result.val(), refreshToken=user['refreshToken'])
     except requests.exceptions.HTTPError as e:
         new = str(e).replace("\n", '')
         parsedError = new[new.index("{"):]
@@ -599,7 +618,10 @@ def delete_note():
 
         db = firebase.database()
 
-        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
+        if (request.form['date'] != "null"):
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
+        else:
+            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -618,8 +640,11 @@ def get_notes():
 
         user = auth.refresh(request.args['refreshToken'])
 
-        # get all image urls from database for the specific user
-        results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("notes").get(user['idToken'])
+        if (request.args['date'] != "null"):
+            results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child(request.args['date']).child("notes").get(user['idToken'])
+        else:
+            # get all image urls from database for the specific user
+            results = db.child("users").child(user['userId']).child("subjects").child(request.args['subjectID']).child("notes").get(user['idToken'])
 
         # return the images as a list
         return jsonify(notes=results.val(), refreshToken=user['refreshToken'])
@@ -745,33 +770,55 @@ def put_tag():
             subjects = db.child("users").child(user['userId']).child("subjects").get(user['idToken'])
 
             # for each subject
-            for i, (key, value) in enumerate(subjects.val().items()):
-                notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+            for i, (key, value) in enumerate(subjects.val().items()): 
+                if (key == "journal"):
+                    if (value != None):
+                        for j, (dateKey, dateValue) in enumerate(value.items()):
+                            notes = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").get(user['idToken'])
 
-                # if the subject has notes
-                if (notes.val() != None):
-                        # for each note for that subject
-                    for j, (noteKey, noteValue) in enumerate(notes.val().items()):
-                        withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+                            if (notes.val() != None):
+                                for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+                                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").child(noteKey).get(user['idToken'])
 
-                        # if that note has the tag to be updated, replace the tag
-                        # with new tag
-                        if (withTag.val()['tag'] == request.form['oldTag']):
-                            db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).child("tag").set(request.form['tag'], user['idToken'])
+                                    if (withTag.val()['tag'] == request.form['oldTag']):
+                                        db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").child(noteKey).child("tag").set(request.form['tag'], user['idToken'])
 
-                files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
+                            files = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").get(user['idToken'])
 
-                # if the subject has files
-                if (files.val() != None):
-                        # for each file for that subject
-                    for j, (fileKey, fileValue) in enumerate(files.val().items()):
-                        withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
+                            # if the subject has files
+                            if (files.val() != None):
+                                for j, (fileKey, fileValue) in enumerate(files.val().items()):
+                                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").child(fileKey).get(user['idToken'])
 
-                        # if that file has the tag to be deleted, replace the tag
-                        # with No Tag
-                        if (withTag.val()['tag'] == request.form['oldTag']):
-                            db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set(request.form['tag'], user['idToken'])
-                            
+                                    if (withTag.val()['tag'] == request.form['oldTag']):
+                                        db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").child(fileKey).child("tag").set(request.form['tag'], user['idToken'])
+                else:
+                    notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+
+                    # if the subject has notes
+                    if (notes.val() != None):
+                            # for each note for that subject
+                        for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+                            withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+
+                            # if that note has the tag to be updated, replace the tag
+                            # with new tag
+                            if (withTag.val()['tag'] == request.form['oldTag']):
+                                db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).child("tag").set(request.form['tag'], user['idToken'])
+
+                    files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
+
+                    # if the subject has files
+                    if (files.val() != None):
+                            # for each file for that subject
+                        for j, (fileKey, fileValue) in enumerate(files.val().items()):
+                            withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
+
+                            # if that file has the tag to be deleted, replace the tag
+                            # with No Tag
+                            if (withTag.val()['tag'] == request.form['oldTag']):
+                                db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set(request.form['tag'], user['idToken'])
+                                
             result = db.child("users").child(user['userId']).child("tags").child(request.form['nodeID']).set(request.form['tag'], user['idToken'])
 
         # return refresh token if successfull
@@ -796,31 +843,53 @@ def delete_tag():
 
         # for each subject
         for i, (key, value) in enumerate(subjects.val().items()):
-            notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+            if (key == "journal"):
+                if (value != None):
+                    for j, (dateKey, dateValue) in enumerate(value.items()):
+                        notes = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").get(user['idToken'])
 
-            # if the subject has notes
-            if (notes.val() != None):
-                    # for each note for that subject
-                for j, (noteKey, noteValue) in enumerate(notes.val().items()):
-                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+                        if (notes.val() != None):
+                            for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+                                withTag = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").child(noteKey).get(user['idToken'])
 
-                    # if that note has the tag to be deleted, replace the tag
-                    # with No Tag
-                    if (withTag.val()['tag'] == request.form['tag']):
-                        db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).child("tag").set("No Tag", user['idToken'])
+                                if (withTag.val()['tag'] == request.form['tag']):
+                                    db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").child(noteKey).child("tag").set("No Tag", user['idToken'])
 
-            files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
+                        files = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").get(user['idToken'])
 
-            # if the subject has files
-            if (files.val() != None):
-                    # for each file for that subject
-                for j, (fileKey, fileValue) in enumerate(files.val().items()):
-                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
+                        # if the subject has files
+                        if (files.val() != None):
+                            for j, (fileKey, fileValue) in enumerate(files.val().items()):
+                                withTag = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").child(fileKey).get(user['idToken'])
 
-                    # if that file has the tag to be deleted, replace the tag
-                    # with No Tag
-                    if (withTag.val()['tag'] == request.form['tag']):
-                        db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set("No Tag", user['idToken'])
+                                if (withTag.val()['tag'] == request.form['tag']):
+                                       db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set("No Tag", user['idToken'])   
+            else:
+                notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+
+                # if the subject has notes
+                if (notes.val() != None):
+                        # for each note for that subject
+                    for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+                        withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+
+                        # if that note has the tag to be deleted, replace the tag
+                        # with No Tag
+                        if (withTag.val()['tag'] == request.form['tag']):
+                            db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).child("tag").set("No Tag", user['idToken'])
+
+                files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
+
+                # if the subject has files
+                if (files.val() != None):
+                        # for each file for that subject
+                    for j, (fileKey, fileValue) in enumerate(files.val().items()):
+                        withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
+
+                        # if that file has the tag to be deleted, replace the tag
+                        # with No Tag
+                        if (withTag.val()['tag'] == request.form['tag']):
+                            db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set("No Tag", user['idToken'])
 
         # delete the tag
         result = db.child("users").child(user['userId']).child("tags").child(request.form['nodeID']).remove(user['idToken'])
@@ -869,27 +938,49 @@ def get_notes_and_files_with_tag():
 
         # for each subject
         for i, (key, value) in enumerate(subjects.val().items()):
-            notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+            if (key == "journal"):
+                if (value != None):
+                    for j, (dateKey, dateValue) in enumerate(value.items()):
+                        notes = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").get(user['idToken'])
 
-            # if the subject has notes
-            if (notes.val() != None):
-                    # for each note for that subject
-                for j, (noteKey, noteValue) in enumerate(notes.val().items()):
-                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+                        if (notes.val() != None):
+                            for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+                                withTag = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").child(noteKey).get(user['idToken'])
 
-                    if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
-                        notesWithTag.append({"note": {"key": noteKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});
+                                if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
+                                    notesWithTag.append({"note": {"key": noteKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});
 
-            files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
+                        files = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").get(user['idToken'])
 
-            # if the subject has files
-            if (files.val() != None):
-                    # for each file for that subject
-                for j, (fileKey, fileValue) in enumerate(files.val().items()):
-                    withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
+                        # if the subject has files
+                        if (files.val() != None):
+                            for j, (fileKey, fileValue) in enumerate(files.val().items()):
+                                withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
 
-                    if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
-                        filesWithTag.append({"file": {"key": fileKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});    
+                                if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
+                                    filesWithTag.append({"file": {"key": fileKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});    
+                else:
+                    notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
+
+                # if the subject has notes
+                if (notes.val() != None):
+                # for each note for that subject
+                    for j, (noteKey, noteValue) in enumerate(notes.val().items()):
+                        withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).get(user['idToken'])
+
+                        if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
+                            notesWithTag.append({"note": {"key": noteKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});
+
+                files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
+
+                # if the subject has files
+                if (files.val() != None):
+                # for each file for that subject
+                    for j, (fileKey, fileValue) in enumerate(files.val().items()):
+                        withTag = db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).get(user['idToken'])
+
+                        if (withTag.val()['tag'].lower() == request.args['tag'].lower()):
+                            filesWithTag.append({"file": {"key": fileKey, "values": withTag.val()}, "subject": {"key": key, "value": value}});    
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'], files=filesWithTag, notes=notesWithTag)

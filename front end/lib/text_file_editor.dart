@@ -21,7 +21,9 @@ class TextFileEditor extends StatefulWidget {
   final Color backgroundColour;
   final Color themeColour;
 
-  TextFileEditor({Key key, this.note, this.backgroundColour, this.themeColour, this.cardColour, this.subject, this.fontData}) : super(key: key);
+  final String date;
+
+  TextFileEditor({Key key, this.note, this.backgroundColour, this.themeColour, this.cardColour, this.subject, this.fontData, this.date}) : super(key: key);
 
   @override
   TextFileEditorState createState() => TextFileEditorState();
@@ -259,7 +261,7 @@ class TextFileEditorState extends State<TextFileEditor> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).padding,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(widget.themeColour)))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],
@@ -435,7 +437,8 @@ class TextFileEditorState extends State<TextFileEditor> {
       "fileName": fileNameController.text,
       "delta": json.encode(_controller.document.toJson()).toString(),
       "subjectID": widget.subject.id,
-      "tag": currentTag
+      "tag": currentTag,
+      "date": widget.date != null ? widget.date : "null"
     };
 
     var response = await requestManager.putNote(map);
@@ -445,7 +448,6 @@ class TextFileEditorState extends State<TextFileEditor> {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Note Saved!', style: TextStyle(
           fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
           fontFamily: widget.fontData.font,
-          color: widget.fontData.color
       ),)));
 
       currentlySaved = true;
@@ -483,11 +485,15 @@ class TextFileEditorState extends State<TextFileEditor> {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(
           fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
           fontFamily: widget.fontData.font,
-          color: widget.fontData.color
       ),)));
     }
     else {
-      Map map = {"id": widget.note.id, "tag": currentTag, "subjectID": widget.subject.id};
+      Map map = {
+        "id": widget.note.id,
+        "tag": currentTag,
+        "subjectID": widget.subject.id,
+        "date": widget.date != null ? widget.date : "null"
+      };
 
       var response = await requestManager.putTagOnNote(map);
 
@@ -499,7 +505,6 @@ class TextFileEditorState extends State<TextFileEditor> {
         _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(
             fontSize: 18*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
             fontFamily: widget.fontData.font,
-            color: widget.fontData.color
         ),)));
       }
       //else the response ['response']  is not null, then print the error message

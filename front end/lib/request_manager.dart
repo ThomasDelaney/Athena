@@ -76,17 +76,21 @@ class RequestManager
 
   Dio dio = new Dio();
 
-  Future<List<SubjectFile>> getFiles(String subjectID) async
+  Future<List<SubjectFile>> getFiles(String subjectID, [String date]) async
   {
     List<SubjectFile> reqFiles = new List<SubjectFile>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getFilesUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+    Response response = await dio.get(getFilesUrl, queryParameters: {
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "subjectID": subjectID,
+      "date": date != null ? date : "null"
+    });
 
     //store files in a SubjectFile list
     if (response.data['files']?.values != null) {
-
       response.data['files'].forEach((key, values) {
         SubjectFile s = new SubjectFile(key, values['url'], values['fileName'], values['tag']);
         reqFiles.add(s);
@@ -97,7 +101,7 @@ class RequestManager
   }
 
   //method for uploading user chosen image
-  Future<SubjectFile> uploadFile(String filePath, String subjectID, BuildContext context) async
+  Future<SubjectFile> uploadFile(String filePath, String subjectID, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -105,6 +109,7 @@ class RequestManager
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "subjectID": subjectID,
+      "date": date != null ? date : "null",
       "refreshToken": await prefs.getString("refreshToken"),
       "file": new UploadFileInfo(new File(filePath), new DateTime.now().millisecondsSinceEpoch.toString()+filePath.split('/').last)
     });
@@ -129,7 +134,7 @@ class RequestManager
     }
   }
 
-  dynamic deleteFile(String id, String subjectID, String fileName) async
+  dynamic deleteFile(String id, String subjectID, String fileName, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -138,6 +143,7 @@ class RequestManager
       "nodeID": id,
       "subjectID": subjectID,
       "fileName": fileName,
+      "date": date != null ? date : "null",
       "refreshToken": await prefs.getString("refreshToken"),
     });
 
@@ -658,6 +664,7 @@ class RequestManager
       "nodeID": jsonMap['id'],
       "refreshToken": await prefs.getString("refreshToken"),
       "tag": jsonMap['tag'],
+      "date": jsonMap['date'] != null ? jsonMap['date'] : "null",
       "oldTag": jsonMap['oldTag']
     });
 
@@ -681,7 +688,7 @@ class RequestManager
     }
   }
 
-  dynamic deleteTag(Tag tag) async
+  dynamic deleteTag(Tag tag, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -689,6 +696,7 @@ class RequestManager
       "id": await prefs.getString("id"),
       "nodeID": tag.id,
       "tag": tag.tag,
+      "date": date != null ? date : "null",
       "refreshToken": await prefs.getString("refreshToken"),
     });
 
@@ -732,7 +740,7 @@ class RequestManager
     return reqTags;
   }
 
-  Future<List> getNotesAndFilesByTag(String tag) async
+  Future<List> getNotesAndFilesByTag(String tag, [String date]) async
   {
     Map<Subject, Note> notes = new Map<Subject, Note>();
     Map<Subject, SubjectFile> files = new Map<Subject, SubjectFile>();
@@ -740,7 +748,12 @@ class RequestManager
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user images
-    Response response = await dio.get(getNotesAndFilesWithTagURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "tag": tag});
+    Response response = await dio.get(getNotesAndFilesWithTagURL, queryParameters: {
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "tag": tag,
+      "date": date != null ? date : "null",
+    });
 
     //print(response.data['notes']);
 
@@ -775,6 +788,8 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    print(jsonMap['date']);
+
     //create form data for the request, with the new note
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
@@ -784,6 +799,7 @@ class RequestManager
       "fileName": jsonMap['fileName'],
       "delta": jsonMap['delta'],
       "tag": jsonMap['tag'],
+      "date": jsonMap['date'] != null ? jsonMap['date'] : "null"
     });
 
     try {
@@ -816,6 +832,7 @@ class RequestManager
       "nodeID": jsonMap['id'],
       "subjectID": jsonMap['subjectID'],
       "tag": jsonMap['tag'],
+      "date": jsonMap['date'] != null ? jsonMap['date'] : "null",
       "refreshToken": await prefs.getString("refreshToken"),
     });
 
@@ -848,6 +865,7 @@ class RequestManager
       "nodeID": jsonMap['id'],
       "subjectID": jsonMap['subjectID'],
       "tag": jsonMap['tag'],
+      "date": jsonMap['date'] != null ? jsonMap['date'] : "null",
       "refreshToken": await prefs.getString("refreshToken"),
     });
 
@@ -873,40 +891,7 @@ class RequestManager
     }
   }
 
-  Future<String> getTagForNote(Map jsonMap) async
-  {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    try {
-      //post the request and retrieve the response data
-      Response response = await dio.get(getTagForNoteURL, queryParameters: {
-        "id": await prefs.getString("id"),
-        "nodeID": jsonMap['id'],
-        "subjectID": jsonMap['subjectID'],
-        "refreshToken": await prefs.getString("refreshToken"),
-      });
-
-      //if the refresh token is null, then print the error in the logs and show an error dialog
-      if(response.data['refreshToken'] == null) {
-        return "error";
-      }
-      else {
-        await prefs.setString("refreshToken", response.data['refreshToken']);
-
-        if (response.data['tag'] != null) {
-          return response.data['tag'];
-        }
-      }
-    }
-    //catch error and display error doalog
-    on DioError catch(e)
-    {
-      print(e.message);
-      return "error";
-    }
-  }
-
-  dynamic deleteNote(String id, String subjectID) async
+  dynamic deleteNote(String id, String subjectID, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -914,6 +899,7 @@ class RequestManager
       "id": await prefs.getString("id"),
       "nodeID": id,
       "subjectID": subjectID,
+      "date": date != null ? date : "null",
       "refreshToken": await prefs.getString("refreshToken"),
     });
 
@@ -937,13 +923,18 @@ class RequestManager
     }
   }
 
-  Future<List<Note>> getNotes(String subjectID) async
+  Future<List<Note>> getNotes(String subjectID, [String date]) async
   {
     List<Note> reqNotes = new List<Note>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     //get user notes
-    Response response = await dio.get(getNotesURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
+    Response response = await dio.get(getNotesURL, queryParameters: {
+      "id": await prefs.getString("id"),
+      "refreshToken": await prefs.getString("refreshToken"),
+      "subjectID": subjectID,
+      "date": date != null ? date : "null"
+    });
 
     //store images in a string list
     if (response.data['notes']?.values != null) {

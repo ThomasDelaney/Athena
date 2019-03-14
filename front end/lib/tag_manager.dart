@@ -319,7 +319,7 @@ class _TagManagerState extends State<TagManager> {
           alignment: Alignment.center,
           children: <Widget>[
             new Container(
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
           ],
         )
             : new Container()
@@ -343,7 +343,6 @@ class _TagManagerState extends State<TagManager> {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Deleted!', style: TextStyle(
           fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
           fontFamily: fontData.font,
-          color: fontData.color
       ),)));
       retrieveData();
     }

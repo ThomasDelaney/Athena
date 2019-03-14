@@ -19,7 +19,7 @@ import 'subject.dart';
 //Widget that displays an interactive file list
 class FileViewer extends StatefulWidget
 {
-  FileViewer({Key key, this.list, this.i, this.subject, this.fromTagMap, this.fontData, this.iconData, this.backgroundColour, this.cardColour, this.themeColour}) : super(key: key);
+  FileViewer({Key key, this.list, this.i, this.subject, this.fromTagMap, this.fontData, this.iconData, this.backgroundColour, this.cardColour, this.themeColour, this.date}) : super(key: key);
 
   //list of file URLS
   final List<SubjectFile> list;
@@ -35,6 +35,8 @@ class FileViewer extends StatefulWidget
   final Color cardColour;
   final Color backgroundColour;
   final Color themeColour;
+
+  String date;
 
   //current selected index (passed in from page in which it was invoked)
   final int i;
@@ -213,7 +215,12 @@ class FileViewerState extends State<FileViewer>
 
   void addTagToFile() async {
 
-    Map map = {"id": currentID, "tag": currentTag, "subjectID": widget.fromTagMap == null ? widget.subject.id : widget.fromTagMap.keys.elementAt(currentIndex).id};
+    Map map = {
+      "id": currentID,
+      "tag": currentTag,
+      "subjectID": widget.fromTagMap == null ? widget.subject.id : widget.fromTagMap.keys.elementAt(currentIndex).id,
+      "date": widget.date != null ? widget.date : null
+    };
 
     var response = await requestManager.putTagOnFile(map);
 
@@ -309,6 +316,7 @@ class FileViewerState extends State<FileViewer>
         widget.fromTagMap == null ? widget.list[currentIndex].id : widget.fromTagMap.values.elementAt(currentIndex).id,
         widget.fromTagMap == null ? widget.subject.id : widget.fromTagMap.keys.elementAt(currentIndex).id,
         widget.fromTagMap == null ? widget.list[currentIndex].fileName : widget.fromTagMap.values.elementAt(currentIndex).fileName,
+        widget.date != null ? widget.date : null
     );
 
     //if null, then the request was a success, retrieve the information

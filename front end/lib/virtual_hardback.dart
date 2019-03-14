@@ -12,14 +12,11 @@ import 'package:Athena/tag.dart';
 import 'package:Athena/tag_filter_dialog.dart';
 import 'package:Athena/theme_check.dart';
 import 'dart:async';
-import 'login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'file_viewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'font_settings.dart';
-import 'package:chewie/chewie.dart';
-import 'package:video_player/video_player.dart';
 import 'filetype_manager.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
@@ -207,8 +204,8 @@ class VirtualHardbackState extends State<VirtualHardback> {
 
     Container subjectList;
 
-    double iconFactor = iconData.size*0.875;
-    double iconScale = (ThemeCheck.orientatedScaleFactor(context))/(iconData.size/iconFactor);
+    double iconFactor = iconLoaded ? iconData.size*0.875 : 0.875;
+    double iconScale = iconLoaded ? (ThemeCheck.orientatedScaleFactor(context))/(iconData.size/iconFactor) : (ThemeCheck.orientatedScaleFactor(context))/(iconFactor);
 
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
     if (subjectFiles.length == 0 && filesLoaded) {
@@ -300,7 +297,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                                   tag: "fileAt"+index.toString(),
                                   //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
-                                      placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour)),
+                                      placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                                       imageUrl: subjectFiles[index].url,
                                       height: (fileCardSize * iconScale),
                                       width: (fileCardSize * iconScale),
@@ -372,7 +369,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
     }
     else{
       //display a circular progress indicator when the image list is loading
-      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour)))));
+      subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))));
     }
 
     ListView textFileList;
@@ -766,7 +763,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
                 //note container, which is 60% the size of the screen
                 height:  MediaQuery.of(context).size.height * 0.50,
                 alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
-                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
+                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
               ),
               new Expanded(
                   child: new Container(
@@ -818,7 +815,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
               new Container(
                 width: MediaQuery.of(context).size.width * 0.50,
                 alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
-                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
+                child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
               ),
               new Flexible(
                   child: Container(
@@ -875,7 +872,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
           children: <Widget>[
             new Container(
                 margin: MediaQuery.of(context).viewInsets,
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour)))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
           ],
         ): new Container()
       ],
@@ -1018,7 +1015,7 @@ class VirtualHardbackState extends State<VirtualHardback> {
   {
     submit(true);
 
-    SubjectFile responseFile = await requestManager.uploadFile(filePath, widget.subject.id, context);
+    SubjectFile responseFile = await requestManager.uploadFile(filePath, widget.subject.id);
 
     if (responseFile.url == "error") {
       showErrorDialog();

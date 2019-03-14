@@ -1,3 +1,4 @@
+import 'package:Athena/notification_plugin.dart';
 import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/athena_notification.dart';
 import 'package:Athena/font_data.dart';
@@ -6,9 +7,11 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/theme_check.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'request_manager.dart';
+import 'dart:math';
 
 class AddNotification extends StatefulWidget {
 
@@ -157,44 +160,46 @@ class _AddNotificationState extends State<AddNotification> {
                                   ),
                                 ),
                                 SizedBox(height: 20.0),
-                                new Container(
-                                    margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-                                    child: new Theme(
-                                        data: ThemeData(
-                                            accentColor: widget.themeColour,
-                                            dialogBackgroundColor: widget.cardColour,
-                                            primaryColor: widget.themeColour,
-                                            primaryColorDark: widget.themeColour
-                                        ),
-                                        child: DateTimePickerFormField(
-                                            controller: dateController,
-                                            initialValue: widget.currentNotification == null ? null :
-                                            DateTime(
-                                                int.tryParse(widget.currentNotification.time.split(' ')[1].split('-')[0]),
-                                                int.tryParse(widget.currentNotification.time.split(' ')[1].split('-')[1]),
-                                                int.tryParse(widget.currentNotification.time.split(' ')[1].split('-')[2]),
-                                                0,
-                                                0
-                                            ),
-                                            format: DateFormat('yyyy-MM-dd'),
-                                            inputType: InputType.date,
-                                            editable: false,
-                                            onChanged: (DateTime dt) {
-                                              setState(() =>
+                                new SingleChildScrollView(
+                                  child: Container(
+                                      margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                      child: new Theme(
+                                          data: ThemeData(
+                                              accentColor: widget.themeColour,
+                                              dialogBackgroundColor: widget.cardColour,
+                                              primaryColor: widget.themeColour,
+                                              primaryColorDark: widget.themeColour
+                                          ),
+                                          child: DateTimePickerFormField(
+                                              controller: dateController,
+                                              initialValue: widget.currentNotification == null ? null :
+                                              DateTime(
+                                                  int.tryParse(widget.currentNotification.time.split(' ')[0].split('-')[0]),
+                                                  int.tryParse(widget.currentNotification.time.split(' ')[0].split('-')[1]),
+                                                  int.tryParse(widget.currentNotification.time.split(' ')[0].split('-')[2]),
+                                                  0,
+                                                  0
+                                              ),
+                                              format: DateFormat('yyyy-MM-dd'),
+                                              inputType: InputType.date,
+                                              editable: false,
+                                              onChanged: (DateTime dt) {
+                                                setState(() =>
                                                 dt != null ? currentDate = (dt.year.toString()+"/"+dt.month.toString()+"/"+dt.day.toString()) : null
-                                              );
+                                                );
 
-                                              FocusScope.of(context).requestFocus(new FocusNode());
-                                            },
-                                            style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.fontData.color),
-                                            decoration: InputDecoration(
-                                              hintText: "Notification Date?",
-                                              hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),
-                                              hasFloatingPlaceholder: false,
-                                            ),
-                                            initialTime: null
-                                        )
-                                    )
+                                                FocusScope.of(context).requestFocus(new FocusNode());
+                                              },
+                                              style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.fontData.color),
+                                              decoration: InputDecoration(
+                                                hintText: "Notification Date?",
+                                                hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),
+                                                hasFloatingPlaceholder: false,
+                                              ),
+                                              initialTime: null
+                                          )
+                                      )
+                                  ),
                                 ),
                                 SizedBox(height: 20.0),
                                 new Container(
@@ -209,7 +214,8 @@ class _AddNotificationState extends State<AddNotification> {
                                         child: DateTimePickerFormField(
                                             controller: timeController,
                                             initialValue: widget.currentNotification == null ? null :
-                                            DateTime(2000, 03, 07, int.tryParse(widget.currentNotification.time.split(' ')[0].split(':')[0]), int.tryParse(widget.currentNotification.time.split(' ')[0].split(':')[1])),
+                                            DateTime(2000, 03, 07, int.tryParse(widget.currentNotification.time.split(' ')[1].split(':')[0]),
+                                                int.tryParse(widget.currentNotification.time.split(' ')[1].split(':')[1])),
                                             format: DateFormat("HH:mm"),
                                             inputType: InputType.time,
                                             editable: false,
@@ -384,13 +390,16 @@ class _AddNotificationState extends State<AddNotification> {
   }
 
   Future<String> addNotification() async {
+    Random random = new Random();
+    int id = 0 + random.nextInt(2^53 - 0);
+
     //create map of tag data
-    Map map = {"id": widget.currentNotification == null ? new Uuid().v4() : widget.currentNotification.id, "description": descriptionController.text, "time": dateController.text+" "+timeController.text};
+    Map map = {"id": widget.currentNotification == null ? id.toString() : widget.currentNotification.id, "description": descriptionController.text, "time": dateController.text+" "+timeController.text};
 
     var response = await requestManager.putNotification(map);
 
     //if null, then the request was a success, retrieve the information
-    if (response !=  "success"){
+    if (response != "success"){
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
         backgroundColor: widget.cardColour,
@@ -413,6 +422,28 @@ class _AddNotificationState extends State<AddNotification> {
 
       return "error";
     }
+    else{
+      NotificationPlugin notificationPlugin = NotificationPlugin.singleton;
+
+      var scheduledNotificationDateTime = DateTime.parse(dateController.text+" "+timeController.text);
+
+      var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+          '01189998819901197253',
+          'Athena',
+          'Student Life Manager'
+      );
+
+      var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+
+      NotificationDetails platformChannelSpecifics = new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+      await notificationPlugin.localNotificationPlugin.schedule(
+          id,
+          'You have a notification',
+          descriptionController.text,
+          scheduledNotificationDateTime,
+          platformChannelSpecifics);
+      }
   }
 
   void submit(bool state)

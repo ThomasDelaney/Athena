@@ -1,8 +1,12 @@
+import 'package:Athena/athena_notification.dart';
+import 'package:Athena/request_manager.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'register_page.dart';
 import 'home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:Athena/notification_plugin.dart';
 
 void main() {
   runApp(new MyApp());
@@ -46,9 +50,24 @@ class MyHomePage extends StatefulWidget
 
 class _MyHomePageState extends State<MyHomePage>
 {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
   @override
   void initState() {
     super.initState();
+
+    var initializationSettingsAndroid = new AndroidInitializationSettings('white_logo');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    NotificationPlugin notificationPlugin = NotificationPlugin.singleton;
+    notificationPlugin.setNotificationPlugin(flutterLocalNotificationsPlugin);
+
+    scheduleNotifications();
 
     //get user's name from shared preferences, and check if it is null, if so, then send user to log in page, else send user to homepage and pass in the user's name
     SharedPreferences.getInstance().then((SharedPreferences sp)
@@ -62,6 +81,31 @@ class _MyHomePageState extends State<MyHomePage>
 
       setState(() {});
     });
+  }
+
+  void scheduleNotifications() async{
+    List<AthenaNotification> notifs = await RequestManager.singleton.getNotifications();
+
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        '01189998819901197253',
+        'Athena',
+        'Student Life Manager'
+    );
+
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+
+    NotificationDetails platformChannelSpecifics = new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+    notifs.forEach((n) async {
+      if(DateTime.parse(n.time).compareTo(DateTime.now()) != -1){
+        await flutterLocalNotificationsPlugin.schedule(
+            int.tryParse(n.id),
+            'You have a notification',
+            n.description,
+            DateTime.parse(n.time),
+            platformChannelSpecifics);
+        }
+      });
   }
 
   @override

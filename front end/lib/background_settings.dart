@@ -270,7 +270,7 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
                                                 )
                                             );},
                                         );},
-                                      child: Align(alignment: Alignment.centerLeft, child: Text('Select Card Colour', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font))),
+                                      child: Align(alignment: Alignment.centerLeft, child: Text('Select Background Colour', style: TextStyle(fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context)*widget.fontData.size, fontFamily: widget.fontData.font))),
                                       color: widget.themeColour,
 
                                       textColor: ThemeCheck.colorCheck(widget.themeColour),
