@@ -180,35 +180,40 @@ class _ByTagViewerState extends State<ByTagViewer> {
 
     Container subjectList;
 
+    double iconFactor = iconLoaded ? iconData.size*0.875 : 0.875;
+    double iconScale = iconLoaded ? (ThemeCheck.orientatedScaleFactor(context))/(iconData.size/iconFactor) : (ThemeCheck.orientatedScaleFactor(context))/(iconFactor);
+
     //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
     if (subjectFiles.length == 0 && loaded) {
       subjectList = new Container(
-        height: fileCardSize,
+        height:(fileCardSize * iconScale),
         child: new ListView(
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
           children: <Widget>[
-            new Container(
-                margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
-                child: new SizedBox(
-                  width: fileCardSize,
-                  height: fileCardSize,
-                  child: new Card(
-                    child: new Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          new Text("You have no Files tagged with this Tag", textAlign: TextAlign.center, style: TextStyle(
-                              fontFamily: fontData.font,
-                              color: fontData.color,
-                              fontSize: fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size
-                          ),),
-                          new SizedBox(height: 15.0,),
-                          new Icon(Icons.local_offer, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,)
-                        ]
+            new SingleChildScrollView(
+              child: Container(
+                  margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+                  child: new SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.95,
+                    child: new Card(
+                      color: cardColour,
+                      child: new Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            new Text("You have no Files tagged with this Tag", textAlign: TextAlign.center, style: TextStyle(
+                                fontFamily: fontData.font,
+                                color: fontData.color,
+                                fontSize: fontData.size <= 1 ? 24.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size : 14.0*ThemeCheck.orientatedScaleFactor(context)*fontData.size
+                            ),),
+                            new SizedBox(height: 15.0,),
+                            new Icon(Icons.local_offer, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,)
+                          ]
+                      ),
                     ),
-                  ),
-                )
-            ),
+                  )
+              ),
+            )
           ],
         ),
       );
@@ -216,7 +221,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
     //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the images cover the card
     else if (loaded){
       subjectList =  new Container(
-          height: fileCardSize,
+          height: (fileCardSize * iconScale),
           child: new ListView.builder (
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
@@ -227,53 +232,84 @@ class _ByTagViewerState extends State<ByTagViewer> {
                   margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                   child: new SizedBox(
                     child: new Card(
+                        color: cardColour,
                         child: new Stack(
                           children: <Widget>[
                             Center(
                               //widget that detects gestures made by a user
                               child: GestureDetector(
-                                onTap:() {
+                                onTap:() async {
                                   //go to the file viewer page and pass in the image list, and the index of the image tapped
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(fromTagMap: subjectFiles, i: index))).whenComplete(retrieveData);
+                                  final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(
+                                    fromTagMap: subjectFiles,
+                                    i: index,
+                                    fontData: fontData,
+                                    iconData: iconData,
+                                    cardColour: cardColour,
+                                    backgroundColour: backgroundColour,
+                                    themeColour: themeColour,
+                                  ))).whenComplete((){
+                                    retrieveData();
+                                    recorder.assignParent(this);
+                                  });
+
+                                  if (result){
+                                    _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('File Deleted!', style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font))));
+                                  }
                                 },
                                 //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
                                 //the tag allows both pages to know where to return to when the user presses the back button
                                 child: new Hero(
-                                  tag: "imageView"+index.toString(),
+                                  tag: "fileAt"+index.toString(),
                                   //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
-                                  child: FileTypeManger.getFileTypeFromURL(subjectFiles.values.elementAt(index).url) == "image" ? CachedNetworkImage(
-                                      placeholder: CircularProgressIndicator(),
-                                      imageUrl: subjectFiles.values.elementAt(index).url,
-                                      height: fileCardSize* ThemeCheck.orientatedScaleFactor(context),
-                                      width: fileCardSize* ThemeCheck.orientatedScaleFactor(context),
+                                  child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
+                                      placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                                      imageUrl: subjectFiles[index].url,
+                                      height: (fileCardSize * iconScale),
+                                      width: (fileCardSize * iconScale),
                                       fit: BoxFit.cover
-                                  ) : FileTypeManger.getFileTypeFromURL(subjectFiles.values.elementAt(index).url) == "video" ? new Stack(children: <Widget>[
-                                    new Chewie(
-                                      controller: new ChewieController(
-                                        videoPlayerController: new VideoPlayerController.network(
-                                            subjectFiles.values.elementAt(index).url
-                                        ),
-                                        aspectRatio: 1.15,
-                                        autoPlay: false,
-                                        autoInitialize: true,
-                                        showControls: false,
-                                        looping: false,
-                                        placeholder: new Center(child: new CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
-                                      ),
+                                  ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "video" ? new Container(
+                                    decoration: new BoxDecoration(
+                                        border: new Border.all(color: Colors.white12)
                                     ),
-                                    new Center(child: new Icon(Icons.play_circle_filled, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: Color.fromRGBO(255, 255, 255, 0.85),)),
-                                  ],) : FileTypeManger.getFileTypeFromURL(subjectFiles.values.elementAt(index).url) == "audio" ?
-                                  new Container(
-                                    width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
-                                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                                    width: (fileCardSize * iconScale),
+                                    height: (fileCardSize * iconScale),
                                     child: new Column(
                                       children: <Widget>[
-                                        new SizedBox(height: 40*ThemeCheck.orientatedScaleFactor(context),),
-                                        new Icon(Icons.volume_up, size: 70.0*ThemeCheck.orientatedScaleFactor(context), color: themeColour),
+                                        new SizedBox(height: 40*iconScale,),
+                                        new Icon(Icons.play_circle_filled, size: 70.0*iconScale, color: themeColour),
                                         new Flexible(
                                             child: Marquee(
                                               text: subjectFiles[index].fileName,
                                               scrollAxis: Axis.horizontal,
+                                              velocity: 50.0,
+                                              style: TextStyle(
+                                                  fontSize: 18*iconScale
+                                              ),
+                                              pauseAfterRound: Duration(seconds: 2),
+                                              blankSpace: 20.0,
+                                            )
+                                        )
+                                      ],
+                                    ),
+                                  ) : FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "audio" ?
+                                  new Container(
+                                    decoration: new BoxDecoration(
+                                        border: new Border.all(color: Colors.white12)
+                                    ),
+                                    width: (fileCardSize * iconScale),
+                                    height: (fileCardSize * iconScale),
+                                    child: new Column(
+                                      children: <Widget>[
+                                        new SizedBox(height: 40*iconScale),
+                                        new Icon(Icons.volume_up, size: 70.0*iconScale, color: themeColour),
+                                        new Flexible(
+                                            child: Marquee(
+                                              text: subjectFiles[index].fileName,
+                                              scrollAxis: Axis.horizontal,
+                                              style: TextStyle(
+                                                  fontSize: 18*iconScale
+                                              ),
                                               velocity: 50.0,
                                               pauseAfterRound: Duration(seconds: 2),
                                               blankSpace: 20.0,
@@ -289,8 +325,8 @@ class _ByTagViewerState extends State<ByTagViewer> {
                         )
                     ),
                     //Keeps the card the same size when the image is loading
-                    width: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
-                    height: fileCardSize * ThemeCheck.orientatedScaleFactor(context),
+                    width: (fileCardSize * iconScale),
+                    height: (fileCardSize * iconScale),
                   ),
                 );
               }
@@ -299,7 +335,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
     }
     else{
       //display a circular progress indicator when the image list is loading
-      subjectList = new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour)))));
+      subjectList = new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))));
     }
 
     ListView textFileList;
@@ -314,6 +350,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
               child: new SizedBox(
                 width: MediaQuery.of(context).size.width * 0.95,
                 child: new Card(
+                  color: cardColour,
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -337,6 +374,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
         itemCount: notesList.length,
         itemBuilder: (context, position) {
           return Card(
+            color: cardColour,
             margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
             elevation: 3.0,
             child: new ListTile(
@@ -372,7 +410,6 @@ class _ByTagViewerState extends State<ByTagViewer> {
           );
         },
       );
-
     }
 
     return Scaffold(
@@ -634,7 +671,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
                   MediaQuery.of(context).size.height * 3.5 * (1-ThemeCheck.orientatedScaleFactor(context)).abs() :
                   MediaQuery.of(context).size.height * 0.80 * ThemeCheck.orientatedScaleFactor(context),
                   alignment: loaded ? Alignment.topCenter : Alignment.center,
-                  child: loaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
+                  child: loaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
                 ),
                 new Container(
                   //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
@@ -661,7 +698,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
                 new Container(
                   width: MediaQuery.of(context).size.width * 0.50,
                   alignment: loaded ? Alignment.topCenter : Alignment.center,
-                  child: loaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(themeColour))),
+                  child: loaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
                 ),
                 new Flexible(
                   child: Container(

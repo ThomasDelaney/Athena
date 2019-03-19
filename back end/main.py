@@ -270,8 +270,8 @@ def get_command_keywords():
         option = ""
         funct = ""
 
-        try:
 
+        try:
             # use google speech to text api to retrieve the text from the audio
             text = r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS)
 

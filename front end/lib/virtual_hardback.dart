@@ -221,7 +221,6 @@ class VirtualHardbackState extends State<VirtualHardback> {
                   margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                   child: new SizedBox(
                     width: MediaQuery.of(context).size.width * 0.95,
-                    height: (fileCardSize * iconScale),
                     child: GestureDetector(
                       onTap: () => getImage(),
                       child: new Card(

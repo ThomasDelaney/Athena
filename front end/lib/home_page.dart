@@ -351,7 +351,7 @@ class HomePageState extends State<HomePage> {
                   ),
                   new Container(
                     padding: EdgeInsets.all(10.0*ThemeCheck.orientatedScaleFactor(context)),
-                    child: new HomeTile(title: "Notifications",  icon: Icons.notifications_active, route: Notifications(), fontData: fontData, iconData: iconData, themeColour: themeColour, state: this,),
+                    child: new HomeTile(title: "Reminders",  icon: Icons.notifications_active, route: Notifications(), fontData: fontData, iconData: iconData, themeColour: themeColour, state: this,),
                   )
                 ],
               ),

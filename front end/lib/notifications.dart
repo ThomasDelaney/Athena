@@ -183,7 +183,7 @@ class _NotificationsState extends State<Notifications> {
                     child: new Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          new Text("Add Notifications By Using the", textAlign: TextAlign.center, style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color,), ),
+                          new Text("Add Reminders By Using the", textAlign: TextAlign.center, style: TextStyle(fontSize: 24*fontData.size, fontFamily: fontData.font, color: fontData.color,), ),
                           new SizedBox(height: 10.0,),
                           new Icon(Icons.add_alert, size: 40.0*ThemeCheck.orientatedScaleFactor(context)*iconData.size, color: iconData.color,),
                         ]
@@ -246,7 +246,8 @@ class _NotificationsState extends State<Notifications> {
                                           SizedBox(height: 5.0*ThemeCheck.orientatedScaleFactor(context)),
                                           Container(
                                             child: Text(
-                                              notifsList[position].time,
+                                              dayOfMonthFromInt(DateTime.parse(notifsList[position].time).day)+" "+
+                                              monthFromInt(DateTime.parse(notifsList[position].time).month)+" "+DateTime.parse(notifsList[position].time).year.toString(),
                                               style: TextStyle(fontSize: 24*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font, color: fontData.color, fontWeight: FontWeight.bold),
                                             ),
                                           )
@@ -503,7 +504,7 @@ class _NotificationsState extends State<Notifications> {
             ),
             backgroundColor: themeColourLoaded ? themeColour : Colors.white,
             title: Text(
-                "Notifications",
+                "Reminders",
                 style: TextStyle(
                     fontFamily: fontLoaded ? fontData.font : "",
                     color: themeColourLoaded ? ThemeCheck.colorCheck(themeColour) : Colors.white
@@ -618,7 +619,7 @@ class _NotificationsState extends State<Notifications> {
 
     //if null, then the request was a success, retrieve the information
     if (response == "success") {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Notification Deleted!', style: TextStyle(fontSize: 18*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font),)));
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Reminder Deleted!', style: TextStyle(fontSize: 18*ThemeCheck.orientatedScaleFactor(context)*fontData.size, fontFamily: fontData.font),)));
       retrieveData();
     }
     //else the response ['response']  is not null, then print the error message
@@ -643,7 +644,7 @@ class _NotificationsState extends State<Notifications> {
   void deleteNotificationDialog(AthenaNotification notification) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,
-      content: new Text("Do you want to DELETE this Notification?", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
+      content: new Text("Do you want to DELETE this Reminder?", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
       actions: <Widget>[
         new FlatButton(onPressed: () {
           Navigator.pop(context);
@@ -672,5 +673,27 @@ class _NotificationsState extends State<Notifications> {
         submitting = state;
       });
     }
+  }
+
+  String dayOfMonthFromInt(int day){
+
+    String dayWithSuffix = day.toString();
+
+    if (day >= 11 && day <= 13) {
+      dayWithSuffix += "th";
+    }
+    switch (day % 10) {
+      case 1:  dayWithSuffix += "st"; break;
+      case 2:  dayWithSuffix += "nd"; break;
+      case 3:  dayWithSuffix += "rd"; break;
+      default: dayWithSuffix += "th"; break;
+    }
+
+    return dayWithSuffix;
+  }
+
+  String monthFromInt(int i){
+    List<String> months = const <String>["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return months[i-1];
   }
 }

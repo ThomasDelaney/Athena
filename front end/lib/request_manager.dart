@@ -647,8 +647,10 @@ class RequestManager
     if (response.data['subjects']?.values != null) {
 
       response.data['subjects'].forEach((key, values) {
-        Subject s = new Subject(key, values['name'], values['colour']);
-        reqSubjects.add(s);
+        if (key != "journal"){
+          Subject s = new Subject(key, values['name'], values['colour']);
+          reqSubjects.add(s);
+        }
       });
     }
 

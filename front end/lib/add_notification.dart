@@ -100,7 +100,7 @@ class _AddNotificationState extends State<AddNotification> {
                 resizeToAvoidBottomPadding: false,
                 backgroundColor: widget.backgroundColour,
                 appBar: new AppBar(
-                  title: widget.currentNotification == null ? new Text("Add a New Notification", style: TextStyle(
+                  title: widget.currentNotification == null ? new Text("Add a New Reminder", style: TextStyle(
                       fontSize: 24.0*ThemeCheck.orientatedScaleFactor(context),
                       fontFamily: widget.fontData.font,
                       color: ThemeCheck.colorCheck(widget.themeColour)
@@ -192,7 +192,7 @@ class _AddNotificationState extends State<AddNotification> {
                                               },
                                               style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.fontData.color),
                                               decoration: InputDecoration(
-                                                hintText: "Notification Date?",
+                                                hintText: "Reminder Date?",
                                                 hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),
                                                 hasFloatingPlaceholder: false,
                                               ),
@@ -228,7 +228,7 @@ class _AddNotificationState extends State<AddNotification> {
                                             },
                                             style: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font, color: widget.fontData.color),
                                             decoration: InputDecoration(
-                                              hintText: "Notification Time?",
+                                              hintText: "Reminder Time?",
                                               hintStyle: TextStyle(fontSize: 24.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: widget.fontData.font),
                                               hasFloatingPlaceholder: false,
                                             ),
@@ -287,7 +287,7 @@ class _AddNotificationState extends State<AddNotification> {
 
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
-      content: new Text("Do you want to ADD this Notification to your Notifications?", style: TextStyle(
+      content: new Text("Do you want to ADD this Reminder to your Reminders?", style: TextStyle(
           fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
           fontFamily: widget.fontData.font,
           color: widget.fontData.color
@@ -330,7 +330,7 @@ class _AddNotificationState extends State<AddNotification> {
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
         backgroundColor: widget.cardColour,
-        content: new Text("Do you want to SAVE this Notification?", style: TextStyle(
+        content: new Text("Do you want to SAVE this Reminder?", style: TextStyle(
             fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
             fontFamily: widget.fontData.font,
             color: widget.fontData.color
@@ -371,7 +371,7 @@ class _AddNotificationState extends State<AddNotification> {
   void showYouMustHaveDescriptionDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
-      content: new Text("You must have a Description for your Notification", style: TextStyle(
+      content: new Text("You must have a Description for your Reminder", style: TextStyle(
           fontSize: 18.0*widget.fontData.size*ThemeCheck.orientatedScaleFactor(context),
           fontFamily: widget.fontData.font,
           color: widget.fontData.color
@@ -439,7 +439,7 @@ class _AddNotificationState extends State<AddNotification> {
 
       await notificationPlugin.localNotificationPlugin.schedule(
           id,
-          'You have a notification',
+          'You have a reminder',
           descriptionController.text,
           scheduledNotificationDateTime,
           platformChannelSpecifics);

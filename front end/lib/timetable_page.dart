@@ -592,7 +592,7 @@ class TimeslotCard extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddTimeslot(
                       day: day, currentTimeslot: subjectList[position],
-                      lastTime: subjectList.length == 1 ? null : position == 0 ? subjectList[position].time : subjectList[position-1].time,
+                      lastTime: subjectList.length == 1 ? null : position == 0 ? "00:00" : subjectList[position-1].time,
                       fontData: fontData,
                       iconData: iconData,
                       backgroundColour: backgroundColour,
