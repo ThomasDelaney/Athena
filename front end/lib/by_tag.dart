@@ -195,6 +195,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
               child: Container(
                   margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                   child: new SizedBox(
+                    height: (fileCardSize * iconScale * 0.9),
                     width: MediaQuery.of(context).size.width * 0.95,
                     child: new Card(
                       color: cardColour,
@@ -263,7 +264,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
                                   tag: "fileAt"+index.toString(),
                                   //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
-                                      placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                                      placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour)),
                                       imageUrl: subjectFiles[index].url,
                                       height: (fileCardSize * iconScale),
                                       width: (fileCardSize * iconScale),

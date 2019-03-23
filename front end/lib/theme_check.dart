@@ -1,4 +1,3 @@
-import 'package:Athena/font_data.dart';
 import 'package:Athena/request_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

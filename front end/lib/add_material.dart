@@ -126,7 +126,7 @@ class _AddMaterialState extends State<AddMaterial> {
                           fit: BoxFit.cover,
                           width: tileSize * ThemeCheck.orientatedScaleFactor(context),
                           height: tileSize * ThemeCheck.orientatedScaleFactor(context),
-                          placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(widget.themeColour),),
+                          placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white),),
                           imageUrl: widget.currentMaterial.photoUrl,
                         ),
                       ),

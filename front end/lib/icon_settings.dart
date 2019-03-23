@@ -1,18 +1,11 @@
-import 'package:Athena/background_settings.dart';
-import 'package:Athena/card_settings.dart';
-import 'package:Athena/sign_out.dart';
-import 'package:Athena/tag_manager.dart';
-import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:Athena/font_data.dart';
-import 'package:Athena/font_settings.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
 import 'request_manager.dart';
 import 'athena_icon_data.dart';
 

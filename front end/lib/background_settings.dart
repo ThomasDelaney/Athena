@@ -1,10 +1,8 @@
 import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
-import 'package:Athena/login_page.dart';
 import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
@@ -343,7 +341,7 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
               children: <Widget>[
                 new Container(
                     margin: MediaQuery.of(context).viewInsets,
-                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                    child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
               ],
             ): new Container()
           ],

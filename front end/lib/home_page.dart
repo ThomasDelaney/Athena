@@ -14,8 +14,6 @@ import 'home_tile.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
 import 'font_settings.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
 import 'subject_hub.dart';
 import 'timetable_page.dart';
 import 'dart:core';

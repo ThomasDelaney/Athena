@@ -227,11 +227,20 @@ class _LoginPageState extends State<LoginPage> {
     //if null, then the request was a success, retrieve the information
     if (response['Success'] != null){
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString("name", response['Success']['message']['firstName']+" "+response['Success']['message']['secondName']);
+      await prefs.setString(
+          "name", response['Success']['message']['firstName']
+          +" "
+          +response['Success']['message']['secondName']
+      );
+
       await prefs.setString("refreshToken", response['Success']['refreshToken']);
 
       //pop all widgets currently on the stack, and route user to the homepage, and pass in their name
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage(pageTitle: response['Success']['message']['firstName']+" "+response['Success']['message']['secondName'])), (Route<dynamic> route) => false);
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) =>
+        new HomePage(
+            pageTitle: response['Success']['message']['firstName']
+                +" "+response['Success']['message']['secondName'])
+      ), (Route<dynamic> route) => false);
     }
     //else the response ['response']  is not null, then print the error message
     else{
@@ -242,9 +251,25 @@ class _LoginPageState extends State<LoginPage> {
 
       //display alertdialog with the returned message
       AlertDialog responseDialog = new AlertDialog(
-        content: new Text(response['error']['response'], style: TextStyle(fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context),),),
+        content: new Text(
+          response['error']['response'],
+          style: TextStyle(
+            fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context),
+          ),
+        ),
         actions: <Widget>[
-          new FlatButton(onPressed: () => Navigator.pop(context), child: new Text("OK", style: TextStyle(color: Color.fromRGBO(94, 185, 255, 1), fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context), fontWeight: FontWeight.bold),))
+          new FlatButton(
+              onPressed: () =>
+                  Navigator.pop(context),
+              child: new Text(
+                "OK",
+                style: TextStyle(
+                    color: Color.fromRGBO(94, 185, 255, 1),
+                    fontSize: 18.0*ThemeCheck.orientatedScaleFactor(context),
+                    fontWeight: FontWeight.bold
+                ),
+              )
+          )
         ],
       );
 

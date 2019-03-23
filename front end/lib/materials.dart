@@ -582,7 +582,7 @@ class _MaterialsState extends State<Materials> {
           children: <Widget>[
             new Container(
                 margin: MediaQuery.of(context).viewInsets,
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
           ],
         ): new Container()
       ],

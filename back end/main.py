@@ -17,7 +17,6 @@ import binascii
 # create flask app
 app = Flask(__name__)
 
-
 # initalise firebase app using config, pyrebase library will be used
 firebase = pyrebase.initialize_app(config)
 
@@ -172,27 +171,27 @@ def upload_file():
         return jsonify(response=parsedError)
 
 # route to delete file
-@app.route('/deleteFile', methods=['POST'])
+@app.route('/deleteFile', methods=['DELETE'])
 def delete_file():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         storage = firebase.storage()
         db = firebase.database()
 
-        if (request.form['date'] != "null"):
+        if (request.values['date'] != "null"):
             # delete file from storage
-            storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/"+request.form['date']+"/"+request.form['fileName'])
+            storage.delete("users/"+user['userId']+"/"+request.values['subjectID']+"/"+request.values['date']+"/"+request.values['fileName'])
             
-            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("files").child(request.form['nodeID']).remove(user['idToken'])
+            result = db.child("users").child(user['userId']).child("subjects").child(request.values['subjectID']).child(request.values['date']).child("files").child(request.values['nodeID']).remove(user['idToken'])
 
         else: 
             # delete file from storage
-            storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/"+request.form['fileName'])
+            storage.delete("users/"+user['userId']+"/"+request.values['subjectID']+"/"+request.values['fileName'])
             
-            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("files").child(request.form['nodeID']).remove(user['idToken'])
+            result = db.child("users").child(user['userId']).child("subjects").child(request.values['subjectID']).child("files").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -269,7 +268,6 @@ def get_command_keywords():
 
         option = ""
         funct = ""
-
 
         try:
             # use google speech to text api to retrieve the text from the audio
@@ -609,19 +607,19 @@ def put_tag_on_note():
         return jsonify(response=parsedError)
 
 # route to delete text file
-@app.route('/deleteNote', methods=['POST'])
+@app.route('/deleteNote', methods=['DELETE'])
 def delete_note():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         db = firebase.database()
 
-        if (request.form['date'] != "null"):
-            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child(request.form['date']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
+        if (request.values['date'] != "null"):
+            result = db.child("users").child(user['userId']).child("subjects").child(request.values['subjectID']).child(request.values['date']).child("notes").child(request.values['nodeID']).remove(user['idToken'])
         else:
-            result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("notes").child(request.form['nodeID']).remove(user['idToken'])
+            result = db.child("users").child(user['userId']).child("subjects").child(request.values['subjectID']).child("notes").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -701,12 +699,12 @@ def put_subject():
         return jsonify(response=parsedError)
 
 # route to delete subject
-@app.route('/deleteSubject', methods=['POST'])
+@app.route('/deleteSubject', methods=['DELETE'])
 def delete_subject():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         db = firebase.database()
 
@@ -721,10 +719,10 @@ def delete_subject():
                 # for each timeslot for that day
                 for j, (slotKey, slotValue) in enumerate(forDay.val().items()):
 
-                    if (slotValue['subjectTitle'] == request.form['title']):
+                    if (slotValue['subjectTitle'] == request.values['title']):
                         db.child("users").child(user['userId']).child("timeslots").child(key).child(slotKey).remove(user['idToken'])
 
-        result = db.child("users").child(user['userId']).child( "subjects").child(request.form['nodeID']).remove(user['idToken'])
+        result = db.child("users").child(user['userId']).child( "subjects").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -829,12 +827,12 @@ def put_tag():
         return jsonify(response=parsedError)
 
 # route to delete subject
-@app.route('/deleteTag', methods=['POST'])
+@app.route('/deleteTag', methods=['DELETE'])
 def delete_tag():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         db = firebase.database()
 
@@ -852,7 +850,7 @@ def delete_tag():
                             for j, (noteKey, noteValue) in enumerate(notes.val().items()):
                                 withTag = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").child(noteKey).get(user['idToken'])
 
-                                if (withTag.val()['tag'] == request.form['tag']):
+                                if (withTag.val()['tag'] == request.values['tag']):
                                     db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("notes").child(noteKey).child("tag").set("No Tag", user['idToken'])
 
                         files = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").get(user['idToken'])
@@ -862,7 +860,7 @@ def delete_tag():
                             for j, (fileKey, fileValue) in enumerate(files.val().items()):
                                 withTag = db.child("users").child(user['userId']).child("subjects").child(key).child(dateKey).child("files").child(fileKey).get(user['idToken'])
 
-                                if (withTag.val()['tag'] == request.form['tag']):
+                                if (withTag.val()['tag'] == request.values['tag']):
                                        db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set("No Tag", user['idToken'])   
             else:
                 notes = db.child("users").child(user['userId']).child("subjects").child(key).child("notes").get(user['idToken'])
@@ -875,7 +873,7 @@ def delete_tag():
 
                         # if that note has the tag to be deleted, replace the tag
                         # with No Tag
-                        if (withTag.val()['tag'] == request.form['tag']):
+                        if (withTag.val()['tag'] == request.values['tag']):
                             db.child("users").child(user['userId']).child("subjects").child(key).child("notes").child(noteKey).child("tag").set("No Tag", user['idToken'])
 
                 files = db.child("users").child(user['userId']).child("subjects").child(key).child("files").get(user['idToken'])
@@ -888,11 +886,11 @@ def delete_tag():
 
                         # if that file has the tag to be deleted, replace the tag
                         # with No Tag
-                        if (withTag.val()['tag'] == request.form['tag']):
+                        if (withTag.val()['tag'] == request.values['tag']):
                             db.child("users").child(user['userId']).child("subjects").child(key).child("files").child(fileKey).child("tag").set("No Tag", user['idToken'])
 
         # delete the tag
-        result = db.child("users").child(user['userId']).child("tags").child(request.form['nodeID']).remove(user['idToken'])
+        result = db.child("users").child(user['userId']).child("tags").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -1040,16 +1038,16 @@ def put_timeslot():
         return jsonify(response=parsedError)
 
 # route to delete subject
-@app.route('/deleteTimeslot', methods=['POST'])
+@app.route('/deleteTimeslot', methods=['DELETE'])
 def delete_timeslot():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         db = firebase.database()
 
-        result = db.child("users").child(user['userId']).child("timeslots").child(request.form['day']).child(request.form['nodeID']).remove(user['idToken'])
+        result = db.child("users").child(user['userId']).child("timeslots").child(request.values['day']).child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -1105,16 +1103,16 @@ def get_test_results():
         return jsonify(response=parsedError)
 
  # route to delete test result file
-@app.route('/deleteTestResult', methods=['POST'])
+@app.route('/deleteTestResult', methods=['DELETE'])
 def delete_test_result():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         db = firebase.database()
 
-        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("results").child(request.form['nodeID']).remove(user['idToken'])
+        result = db.child("users").child(user['userId']).child("subjects").child(request.values['subjectID']).child("results").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -1166,16 +1164,16 @@ def get_notifications():
         return jsonify(response=parsedError)
 
  # route to delete test result file
-@app.route('/deleteNotification', methods=['POST'])
+@app.route('/deleteNotification', methods=['DELETE'])
 def delete_notification():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         db = firebase.database()
 
-        result = db.child("users").child(user['userId']).child("notifications").child(request.form['nodeID']).remove(user['idToken'])
+        result = db.child("users").child(user['userId']).child("notifications").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -1231,16 +1229,16 @@ def get_homework():
         return jsonify(response=parsedError)
 
  # route to delete test result file
-@app.route('/deleteHomework', methods=['POST'])
+@app.route('/deleteHomework', methods=['DELETE'])
 def delete_homework():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         db = firebase.database()
 
-        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("homework").child(request.form['nodeID']).remove(user['idToken'])
+        result = db.child("users").child(user['userId']).child("subjects").child(request.values['subjectID']).child("homework").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])
@@ -1314,22 +1312,20 @@ def get_materials():
         return jsonify(response=parsedError)
 
 # route to delete material file
-@app.route('/deleteMaterial', methods=['POST'])
+@app.route('/deleteMaterial', methods=['DELETE'])
 def delete_material():
     auth = firebase.auth()
 
     try:
-        user = auth.refresh(request.form['refreshToken'])
+        user = auth.refresh(request.values['refreshToken'])
 
         storage = firebase.storage()
         db = firebase.database()
 
-        print(request.form['fileName'])
+        if(request.values['fileName'] != 'null'):
+            storage.delete("users/"+user['userId']+"/"+request.values['subjectID']+"/materials/"+request.values['fileName'])
 
-        if(request.form['fileName'] != 'null'):
-            storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/materials/"+request.form['fileName'])
-
-        result = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("materials").child(request.form['nodeID']).remove(user['idToken'])
+        result = db.child("users").child(user['userId']).child("subjects").child(request.values['subjectID']).child("materials").child(request.values['nodeID']).remove(user['idToken'])
 
         # return refresh token if successfull
         return jsonify(refreshToken=user['refreshToken'])

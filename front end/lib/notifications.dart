@@ -7,7 +7,6 @@ import 'package:Athena/notification_plugin.dart';
 import 'package:Athena/sign_out.dart';
 import 'package:Athena/theme_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:Athena/add_result.dart';
 import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/font_settings.dart';
@@ -15,11 +14,9 @@ import 'package:Athena/home_page.dart';
 import 'package:Athena/icon_settings.dart';
 import 'package:Athena/recording_manager.dart';
 import 'package:Athena/request_manager.dart';
-import 'package:Athena/subject.dart';
 import 'package:Athena/tag_manager.dart';
 import 'package:Athena/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'test_result.dart';
 
 class Notifications extends StatefulWidget {
 

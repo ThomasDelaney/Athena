@@ -10,7 +10,6 @@ import 'package:Athena/font_data.dart';
 import 'package:Athena/font_settings.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/icon_settings.dart';
-import 'package:Athena/login_page.dart';
 import 'package:Athena/recording_manager.dart';
 import 'package:Athena/request_manager.dart';
 import 'package:Athena/subject.dart';
@@ -637,7 +636,7 @@ class _ProgressState extends State<Progress> {
           children: <Widget>[
             new Container(
                 margin: MediaQuery.of(context).viewInsets,
-                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0,))
+                child: new ModalBarrier(color: Colors.black54, dismissible: false,)), new SizedBox(width: 50.0, height: 50.0, child: new CircularProgressIndicator(strokeWidth: 5.0, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
           ],
         ): new Container()
       ],

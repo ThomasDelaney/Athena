@@ -138,18 +138,16 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "subjectID": subjectID,
-      "fileName": fileName,
-      "date": date != null ? date : "null",
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteFileUrl, data: formData);
+      var responseObj = await dio.delete(deleteFileUrl, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "subjectID": subjectID,
+        "fileName": fileName,
+        "date": date != null ? date : "null",
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -608,16 +606,14 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "title": title,
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteSubjectURL, data: formData);
+      var responseObj = await dio.delete(deleteSubjectURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "title": title,
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -694,17 +690,15 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": tag.id,
-      "tag": tag.tag,
-      "date": date != null ? date : "null",
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteTagURL, data: formData);
+      var responseObj = await dio.delete(deleteTagURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": tag.id,
+        "tag": tag.tag,
+        "date": date != null ? date : "null",
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -897,17 +891,15 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "subjectID": subjectID,
-      "date": date != null ? date : "null",
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteNoteURL, data: formData);
+      var responseObj = await dio.delete(deleteNoteURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "subjectID": subjectID,
+        "date": date != null ? date : "null",
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -1118,16 +1110,14 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "day": day,
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteTimeslotURL, data: formData);
+      var responseObj = await dio.delete(deleteTimeslotURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "day": day,
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -1202,16 +1192,14 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "subjectID": subjectID,
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteTestResultURL, data: formData);
+      var responseObj = await dio.delete(deleteTestResultURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "subjectID": subjectID,
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -1286,16 +1274,14 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "subjectID": subjectID,
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteHomeworkURL, data: formData);
+      var responseObj = await dio.delete(deleteHomeworkURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "subjectID": subjectID,
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -1373,17 +1359,15 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "subjectID": subjectID,
-      "refreshToken": await prefs.getString("refreshToken"),
-      "fileName": fileName
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteMaterialURL, data: formData);
+      var responseObj = await dio.delete(deleteMaterialURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "subjectID": subjectID,
+        "refreshToken": await prefs.getString("refreshToken"),
+        "fileName": fileName
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {
@@ -1459,15 +1443,13 @@ class RequestManager
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    FormData formData = new FormData.from({
-      "id": await prefs.getString("id"),
-      "nodeID": id,
-      "refreshToken": await prefs.getString("refreshToken"),
-    });
-
     try {
       //post the request and retrieve the response data
-      var responseObj = await dio.post(deleteNotificationURL, data: formData);
+      var responseObj = await dio.delete(deleteNotificationURL, queryParameters: {
+        "id": await prefs.getString("id"),
+        "nodeID": id,
+        "refreshToken": await prefs.getString("refreshToken"),
+      });
 
       //if the refresh token is null, then print the error in the logs and show an error dialog
       if(responseObj.data['refreshToken'] == null) {

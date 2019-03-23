@@ -1,7 +1,6 @@
 import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/recording_manager.dart';
-import 'package:Athena/subject.dart';
 import 'package:flutter/material.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/theme_check.dart';

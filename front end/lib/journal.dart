@@ -10,17 +10,13 @@ import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/icon_settings.dart';
 import 'package:Athena/tag.dart';
-import 'package:Athena/tag_filter_dialog.dart';
 import 'package:Athena/theme_check.dart';
 import 'dart:async';
-import 'login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'file_viewer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'font_settings.dart';
-import 'package:chewie/chewie.dart';
-import 'package:video_player/video_player.dart';
 import 'filetype_manager.dart';
 import 'recording_manager.dart';
 import 'request_manager.dart';
@@ -224,6 +220,7 @@ class JournalState extends State<Journal> {
               child: new Container(
                   margin: new EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
                   child: new SizedBox(
+                    height: (fileCardSize * iconScale * 0.9),
                     width: MediaQuery.of(context).size.width * 0.95,
                     child: GestureDetector(
                       onTap: () => getImage(),

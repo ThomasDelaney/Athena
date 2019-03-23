@@ -1,10 +1,8 @@
 import 'package:Athena/athena_icon_data.dart';
 import 'package:Athena/font_data.dart';
 import 'package:Athena/home_page.dart';
-import 'package:Athena/login_page.dart';
 import 'package:Athena/recording_manager.dart';
 import 'package:Athena/theme_check.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'request_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
