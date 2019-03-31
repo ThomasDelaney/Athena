@@ -275,9 +275,9 @@ def get_command_keywords():
 
             # set up dialogflow session, and create a dialogflow query with the
             # text input
-            session = session_client.session_path("moonlit-caster-232518", "1")
+            session = session_client.session_path("qualified-cedar-235821", "1")
             text_input = dialogflow.types.TextInput(
-                text=text, language_code="en-US")
+                text=text, language_code="en-GB")
             query_input = dialogflow.types.QueryInput(text=text_input)
 
             # detect the intent via dialogflow by passing in the query from the
@@ -288,22 +288,27 @@ def get_command_keywords():
             responseObject = MessageToDict(response)
 
             # get the payload from the response, which returns the intent
-            payload = responseObject['queryResult']['fulfillmentMessages'][1]['payload']
+            payload = responseObject['queryResult']['fulfillmentMessages'][0]['payload']
 
             # get function from payload, e.g "timetable"
             funct = payload['function']
 
             if (payload['function'] == 'timetable'):
-                # get date from payload, and convert it to a datetime object
-                dayInfo = payload['option'].split('-')
 
-                date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
-                # get the day of the week from the datetime object
-                option = date.strftime("%A")
-                #option = payload['option']
+                days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
-            elif (payload['function'] == 'notes'):
+                if (payload['option'] in days):
+                    option = payload['option']
+                else:
+                    # get date from payload, and convert it to a datetime object
+                    dayInfo = payload['option'].split('-')
+
+                    date = datetime.date(int(dayInfo[0]), int(dayInfo[1]), int(dayInfo[2]))
+                    # get the day of the week from the datetime object
+                    option = date.strftime("%A")
+            else:
                 option = payload['option']
+
         except sr.UnknownValueError:
             print("Google Cloud Speech could not understand audio")
         except sr.RequestError as e:
@@ -1278,6 +1283,8 @@ def put_material():
 
         if (request.form['nodeID'] == 'null'):
             addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("materials").push(data, user['idToken'])
+        elif (request.form.get('file') == 'null'):
+            addUrl = db.child("users").child(user['userId']).child("subjects").child(request.form['subjectID']).child("materials").child(request.form['nodeID']).set(data, user['idToken'])
         else:
             if (request.form['previousFile'] != 'null'):
                 storage.delete("users/"+user['userId']+"/"+request.form['subjectID']+"/materials/"+request.form['previousFile'])

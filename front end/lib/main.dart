@@ -1,12 +1,12 @@
-import 'package:Athena/athena_notification.dart';
-import 'package:Athena/request_manager.dart';
+import 'package:Athena/reminders/athena_notification.dart';
+import 'package:Athena/utilities/request_manager.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
 import 'register_page.dart';
 import 'home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:Athena/notification_plugin.dart';
+import 'package:Athena/reminders/notification_plugin.dart';
 
 void main() {
   runApp(new MyApp());
@@ -94,7 +94,10 @@ class _MyHomePageState extends State<MyHomePage>
 
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
 
-    NotificationDetails platformChannelSpecifics = new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    NotificationDetails platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics,
+        iOSPlatformChannelSpecifics
+    );
 
     notifs.forEach((n) async {
       if(DateTime.parse(n.time).compareTo(DateTime.now()) != -1){

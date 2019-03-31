@@ -1,7 +1,7 @@
-import 'package:Athena/theme_check.dart';
+import 'package:Athena/utilities/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'request_manager.dart';
+import 'package:Athena/utilities/request_manager.dart';
 
 //class to display and handle the register page
 class RegisterPage extends StatefulWidget {

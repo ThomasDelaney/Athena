@@ -1,9 +1,9 @@
 import 'package:Athena/home_page.dart';
 import 'package:flutter/material.dart';
-import 'package:Athena/athena_icon_data.dart';
-import 'package:Athena/font_data.dart';
-import 'package:Athena/recording_manager.dart';
-import 'package:Athena/theme_check.dart';
+import 'package:Athena/design/athena_icon_data.dart';
+import 'package:Athena/design/font_data.dart';
+import 'package:Athena/utilities/recording_manager.dart';
+import 'package:Athena/utilities/theme_check.dart';
 
 class HomeTile extends StatelessWidget {
 

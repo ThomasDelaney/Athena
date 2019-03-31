@@ -1,11 +1,11 @@
-import 'package:Athena/theme_check.dart';
+import 'package:Athena/utilities/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
-import 'request_manager.dart';
+import 'package:Athena/utilities/request_manager.dart';
 
 //class to display and handle the log in page
 class LoginPage extends StatefulWidget {
