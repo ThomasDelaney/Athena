@@ -11,6 +11,7 @@ import 'package:Athena/utilities/recording_manager.dart';
 import 'package:Athena/utilities/request_manager.dart';
 import 'package:Athena/subjects/subject.dart';
 import 'package:Athena/utilities/theme_check.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddMaterial extends StatefulWidget {
 
@@ -366,8 +367,9 @@ class _AddMaterialState extends State<AddMaterial> {
   //method for getting an image from the camera
   void getCameraImage() async
   {
-    //use filepicker to retrieve image from camera
-    String image = await FilePicker.getFilePath(type: FileType.CAMERA);
+    //use image picker to retrieve image from camera
+    File imageFile = await ImagePicker.pickImage(source: ImageSource.camera);
+    String image = imageFile.path;
 
     //if image is not null then upload the image
     if (image != null) {
