@@ -448,7 +448,8 @@ class RecordingManger
             children: <Widget>[
               Padding(
                   padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 15.0*ThemeCheck.orientatedScaleFactor(context)),
-                  child: new Text("Recording",
+                  child: new Text(
+                    recorderLoading ? "Recording" : "Loading..",
                     textAlign: TextAlign.center, style:
                     TextStyle(
                         fontSize: 24.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
