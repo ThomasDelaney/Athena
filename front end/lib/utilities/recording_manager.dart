@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:Athena/design/athena_icon_data.dart';
 import 'package:Athena/design/background_settings.dart';
 import 'package:Athena/design/card_settings.dart';
@@ -116,6 +117,10 @@ class RecordingManger
     if (audioSubscription != null) {
       audioSubscription.cancel();
       audioSubscription = null;
+
+      if (Platform.isIOS) {
+        uri = uri.replaceAll(RegExp("file://"), "");
+      }
 
       var result = await requestManager.command(uri);
 
