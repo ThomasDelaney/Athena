@@ -118,11 +118,13 @@ class RecordingManger
       audioSubscription.cancel();
       audioSubscription = null;
 
+      String oldUri = uri;
+
       if (Platform.isIOS) {
         uri = uri.replaceAll(RegExp("file://"), "");
       }
 
-      var result = await requestManager.command(uri);
+      var result = await requestManager.command(uri, oldUri);
 
       if (result == "error") {
         showCannotUnderstandError(context, fontData, cardColour, themeColour);
