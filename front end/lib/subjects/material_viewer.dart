@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'dart:io';
 
+//Class to render page to view a class material image
 class MaterialViewer extends StatefulWidget {
   
   final bool network;

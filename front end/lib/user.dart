@@ -1,3 +1,4 @@
+//Class to encapsulate user information
 class User
 {
   String displayName;

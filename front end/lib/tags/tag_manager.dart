@@ -9,6 +9,7 @@ import 'package:Athena/utilities/recording_manager.dart';
 import 'package:Athena/subjects/add_tag.dart';
 import 'package:Athena/tags/tag.dart';
 
+//Class for the page that displays all the user's tags
 class TagManager extends StatefulWidget {
 
   TagManager({Key key}) : super(key: key);
@@ -45,7 +46,6 @@ class _TagManagerState extends State<TagManager> {
   Color backgroundColour;
   Color cardColour;
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -58,7 +58,6 @@ class _TagManagerState extends State<TagManager> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -95,7 +94,6 @@ class _TagManagerState extends State<TagManager> {
     }
   }
 
-  //get current font from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -139,11 +137,13 @@ class _TagManagerState extends State<TagManager> {
     getFontData();
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
 
     ListView tList;
 
+    //if list is empty, draw a card telling the user that they can add new tag
     if (tagList.length == 0 && tagsLoaded) {
       tList = new ListView(
         shrinkWrap: true,
@@ -169,6 +169,7 @@ class _TagManagerState extends State<TagManager> {
         ],
       );
     }
+    //else draw the list
     else {
       tList = ListView.builder(
         itemCount: tagList.length,
@@ -327,6 +328,7 @@ class _TagManagerState extends State<TagManager> {
     );
   }
 
+  //method to get all the tags
   void getTags() async {
     List<Tag> reqTags = await requestManager.getTags();
     this.setState(() {
@@ -335,6 +337,7 @@ class _TagManagerState extends State<TagManager> {
     });
   }
 
+  //method to delete a tag
   void deleteTag(Tag tag) async {
     var response = await requestManager.deleteTag(tag);
 
@@ -374,6 +377,7 @@ class _TagManagerState extends State<TagManager> {
     }
   }
 
+  //method to draw a dialog when the user attempts delete a tag
   void deleteTagDialog(Tag tag) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,

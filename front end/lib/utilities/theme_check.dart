@@ -5,10 +5,12 @@ import 'package:video_player/video_player.dart';
 
 class ThemeCheck
 {
+  //method to check if the text on the parameter background colour should be white or black
   static Color colorCheck(Color color) {
     return 1.05 / (color.computeLuminance() + 0.05) > 1.5 ? Colors.white : Colors.black;
   }
 
+  //static list of colourblind friendly colours
   static List<Color> colorBlindFriendlyColours() {
     return [
       Color.fromRGBO(0, 110, 130, 1),
@@ -26,6 +28,7 @@ class ThemeCheck
     ];
   }
 
+  //static list of dyslexia friendly colours
   static List<Color> dyslexiaFriendlyColours() {
     return [
       Color.fromRGBO(246, 219, 219, 1),
@@ -36,6 +39,8 @@ class ThemeCheck
     ];
   }
 
+  //method to activate dyslexia friendly mode
+  //this changes the colours in shared preferences to be dyslexia friendly colours
   static void activateDyslexiaFriendlyMode() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt("fontColour", Colors.black.value);
@@ -56,6 +61,8 @@ class ThemeCheck
     );
   }
 
+  //method to disable dyslexia friendly mode
+  //this changes the colours in shared preferences to back to the colours on the database
   static void disableDyslexiaFriendlyMode() async {
     RequestManager requestManger = RequestManager.singleton;
 
@@ -66,12 +73,14 @@ class ThemeCheck
     await requestManger.getThemeColour();
   }
 
+  //method to calculate the error colour of a parameter colour
   static Color errorColorOfColor(Color color){
     HSLColor hslColor = HSLColor.fromColor(color);
     HSLColor newHSLColour = new HSLColor.fromAHSL(hslColor.alpha, hslColor.hue, hslColor.saturation, hslColor.lightness / 1.20);
     return newHSLColour.toColor();
   }
 
+  //method to calculate the light colour of a parameter colour
   static Color lightColorOfColor(Color color){
     HSLColor hslColor = HSLColor.fromColor(color);
 
@@ -81,12 +90,7 @@ class ThemeCheck
     return newHSLColour.toColor();
   }
 
-  static void getThumbnailFromVideoURL(String url){
-    dynamic cap = VideoPlayerController.network('http://www.sample-videos.com/video123/mp4/720/big_buck_bunny_720p_20mb.mp4').initialize().asStream().first;
-    print(cap);
-  }
-
-  //scale factor based on orientation
+  //method to calculate the scale factor based on orientation
   static double orientatedScaleFactor(BuildContext _context){
 
     double scaleFactorLandscape = (

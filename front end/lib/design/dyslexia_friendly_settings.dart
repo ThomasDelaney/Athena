@@ -7,7 +7,7 @@ import 'package:Athena/utilities/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Athena/utilities/request_manager.dart';
 
-//Widget that displays the settings that allow the user to change the font used in the application
+//Widget that displays the settings that allow the user to enable or disable dyslexia friendly mode
 class DyslexiaFriendlySettings extends StatefulWidget {
   @override
   _DyslexiaFriendlySettingsState createState() => _DyslexiaFriendlySettingsState();
@@ -69,7 +69,7 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
     await getCardColour();
   }
 
-  //get current font from shared preferences if present
+  //get current dyslexia friendly data from the database
   void getCurrentDyslexiaFriendlyData() async {
 
     bool data = await requestManager.getDyslexiaFriendlyModeEnabled();
@@ -80,7 +80,6 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
     });
   }
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -95,7 +94,6 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -132,7 +130,6 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
     }
   }
 
-  //get current icon settings from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -204,6 +201,7 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
                                     ))
                             ),
                             SizedBox(height: 20.0*ThemeCheck.orientatedScaleFactor(context)),
+                            //container to display switch
                             Container(
                               alignment: Alignment.center,
                               width: ThemeCheck.orientatedScaleFactor(context) >= 1 ? 35*1.85*ThemeCheck.orientatedScaleFactor(context)*iconData.size : 35*1.85*iconData.size,
@@ -287,7 +285,7 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
     );
   }
 
-  //method to submit the new font
+  //method to enable dyslexia friendly mode
   Future<void> enableDyslexiaFriendlyColours() async
   {
     submit(true);
@@ -296,7 +294,7 @@ class _DyslexiaFriendlySettingsState extends State<DyslexiaFriendlySettings> {
     submit(false);
   }
 
-  //method to submit the new font
+  //method to disable dyslexia friendly mode
   Future<void> disableDyslexiaFriendlyColours() async
   {
     submit(true);

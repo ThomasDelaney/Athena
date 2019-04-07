@@ -3,6 +3,7 @@ import 'package:Athena/design/font_data.dart';
 import 'package:Athena/utilities/theme_check.dart';
 import 'package:Athena/journal/journal.dart';
 
+//Class to display and manage the state of the tag dialog on the journal page
 class TagFilterDialogJournal extends StatefulWidget {
 
   final FontData fontData;
@@ -30,6 +31,7 @@ class _TagFilterDialogJournalState extends State<TagFilterDialogJournal> {
     super.initState();
   }
 
+  //method to build dialog
   @override
   Widget build(BuildContext context) {
     return new Center(

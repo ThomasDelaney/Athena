@@ -1,3 +1,4 @@
+//Class to encapsulate note data
 class Note
 {
   String _id;

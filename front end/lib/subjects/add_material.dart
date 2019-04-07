@@ -13,6 +13,7 @@ import 'package:Athena/subjects/subject.dart';
 import 'package:Athena/utilities/theme_check.dart';
 import 'package:image_picker/image_picker.dart';
 
+//Class for the page to add a material for a subject
 class AddMaterial extends StatefulWidget {
 
   final Subject subject;
@@ -48,6 +49,7 @@ class _AddMaterialState extends State<AddMaterial> {
   double tileSize = 175;
   bool fileChanged = false;
 
+  //method to check if the page has been edited since opened
   bool isFileEdited() {
     if (widget.currentMaterial == null) {
       if (materialNameController.text == "" && fileName == "") {
@@ -84,6 +86,7 @@ class _AddMaterialState extends State<AddMaterial> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //when the page has changed (aka if the orientation has changed) update how the page has looked
   @override
   void didChangeDependencies() {
     if (widget.currentMaterial != null) {
@@ -167,6 +170,7 @@ class _AddMaterialState extends State<AddMaterial> {
     super.didChangeDependencies();
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -395,6 +399,7 @@ class _AddMaterialState extends State<AddMaterial> {
     }
   }
 
+  //method that is called when the user exits the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -489,6 +494,7 @@ class _AddMaterialState extends State<AddMaterial> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to create or update a material
   void putMaterial() async {
 
     //create map of subject data
@@ -529,6 +535,7 @@ class _AddMaterialState extends State<AddMaterial> {
     }
   }
 
+  //method to draw a dialog when the user attempts to submit a material without a name
   void showYouMustHaveMaterialNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,

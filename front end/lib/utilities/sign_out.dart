@@ -4,7 +4,9 @@ import 'package:Athena/utilities/theme_check.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//Class to handle a user sign out
 class SignOut {
+  //static method that draws the dialog to ask the user if they would like to sign out
   static void signOut(BuildContext context, FontData fontData, Color cardColour, Color themeColour){
     AlertDialog signOutDialog = new AlertDialog(
       backgroundColor: cardColour,
@@ -18,9 +20,10 @@ class SignOut {
     showDialog(context: context, barrierDismissible: false, builder: (_) => signOutDialog);
   }
 
-  //clear relevant shared preference data
+  //method to sign out the user
   static void handleSignOut(BuildContext context) async
   {
+    //clear relevant shared preference data
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("name");
     await prefs.remove("id");

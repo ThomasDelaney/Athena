@@ -18,6 +18,7 @@ import 'package:Athena/utilities/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'class_material.dart';
 
+//Class for the page that displays all the materials for a subject
 class Materials extends StatefulWidget {
 
   final Subject subject;
@@ -56,7 +57,6 @@ class _MaterialsState extends State<Materials> {
   Color backgroundColour;
   Color cardColour;
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -69,7 +69,6 @@ class _MaterialsState extends State<Materials> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -106,7 +105,6 @@ class _MaterialsState extends State<Materials> {
     }
   }
 
-  //get current icon settings from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -150,11 +148,13 @@ class _MaterialsState extends State<Materials> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
 
     ListView mList;
 
+    //if list is empty, draw a card telling the user that they can add new material
     if (materialList.length == 0 && materialsLoaded) {
       mList = new ListView(
         shrinkWrap: true,
@@ -198,6 +198,7 @@ class _MaterialsState extends State<Materials> {
         ],
       );
     }
+    //else draw the list
     else {
       mList = ListView.builder(
         itemCount: materialList.length,
@@ -589,6 +590,7 @@ class _MaterialsState extends State<Materials> {
     );
   }
 
+  //method to get all the materials for a subject
   void getMaterials() async {
     List<ClassMaterial> reqMaterials = await requestManager.getMaterials(widget.subject.id);
     this.setState(() {
@@ -597,6 +599,7 @@ class _MaterialsState extends State<Materials> {
     });
   }
 
+  //method to delete a material
   void deleteMaterial(ClassMaterial material) async {
     var response = await requestManager.deleteMaterial(material.id, widget.subject.id, material.fileName == "" ? null : material.fileName);
 
@@ -624,6 +627,7 @@ class _MaterialsState extends State<Materials> {
     }
   }
 
+  //method to draw a dialog when the user attempts delete a material
   void deleteMaterialDialog(ClassMaterial material) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,

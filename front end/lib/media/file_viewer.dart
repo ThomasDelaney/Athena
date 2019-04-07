@@ -47,13 +47,12 @@ class FileViewer extends StatefulWidget
 
 class FileViewerState extends State<FileViewer>
 {
-
   RequestManager requestManager = RequestManager.singleton;
 
   bool submitting = false;
 
+  //variables to track tag changes
   bool tagChanged = false;
-
   String currentTag;
   String previousTag;
 
@@ -82,6 +81,7 @@ class FileViewerState extends State<FileViewer>
     super.initState();
   }
 
+  //method to build file viewer
   @override
   Widget build(BuildContext context) {
     return new Stack(
@@ -104,7 +104,7 @@ class FileViewerState extends State<FileViewer>
                 ]
             ),
             backgroundColor: Colors.black,
-            //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
+            //hero animation for moving smoothly from the page in which the file was selected, to the file viewer
             //the tag allows both pages to know where to return to when the user presses the back button
             body: new Center(
               child: Hero(tag: "fileAt"+widget.i.toString(),
@@ -123,12 +123,14 @@ class FileViewerState extends State<FileViewer>
                         )
                       : FileTypeManger.getFileTypeFromURL(
                         widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "video" ?
+                        //create new video manager to display a video, passing in the network video as a parameter
                         new VideoManager(
                             controller: new VideoPlayerController.network(widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url)
                         )
                       : FileTypeManger.getFileTypeFromURL(
                         widget.fromTagMap == null ? widget.list[index].url : widget.fromTagMap.values.elementAt(index).url) == "audio" ?
-                        new AudioManager(
+                    //create new audio manager to play an audio file, passing in an audio player and the subject file as a parameter
+                    new AudioManager(
                           themeColour: widget.themeColour,
                           cardColour: widget.cardColour,
                           iconData: widget.iconData,
@@ -138,6 +140,7 @@ class FileViewerState extends State<FileViewer>
                         ) : new Container();
                   },
                   itemCount: widget.fromTagMap == null ? widget.list.length : widget.fromTagMap.length,
+                  //remove pagination to avoid UI overlap
                   pagination: new SwiperPagination(
                     builder: SwiperPagination.rect
                   ),
@@ -164,6 +167,7 @@ class FileViewerState extends State<FileViewer>
     );
   }
 
+  //method to update ID and Tag info, triggered whenever the user swipes to a new file
   void updateInfo(String newID, int newIndex, String newTag){
     if(this.mounted) {
       setState(() {
@@ -179,6 +183,7 @@ class FileViewerState extends State<FileViewer>
     }
   }
 
+  //show the users tag in an alert dialog
   void showTagDialog(bool fromWithin, List<String> currentTags) async {
 
     List<String> tagValues;
@@ -207,6 +212,7 @@ class FileViewerState extends State<FileViewer>
     ));
   }
 
+  //method to add a tag to a file
   void addTagToFile() async {
 
     Map map = {
@@ -241,6 +247,7 @@ class FileViewerState extends State<FileViewer>
     }
   }
 
+  //show the users tag list, used by media_file_tag_picker_dialog.dart
   void showTagList(List<String> tagValues){
     AlertDialog tags = new AlertDialog(
       content: new Container(
@@ -276,6 +283,7 @@ class FileViewerState extends State<FileViewer>
     showDialog(context: context, barrierDismissible: false, builder: (_) => tags, );
   }
 
+  //method to draw a dialog that is shown when the user attempts to delete a media file
   void deleteFileDialog() {
     AlertDialog areYouSure = new AlertDialog(
       content: new Text("Do you want to DELETE this File?", style: TextStyle(
@@ -305,6 +313,7 @@ class FileViewerState extends State<FileViewer>
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to delete a media file
   void deleteFile() async {
     var response = await requestManager.deleteFile(
         widget.fromTagMap == null ? widget.list[currentIndex].id : widget.fromTagMap.values.elementAt(currentIndex).id,

@@ -8,6 +8,7 @@ import 'package:Athena/subjects/subject.dart';
 import 'package:Athena/subjects/test_result.dart';
 import 'package:Athena/utilities/theme_check.dart';
 
+//Class for the page to add a test result for a subject
 class AddResult extends StatefulWidget {
 
   final Subject subject;
@@ -39,6 +40,7 @@ class _AddResultState extends State<AddResult> {
 
   double resultValue;
 
+  //method to check if the page has been edited since opened
   bool isFileEdited() {
     if (widget.currentResult == null) {
       if (testTitleController.text == "") {
@@ -79,6 +81,7 @@ class _AddResultState extends State<AddResult> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -242,6 +245,7 @@ class _AddResultState extends State<AddResult> {
     );
   }
 
+  //method that is called when the user exits the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -335,7 +339,8 @@ class _AddResultState extends State<AddResult> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
-    void putTestResult() async {
+  //method to create or update a test result
+  void putTestResult() async {
 
     //create map of subject data
     Map map = {
@@ -371,6 +376,7 @@ class _AddResultState extends State<AddResult> {
     }
   }
 
+  //method to draw a dialog when the user attempts to submit a test result without a title
   void showYouMustHaveResultTitleDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,

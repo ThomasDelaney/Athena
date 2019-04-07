@@ -1,3 +1,4 @@
+//Class to encapsulate homework data
 class Homework
 {
   String _id;

@@ -1,3 +1,4 @@
+//Class to encapsulate class material data
 class ClassMaterial
 {
   String _id;

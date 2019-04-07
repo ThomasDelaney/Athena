@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 
+//Class to build the Theme Settings page, allows users to change the theme colour within the application
 class ThemeSettings extends StatefulWidget {
 
   ThemeSettings({Key key, this.fontData, this.cardColour, this.backgroundColour, this.iconData}) : super(key: key);
@@ -50,7 +51,7 @@ class _ThemeSettingsState extends State<ThemeSettings> {
     super.didUpdateWidget(oldWidget);
   }
 
-  //get current font from shared preferences if present
+  //get current theme colour from the database
   void getCurrentThemeColour() async {
 
     Color data = await requestManager.getThemeColour();
@@ -64,11 +65,13 @@ class _ThemeSettingsState extends State<ThemeSettings> {
 
   ValueChanged<Color> onColorChanged;
 
+  //method that changes the colour chosen by the user from the colour picker widget, then pops the dialog
   changeColorAndPopout(Color color) => setState(() {
     currentColour = color;
     Navigator.of(context).pop();
   });
 
+  //build Theme settings page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -349,7 +352,7 @@ class _ThemeSettingsState extends State<ThemeSettings> {
     );
   }
 
-  //method to submit the new font
+  //method to submit the new theme colour
   void putThemeColour() async
   {
     submit(true);
@@ -365,6 +368,7 @@ class _ThemeSettingsState extends State<ThemeSettings> {
     }
   }
 
+  //check if the theme data has been changed
   bool isFileEdited() {
     if (currentColour == oldColour) {
       return false;
@@ -374,6 +378,7 @@ class _ThemeSettingsState extends State<ThemeSettings> {
     }
   }
 
+  //method that is called when the user attempts to exit the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(

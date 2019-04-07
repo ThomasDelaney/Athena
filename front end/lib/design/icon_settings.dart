@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Athena/utilities/request_manager.dart';
 import 'package:Athena/design/athena_icon_data.dart';
 
+//Class to build the Icon Settings page, allows users to change the icon colour and icon size within the application
 class IconSettings extends StatefulWidget {
   @override
   _IconSettingsState createState() => _IconSettingsState();
@@ -66,7 +67,6 @@ class _IconSettingsState extends State<IconSettings> {
     await getCardColour();
   }
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -81,7 +81,6 @@ class _IconSettingsState extends State<IconSettings> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -118,7 +117,7 @@ class _IconSettingsState extends State<IconSettings> {
     }
   }
 
-  //get current font from shared preferences if present
+  //get current icon data from the database
   void getCurrentIconData() async {
 
     AthenaIconData data = await requestManager.getIconData();
@@ -130,6 +129,7 @@ class _IconSettingsState extends State<IconSettings> {
     });
   }
 
+  //check if the card data has been changed
   bool isFileEdited() {
     if (currentData.size == oldData.size && currentData.color.value == oldData.color.value) {
       return false;
@@ -138,6 +138,8 @@ class _IconSettingsState extends State<IconSettings> {
       return true;
     }
   }
+
+  //method to build the icon settings page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -415,12 +417,13 @@ class _IconSettingsState extends State<IconSettings> {
     );
   }
 
+  //method that changes the colour chosen by the user from the colour picker widget, then pops the dialog
   changeColorAndPopout(Color color) => setState(() {
     currentData.color = color;
     Navigator.of(context).pop();
   });
 
-  //method to submit the new font
+  //method to submit the new icon data
   void putIconData() async
   {
     submit(true);
@@ -436,6 +439,7 @@ class _IconSettingsState extends State<IconSettings> {
     }
   }
 
+  //method that is called when the user attempts to exit the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(

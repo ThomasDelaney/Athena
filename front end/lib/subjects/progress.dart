@@ -20,6 +20,7 @@ import 'package:Athena/subjects/homework.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:Athena/utilities/theme_check.dart';
 
+//Class for the page that displays all the the progress made in a subject
 class Progress extends StatefulWidget {
 
   final Subject subject;
@@ -34,6 +35,7 @@ class _ProgressState extends State<Progress> {
 
   bool submitting = false;
 
+  //static lists of the current leaving cert grades and their thresholds
   static const grades = ['H1/O1', 'H2/O2', 'H3/O3', 'H4/O4', 'H5/O5', 'H6/O6', 'H7/O7', 'H8/O8', 'NG'];
   static const thresholds = [[90.0, 100.0], [80.0, 89.9], [70.0, 79.9], [60.0, 69.9], [50.0, 59.9], [40.0, 49.9], [30.0, 39.9], [10.0, 29.9], [0.0, 9.9]];
 
@@ -48,6 +50,7 @@ class _ProgressState extends State<Progress> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
+  //list to hold the different progress options
   List<String> statsDescription = ["Test Results", "Homework"];
 
   //Test Result variables
@@ -77,7 +80,6 @@ class _ProgressState extends State<Progress> {
   Color backgroundColour;
   Color cardColour;
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -114,7 +116,6 @@ class _ProgressState extends State<Progress> {
     }
   }
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -127,7 +128,6 @@ class _ProgressState extends State<Progress> {
     }
   }
 
-  //get current icon settings from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -184,11 +184,11 @@ class _ProgressState extends State<Progress> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
 
-    //double scaleFactor = (MediaQuery.of(context).size.width/MediaQuery.of(context).size.height)*1.85;
-
+    //list of the different charts, in the order pie chart, bar chart and line graph
     List<Widget> chartList = fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded && dataLoaded ? [
       Container(
         width: MediaQuery.of(context).size.width/ThemeCheck.orientatedScaleFactor(context),
@@ -546,6 +546,7 @@ class _ProgressState extends State<Progress> {
                                   color: fontData.color
                               ),
                             ),
+                            //swiper to be able to swipe between the graphs
                             new Expanded(
                                 child: Container(
                                   child: Swiper(
@@ -643,6 +644,7 @@ class _ProgressState extends State<Progress> {
     );
   }
 
+  //method to create Series data from a list of test results
   List<charts.Series<Map, String>> getTestResultListAsSeriesData() {
     return [
       new charts.Series<Map, String>(
@@ -657,6 +659,7 @@ class _ProgressState extends State<Progress> {
     ];
   }
 
+  //method to create Series data from a list of test results (specifically for line graph, due to the way it represents data)
   List<charts.Series<Map, num>> getTestResultListAsSeriesDataForLineChart() {
     return [
       new charts.Series<Map, num>(
@@ -672,8 +675,8 @@ class _ProgressState extends State<Progress> {
     ];
   }
 
+  //method to return the grade value from a given test result
   String gradeFromResult(double result){
-
     for (int i = 0; i < thresholds.length; i++) {
       if (result >= thresholds[i][0] && result <= thresholds[i][1]) {
         return grades[i];
@@ -681,6 +684,7 @@ class _ProgressState extends State<Progress> {
     }
   }
 
+  //method get the frequency of the grades
   List<Map> getGradeFrequencies(){
 
     List<Map> freqList = new List<Map>();
@@ -708,6 +712,7 @@ class _ProgressState extends State<Progress> {
     return freqList;
   }
 
+  //method get the frequency of the grades for the line graph
   List<Map> getGradesForLineGraph(){
 
     List<Map> gradeList = new List<Map>();
@@ -723,6 +728,7 @@ class _ProgressState extends State<Progress> {
     return gradeList;
   }
 
+  //method to generate the colour of a result
   charts.Color colorFromResult(double result, Color colour){
     HSLColor hslColor = HSLColor.fromColor(colour);
 
@@ -748,6 +754,7 @@ class _ProgressState extends State<Progress> {
     }
   }
 
+  //method get the frequency of the homework
   List<Map> getHomeworkFrequencies(){
 
     List<Map> freqList = new List<Map>();
@@ -772,6 +779,7 @@ class _ProgressState extends State<Progress> {
     return freqList;
   }
 
+  //method get the frequency of the homework for the line graph
   List<Map> getHomeworkForLineGraph(){
 
     List<Map> hList = new List<Map>();
@@ -787,7 +795,7 @@ class _ProgressState extends State<Progress> {
     return hList;
   }
 
-
+  //method to create Series data from a list of homework
   List<charts.Series<Map, String>> getHomeworkListAsSeriesData() {
     return [
       new charts.Series<Map, String>(
@@ -802,6 +810,7 @@ class _ProgressState extends State<Progress> {
     ];
   }
 
+  //method to create Series data from a list of homework for the line graph
   List<charts.Series<Map, num>> getHomeworkListAsSeriesDataForLineChart() {
     return [
       new charts.Series<Map, num>(
@@ -817,6 +826,7 @@ class _ProgressState extends State<Progress> {
     ];
   }
 
+  //method to get the homework and test results data, and call the methods to generate the series data
   void getStatsData() async {
     List<TestResult> reqResults = await requestManager.getTestResults(widget.subject.id);
     List<Homework> reqHomework = await requestManager.getHomework(widget.subject.id);

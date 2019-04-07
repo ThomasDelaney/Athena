@@ -19,7 +19,7 @@ import 'package:Athena/tags/tag_manager.dart';
 import 'package:Athena/utilities/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-//Widget that displays the users timetable information, as of current prototype implementation, it can only be accessed via voice commands
+//Widget that displays the users timetable information
 class TimetablePage extends StatefulWidget 
 {
   TimetablePage({Key key, this.initialDay}) : super(key: key);
@@ -63,7 +63,6 @@ class _TimetablePageState extends State<TimetablePage> {
   Color backgroundColour;
   Color cardColour;
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -78,7 +77,6 @@ class _TimetablePageState extends State<TimetablePage> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -129,6 +127,7 @@ class _TimetablePageState extends State<TimetablePage> {
     }
   }
 
+  //method to get all timeslots
   void getTimeslots() async {
     Map<String, List<TimetableSlot>> reqTimeslots = await requestManager.getTimeslots();
 
@@ -170,6 +169,7 @@ class _TimetablePageState extends State<TimetablePage> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the timetable page
   @override
   Widget build(BuildContext context)
   {
@@ -178,7 +178,6 @@ class _TimetablePageState extends State<TimetablePage> {
       //tab controller widget allows you to tab between the different days
       child: DefaultTabController(
         //start the user on the initial day
-
         initialIndex: weekdays.indexOf(widget.initialDay),
         length: weekdays.length,
         child: Stack(
@@ -540,7 +539,7 @@ class _TimetablePageState extends State<TimetablePage> {
   }
 }
 
-//widget for a timeslot card
+//widget for a day
 class TimeslotCard extends StatelessWidget {
   const TimeslotCard({Key key, this.fontData, this.iconData, this.subjectList, this.day, this.pageState, this.themeColour, this.cardColour, this.backgroundColour}) : super(key: key);
 
@@ -557,6 +556,7 @@ class TimeslotCard extends StatelessWidget {
 
   final String day;
 
+  //build a page for a day
   @override
   Widget build(BuildContext context) {
 
@@ -721,6 +721,7 @@ class TimeslotCard extends StatelessWidget {
     }
   }
 
+  //method to get the period of a day via a TimeOfDay object
   String periodOfDay(TimeOfDay timeOfDay) {
     if (timeOfDay.period == DayPeriod.am) {
       return "am";

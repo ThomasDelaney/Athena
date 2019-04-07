@@ -1,3 +1,4 @@
+//Class to encapsulate subject media file data
 class SubjectFile
 {
   String _url;

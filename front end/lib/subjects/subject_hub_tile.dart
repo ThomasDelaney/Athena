@@ -12,6 +12,7 @@ import 'virtual_hardback.dart';
 import 'package:Athena/subjects/subject_hub.dart';
 import 'package:Athena/utilities/theme_check.dart';
 
+//Class to build a subject tile used in the subject hub
 class SubjectHubTile extends StatelessWidget {
 
   SubjectHubTile({Key key, this.subject, this.state, this.fontData, this.iconData, this.cardColour, this.themeColour, this.backgroundColour}) : super(key: key);
@@ -31,9 +32,9 @@ class SubjectHubTile extends StatelessWidget {
   final smallTileSize = 60.0;
   final hardbackTileSize = 108.5;
 
+  //method to build the tile
   @override
   Widget build(BuildContext context) {
-
     return new Card(
       margin: EdgeInsets.fromLTRB(20.0*ThemeCheck.orientatedScaleFactor(context), 10.0*ThemeCheck.orientatedScaleFactor(context), 20.0*ThemeCheck.orientatedScaleFactor(context), 10.0*ThemeCheck.orientatedScaleFactor(context)),
       elevation: 3.0,

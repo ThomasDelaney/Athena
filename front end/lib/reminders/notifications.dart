@@ -18,6 +18,7 @@ import 'package:Athena/tags/tag_manager.dart';
 import 'package:Athena/utilities/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//Class to display all user reminders
 class Notifications extends StatefulWidget {
 
   Notifications({Key key}) : super(key: key);
@@ -54,7 +55,6 @@ class _NotificationsState extends State<Notifications> {
   Color backgroundColour;
   Color cardColour;
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -67,7 +67,6 @@ class _NotificationsState extends State<Notifications> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -104,7 +103,6 @@ class _NotificationsState extends State<Notifications> {
     }
   }
 
-  //get current icon settings from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -151,6 +149,7 @@ class _NotificationsState extends State<Notifications> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the reminder list
   Widget build(BuildContext context) {
 
     ListView rList;
@@ -599,6 +598,7 @@ class _NotificationsState extends State<Notifications> {
     );
   }
 
+  //method to get all current reminders
   void getNotifications() async {
     List<AthenaNotification> reqNotifs = await requestManager.getNotifications();
     this.setState(() {
@@ -607,6 +607,7 @@ class _NotificationsState extends State<Notifications> {
     });
   }
 
+  //method to delete a notification
   void deleteNotification(AthenaNotification notification) async {
 
     NotificationPlugin notificationPlugin = NotificationPlugin.singleton;
@@ -638,6 +639,7 @@ class _NotificationsState extends State<Notifications> {
     }
   }
 
+  //method to display a dialog when a user attempts to delete a reminder
   void deleteNotificationDialog(AthenaNotification notification) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,
@@ -672,6 +674,7 @@ class _NotificationsState extends State<Notifications> {
     }
   }
 
+  //method to return suffix of a day from an int
   String dayOfMonthFromInt(int day){
 
     String dayWithSuffix = day.toString();
@@ -689,6 +692,7 @@ class _NotificationsState extends State<Notifications> {
     return dayWithSuffix;
   }
 
+  //method to return the month as a string from an int
   String monthFromInt(int i){
     List<String> months = const <String>[
       "January", "February",

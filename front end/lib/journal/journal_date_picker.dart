@@ -17,7 +17,7 @@ import 'package:flutter_calendar_carousel/classes/event.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 
-
+//Class to allow a user to pick a date for the virtual Journal
 class JournalDatePicker extends StatefulWidget {
   @override
   _JournalDatePickerState createState() => _JournalDatePickerState();
@@ -44,7 +44,6 @@ class _JournalDatePickerState extends State<JournalDatePicker> {
 
   FocusNode dateNode;
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -57,7 +56,6 @@ class _JournalDatePickerState extends State<JournalDatePicker> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -94,7 +92,6 @@ class _JournalDatePickerState extends State<JournalDatePicker> {
     }
   }
 
-  //get current icon settings from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -133,6 +130,7 @@ class _JournalDatePickerState extends State<JournalDatePicker> {
     super.initState();
   }
 
+  //always focus on the calendar
   @override
   void didChangeDependencies() {
     FocusScope.of(context).requestFocus(dateNode);
@@ -145,6 +143,7 @@ class _JournalDatePickerState extends State<JournalDatePicker> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build data picker
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColourLoaded ? backgroundColour : Colors.white,
@@ -408,6 +407,7 @@ class _JournalDatePickerState extends State<JournalDatePicker> {
                 new Card(
                   elevation: 3,
                   color: cardColour,
+                  //build calendar
                   child: new Container(
                     padding: EdgeInsets.all(10.0),
                     child:CalendarCarousel<Event> (

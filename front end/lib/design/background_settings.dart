@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 
+//Class to build the Background Settings page, allows users to change the background colour within the application
 class BackgroundSettings extends StatefulWidget {
 
   BackgroundSettings({Key key, this.fontData, this.cardColour, this.themeColour, this.iconData}) : super(key: key);
@@ -49,7 +50,7 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
     super.didUpdateWidget(oldWidget);
   }
 
-  //get current font from shared preferences if present
+  //get current background colour from the database
   void getCurrentBackgroundColour() async {
 
     Color data = await requestManager.getBackgroundColour();
@@ -63,11 +64,13 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
 
   ValueChanged<Color> onColorChanged;
 
+  //method that changes the colour chosen by the user from the colour picker widget, then pops the dialog
   changeColorAndPopout(Color color) => setState(() {
     currentColour = color;
     Navigator.of(context).pop();
   });
 
+  //build Background settings page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -158,6 +161,7 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
                                                             )
                                                         ),
                                                         new SizedBox(height: 20.0,),
+                                                        //build colour picker
                                                         Flexible(
                                                           child: Container(
                                                             width: MediaQuery.of(context).size.width,
@@ -349,7 +353,7 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
     );
   }
 
-  //method to submit the new font
+  //method to submit the new background colour
   void putBackgroundColour() async
   {
     submit(true);
@@ -365,6 +369,7 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
     }
   }
 
+  //check if the background data has been changed
   bool isFileEdited() {
     if (currentColour == oldColour) {
       return false;
@@ -374,6 +379,7 @@ class _BackgroundSettingsState extends State<BackgroundSettings> {
     }
   }
 
+  //method that is called when the user attempts to exit the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(

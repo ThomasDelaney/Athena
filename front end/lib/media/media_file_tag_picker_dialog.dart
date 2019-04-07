@@ -3,6 +3,7 @@ import 'package:Athena/media/file_viewer.dart';
 import 'package:Athena/design/font_data.dart';
 import 'package:Athena/utilities/theme_check.dart';
 
+//Class to draw and handle the state of the alert dialog to allow the user to select a tag when adding a tag to a media file
 class MediaFileTagPickerDialog extends StatefulWidget {
 
   final FontData fontData;

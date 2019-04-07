@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 
+//Class to build the Card Settings page, allows users to change the card colour within the application
 class CardSettings extends StatefulWidget {
 
   CardSettings({Key key, this.fontData, this.backgroundColour, this.themeColour, this.iconData}) : super(key: key);
@@ -48,7 +49,7 @@ class _CardSettingsState extends State<CardSettings> {
     super.didUpdateWidget(oldWidget);
   }
 
-  //get current font from shared preferences if present
+  //get current card colour from the database
   void getCurrentCardColour() async {
 
     Color data = await requestManager.getCardColour();
@@ -62,11 +63,13 @@ class _CardSettingsState extends State<CardSettings> {
 
   ValueChanged<Color> onColorChanged;
 
+  //method that changes the colour chosen by the user from the colour picker widget, then pops the dialog
   changeColorAndPopout(Color color) => setState(() {
     currentColour = color;
     Navigator.of(context).pop();
   });
 
+  //build Card settings page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -161,6 +164,7 @@ class _CardSettingsState extends State<CardSettings> {
                                                                 )
                                                             ),
                                                             new SizedBox(height: 20.0,),
+                                                            //build colour picker
                                                             Flexible(
                                                               child: Container(
                                                                 width: MediaQuery.of(context).size.width,
@@ -352,7 +356,7 @@ class _CardSettingsState extends State<CardSettings> {
     );
   }
 
-  //method to submit the new font
+  //method to submit the new card colour
   void putCardColour() async
   {
     submit(true);
@@ -368,6 +372,7 @@ class _CardSettingsState extends State<CardSettings> {
     }
   }
 
+  //check if the card data has been changed
   bool isFileEdited() {
     if (currentColour == oldColour) {
       return false;
@@ -377,6 +382,7 @@ class _CardSettingsState extends State<CardSettings> {
     }
   }
 
+  //method that is called when the user attempts to exit the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(

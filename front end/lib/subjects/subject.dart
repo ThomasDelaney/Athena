@@ -1,5 +1,6 @@
 import 'package:Athena/utilities/request_manager.dart';
 
+//Class to encapsulate subject data
 class Subject {
   String _id;
   String _name;

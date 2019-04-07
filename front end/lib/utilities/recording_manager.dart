@@ -24,6 +24,7 @@ import 'package:Athena/by_tag.dart';
 import 'package:Athena/Timetables/timetable_page.dart';
 import 'package:Athena/utilities/request_manager.dart';
 
+//Class to control the state and handling of the recorder that enables voice commands within the application
 class RecordingManger
 {
   static final RecordingManger singleton = new RecordingManger._internal();
@@ -120,6 +121,7 @@ class RecordingManger
       }
       else {
 
+        //switch statement to handle the different functions currently offered by the Dialogflow agent
         switch(result.data['function'])
         {
           case "timetable":
@@ -378,7 +380,7 @@ class RecordingManger
     }
   }
 
-  //alert dialog thats displayed when the recorder could not understand your command
+  //alert dialog that is displayed when the recorder could not understand your command
   void showCannotUnderstandError(BuildContext context, FontData fontData, Color cardColour, Color themeColour)
   {
     _parent.setState((){this._recording = false;});
@@ -408,6 +410,7 @@ class RecordingManger
     showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
   }
 
+  //specific method to show a dialog that states that the subject they are looking for does not exist
   void notASubjectDialog(BuildContext context, FontData fontData, Color cardColour, Color themeColour, String notASubject)
   {
     _parent.setState((){this._recording = false;});
@@ -437,6 +440,7 @@ class RecordingManger
     showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
   }
 
+  //method to draw and return the recording card that is shown when a user presses the record icon
   Card drawRecordingCard(BuildContext context, FontData fontData, Color cardColour, Color themeColour, AthenaIconData iconData, Color backgroundColour)
   {
     return Card(

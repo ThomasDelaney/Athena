@@ -6,6 +6,7 @@ import 'package:Athena/utilities/theme_check.dart';
 import 'package:Athena/subjects/subject_file.dart';
 import 'package:marquee/marquee.dart';
 
+//Class to build and control the state of the custom audio controller
 class AudioManager extends StatefulWidget {
   AudioManager({Key key, this.subjectFile, this.audioPlayer, this.fontData, this.iconData, this.cardColour, this.themeColour}) : super(key: key);
 
@@ -33,6 +34,7 @@ class _AudioManagerState extends State<AudioManager> {
   IconButton playButton;
   IconButton stopButton;
 
+  //method to play the audio file
   void playAudio() async {
     await _audioPlayer.resume();
 
@@ -41,6 +43,7 @@ class _AudioManagerState extends State<AudioManager> {
     });
   }
 
+  //method to stop the audio file
   void stopAudio() async {
 
     await _audioPlayer.pause();
@@ -50,6 +53,7 @@ class _AudioManagerState extends State<AudioManager> {
     });
   }
 
+  //method that triggers when the audio file is completed
   void onComplete() async {
     if (playing) {
       await _audioPlayer.play(widget.subjectFile.url);
@@ -58,6 +62,7 @@ class _AudioManagerState extends State<AudioManager> {
 
   @override
   void dispose() {
+    //dispose of audio player when page is disposed
     _audioPlayer.stop();
     super.dispose();
   }
@@ -88,6 +93,7 @@ class _AudioManagerState extends State<AudioManager> {
 
     _audioPlayer = widget.audioPlayer;
 
+    //initialize handlers
     _audioPlayer.completionHandler = () {
       onComplete();
     };
@@ -109,11 +115,13 @@ class _AudioManagerState extends State<AudioManager> {
       });
     };
 
+    //play audio file on init
     _audioPlayer.play(widget.subjectFile.url);
 
     init = true;
   }
 
+  //method to create a human readable method from an int value representing milliseconds
   String visualTimerFromTime(int timeInMilliseconds)
   {
     String timeStr = "";
@@ -146,8 +154,10 @@ class _AudioManagerState extends State<AudioManager> {
       onPressed: () => stopAudio(),
     );
 
+    //height for the container to display the audio name, varies based on font size for fluid scaling
     double nameHeight = widget.fontData.size < 1.5 ? 135 : 75;
 
+    //draw audio controller
     return Container(
         child: Center(
             child: Container(

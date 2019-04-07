@@ -1,3 +1,4 @@
+//Class to encapsulate tag data
 class Tag
 {
   String _id;

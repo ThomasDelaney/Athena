@@ -1,3 +1,4 @@
+//Class to encapsulate test result data
 class TestResult
 {
   String _id;

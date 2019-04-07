@@ -11,6 +11,7 @@ import 'package:Athena/media/note.dart';
 import 'dart:convert';
 import 'package:Athena/subjects/subject.dart';
 
+//Class to draw and handle the state of the rich text editor for a media file
 class TextFileEditor extends StatefulWidget {
 
   final Note note;
@@ -40,7 +41,9 @@ class TextFileEditorState extends State<TextFileEditor> {
   String currentTag;
   String previousTag;
 
+  //zefyr provides the scaffolding capabilities to develop a rich text editor, the controller allows you to control the scaffold
   ZefyrController _controller;
+
   FocusNode _focusNode;
   final fileNameController = new TextEditingController();
   String title;
@@ -71,6 +74,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     _focusNode = new FocusNode();
   }
 
+  //check if the rich text file has been edited
   bool isFileEdited() {
     if (currentlySaved == true) {
       return false;
@@ -95,6 +99,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     }
   }
 
+  //method to build the rich text editor
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -156,10 +161,10 @@ class TextFileEditorState extends State<TextFileEditor> {
                               child: Card(
                                   color: widget.cardColour,
                                   elevation: 18.0,
+                                  //draw zefyr scaffold and change theme data to reflect user design settings
                                   child: new ZefyrScaffold(
                                       child: new ZefyrTheme(
                                         data: new ZefyrThemeData(
-
                                             paragraphTheme: StyleTheme(
                                                 textStyle: TextStyle(
                                                     fontFamily: widget.fontData.font,
@@ -304,6 +309,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method that is called when the user tries to exit the page
   Future<bool> exitCheck() async{
     FocusScope.of(context).requestFocus(new FocusNode());
 
@@ -346,6 +352,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     }
   }
 
+  //method to display a dialog when a user tries to submit a note without a file name
   void showYouMustHaveFileNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -362,6 +369,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to display dialog with all user tags
   void showTagDialog(bool fromWithin, List<String> currentTags) async {
 
     List<String> tagValues;
@@ -393,6 +401,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     );
   }
 
+  //method to get list of tags, used by text_file_tag_picker_dialog.dart
   void showTagList(List<String> tagValues){
     AlertDialog tags = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -429,6 +438,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     showDialog(context: context, barrierDismissible: false, builder: (_) => tags, );
   }
 
+  //method to upload a note to the database
   Future<void> uploadNote() async {
 
     //create map of note data
@@ -480,6 +490,7 @@ class TextFileEditorState extends State<TextFileEditor> {
     }
   }
 
+  //method to add a tag to a note
   void addTagToNote() async {
     if (widget.note == null) {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('Tag Added!', style: TextStyle(

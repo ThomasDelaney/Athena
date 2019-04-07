@@ -19,7 +19,7 @@ import 'package:Athena/Timetables/timetable_page.dart';
 import 'dart:core';
 import 'package:Athena/tags/tag_manager.dart';
 
-//Widget that displays the "home" page, this will actually be page for the virtual hardback and journal that displays notes and files, stored by the user
+//Class to create and display the Home page
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.pageTitle}) : super(key: key);
 
@@ -54,6 +54,7 @@ class HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    //retrieve data on init
     retrieveData();
     recorder.assignParent(this);
     super.initState();
@@ -80,6 +81,7 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+  //method to build and draw the home page
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -330,6 +332,7 @@ class HomePageState extends State<HomePage> {
       body: fontLoaded && iconLoaded && cardColourLoaded && backgroundColourLoaded && themeColourLoaded ? new Stack(
         children: <Widget>[
           new Center(
+            //build and display home tiles
             child: SingleChildScrollView(
               child: new Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,

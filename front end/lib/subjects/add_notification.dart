@@ -12,6 +12,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 
+//Class for the page to add a notification
 class AddNotification extends StatefulWidget {
 
   AddNotification({Key key, this.currentNotification, this.fontData, this.cardColour, this.themeColour, this.backgroundColour, this.iconData}) : super(key: key);
@@ -46,6 +47,7 @@ class _AddNotificationState extends State<AddNotification> {
 
   bool submitting = false;
 
+  //init page, get current time and set up controllers
   @override
   void initState() {
     recorder.assignParent(this);
@@ -71,6 +73,7 @@ class _AddNotificationState extends State<AddNotification> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to check if the page has been edited since opened
   bool isFileEdited() {
     if (widget.currentNotification == null) {
       if (descriptionController.text == "") {
@@ -89,6 +92,8 @@ class _AddNotificationState extends State<AddNotification> {
       }
     }
   }
+
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -169,6 +174,7 @@ class _AddNotificationState extends State<AddNotification> {
                                               primaryColor: widget.themeColour,
                                               primaryColorDark: widget.themeColour
                                           ),
+                                          //date picker
                                           child: DateTimePickerFormField(
                                               controller: dateController,
                                               initialValue: widget.currentNotification == null ? null :
@@ -210,6 +216,7 @@ class _AddNotificationState extends State<AddNotification> {
                                             primaryColor: widget.themeColour,
                                             primaryColorDark: widget.themeColour
                                         ),
+                                        //time picker
                                         child: DateTimePickerFormField(
                                             controller: timeController,
                                             initialValue: widget.currentNotification == null ? null :
@@ -325,6 +332,7 @@ class _AddNotificationState extends State<AddNotification> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method that is called when the user exits the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -367,6 +375,7 @@ class _AddNotificationState extends State<AddNotification> {
     }
   }
 
+  //method to draw a dialog when the user attempts to submit a reminder without a description
   void showYouMustHaveDescriptionDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -388,6 +397,7 @@ class _AddNotificationState extends State<AddNotification> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to create or update a reminder
   Future<String> addNotification() async {
     Random random = new Random();
     int id = 0 + random.nextInt(2^53 - 0);
@@ -422,6 +432,7 @@ class _AddNotificationState extends State<AddNotification> {
       return "error";
     }
     else{
+      //schedule notification
       NotificationPlugin notificationPlugin = NotificationPlugin.singleton;
 
       var scheduledNotificationDateTime = DateTime.parse(dateController.text+" "+timeController.text);

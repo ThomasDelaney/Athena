@@ -9,6 +9,7 @@ import 'package:flutter_colorpicker/block_picker.dart';
 import 'subject.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 
+//Class for the page to add a subject
 class AddSubject extends StatefulWidget {
 
   AddSubject({Key key, this.subject, this.fontData, this.themeColour, this.backgroundColour, this.cardColour, this.iconData}) : super(key: key);
@@ -58,6 +59,7 @@ class _AddSubjectState extends State<AddSubject> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method that changes the colour chosen by the user from the colour picker widget, then pops the dialog
   ValueChanged<Color> onColorChanged;
 
   changeColorAndPopout(Color color) => setState(() {
@@ -65,6 +67,7 @@ class _AddSubjectState extends State<AddSubject> {
     Navigator.of(context).pop();
   });
 
+  //method to check if the page has been edited since opened
   bool isFileEdited() {
       if (widget.subject == null) {
         if (subjectController.text == "") {
@@ -84,6 +87,7 @@ class _AddSubjectState extends State<AddSubject> {
       }
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -199,6 +203,7 @@ class _AddSubjectState extends State<AddSubject> {
                                                               )
                                                           ),
                                                           new SizedBox(height: 20.0,),
+                                                          //colour picker widget
                                                           Flexible(
                                                             child: Container(
                                                               width: MediaQuery.of(context).size.width,
@@ -364,7 +369,7 @@ class _AddSubjectState extends State<AddSubject> {
         new FlatButton(onPressed: () async {
           if (subjectController.text == "") {
             Navigator.pop(context);
-            showYouMustHaveFileNameDialog();
+            showYouMustHaveSubjectNameDialog();
             return false;
           }
           else {
@@ -391,6 +396,7 @@ class _AddSubjectState extends State<AddSubject> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method that is called when the user exits the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -415,7 +421,7 @@ class _AddSubjectState extends State<AddSubject> {
           ),
           new FlatButton(onPressed: () async {
             if (subjectController.text == "") {
-              showYouMustHaveFileNameDialog();
+              showYouMustHaveSubjectNameDialog();
               return false;
             }
             else {
@@ -445,7 +451,8 @@ class _AddSubjectState extends State<AddSubject> {
     }
   }
 
-  void showYouMustHaveFileNameDialog() {
+  //method to draw a dialog when the user attempts to submit a subject without a name
+  void showYouMustHaveSubjectNameDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
       content: new Text(
@@ -473,6 +480,7 @@ class _AddSubjectState extends State<AddSubject> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to create or update a subject in the database
   void addSubject() async {
     //create map of subject data
     Map map = {

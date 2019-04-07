@@ -22,6 +22,7 @@ import 'package:Athena/subjects/subject_file.dart';
 import 'package:Athena/media/text_file_editor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+//Class used only by the recording manager that builds a page of notes and media files based on a tag
 class ByTagViewer extends StatefulWidget {
   ByTagViewer({Key key, this.tag}) : super(key: key);
 
@@ -181,7 +182,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
     double iconFactor = iconLoaded ? iconData.size*0.875 : 0.875;
     double iconScale = iconLoaded ? (ThemeCheck.orientatedScaleFactor(context))/(iconData.size/iconFactor) : (ThemeCheck.orientatedScaleFactor(context))/(iconFactor);
 
-    //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
+    //if the user has no media files stored currently, then create a list with one panel that tells the user they can add media files
     if (subjectFiles.length == 0 && loaded) {
       subjectList = new Container(
         height:(fileCardSize * iconScale),
@@ -217,7 +218,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
         ),
       );
     }
-    //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the images cover the card
+    //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the media file cover the card
     else if (loaded){
       subjectList =  new Container(
           height: (fileCardSize * iconScale),
@@ -238,7 +239,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
                               //widget that detects gestures made by a user
                               child: GestureDetector(
                                 onTap:() async {
-                                  //go to the file viewer page and pass in the image list, and the index of the image tapped
+                                  //go to the file viewer page and pass in the media file list, and the index of the media file that was tapped
                                   final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(
                                     fromTagMap: subjectFiles,
                                     i: index,
@@ -256,11 +257,11 @@ class _ByTagViewerState extends State<ByTagViewer> {
                                     _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text('File Deleted!', style: TextStyle(fontSize: 18*fontData.size, fontFamily: fontData.font))));
                                   }
                                 },
-                                //hero animation for moving smoothly from the page in which the image was selected, to the file viewer
+                                //hero animation for moving smoothly from the page in which the media file was selected, to the file viewer
                                 //the tag allows both pages to know where to return to when the user presses the back button
                                 child: new Hero(
                                   tag: "fileAt"+index.toString(),
-                                  //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
+                                  //cached network image from URLs retrieved, with a circular progress indicator placeholder until the image has loaded
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColour)),
                                       imageUrl: subjectFiles[index].url,
@@ -323,7 +324,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
                           ],
                         )
                     ),
-                    //Keeps the card the same size when the image is loading
+                    //Keeps the card the same size when the media file is loading
                     width: (fileCardSize * iconScale),
                     height: (fileCardSize * iconScale),
                   ),
@@ -333,12 +334,14 @@ class _ByTagViewerState extends State<ByTagViewer> {
       );
     }
     else{
-      //display a circular progress indicator when the image list is loading
+      //display a circular progress indicator when the media file list is loading
       subjectList = new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))));
     }
 
     ListView textFileList;
 
+    //if the note list is empty, and the data has been loaded
+    //draw a card telling the user they have no notes tagged with the tag
     if (notesList.length == 0 && loaded) {
       textFileList = new ListView(
         shrinkWrap: true,
@@ -369,6 +372,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
       );
     }
     else {
+      //build note list
       textFileList = ListView.builder(
         itemCount: notesList.length,
         itemBuilder: (context, position) {
@@ -665,7 +669,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 new Container(
-                  //note container, which is 60% the size of the screen
+                  //note container, the size varies based on scale factor
                   height: ThemeCheck.orientatedScaleFactor(context) > 0.70 ?
                   MediaQuery.of(context).size.height * 3.5 * (1-ThemeCheck.orientatedScaleFactor(context)).abs() :
                   MediaQuery.of(context).size.height * 0.80 * ThemeCheck.orientatedScaleFactor(context),
@@ -673,7 +677,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
                   child: loaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
                 ),
                 new Container(
-                  //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
+                  //container for the media file list
                   alignment: Alignment.bottomCenter,
                   child: subjectList,
                 ),
@@ -701,7 +705,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
                 ),
                 new Flexible(
                   child: Container(
-                    //container for the image buttons, one for getting images from the gallery and one for getting images from the camera
+                    //container for the media file list
                     alignment: Alignment.center,
                     child: subjectList,
                   ),
@@ -747,6 +751,7 @@ class _ByTagViewerState extends State<ByTagViewer> {
     showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
   }
 
+  //method to draw dialog to ask if the user wants to delete a note
   void deleteNoteDialog(Note note, Subject subject) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,
@@ -775,10 +780,12 @@ class _ByTagViewerState extends State<ByTagViewer> {
     showDialog(context: context, barrierDismissible: false, builder: (_) => areYouSure);
   }
 
+  //method to delete a note
   void deleteNote(Note note, Subject subject) async {
     var response = await requestManager.deleteNote(note.id, subject.id);
 
     //if null, then the request was a success, retrieve the information
+    //if success, refresh data
     if (response == "success") {
       Navigator.pop(context);
       _scaffoldKey.currentState.showSnackBar(new SnackBar(content: Text(

@@ -1,3 +1,4 @@
+//Class to determine the file type of a file using its URL
 class FileTypeManger
 {
   static String getFileTypeFromURL(String url)

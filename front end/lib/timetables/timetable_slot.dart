@@ -1,3 +1,4 @@
+//Class to encapsulate timeslot data
 class TimetableSlot
 {
   String _id;

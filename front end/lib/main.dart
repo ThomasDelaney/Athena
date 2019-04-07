@@ -56,6 +56,7 @@ class _MyHomePageState extends State<MyHomePage>
   void initState() {
     super.initState();
 
+    //set up notification handlers
     var initializationSettingsAndroid = new AndroidInitializationSettings('white_logo');
     var initializationSettingsIOS = new IOSInitializationSettings();
     var initializationSettings = new InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
@@ -67,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage>
     NotificationPlugin notificationPlugin = NotificationPlugin.singleton;
     notificationPlugin.setNotificationPlugin(flutterLocalNotificationsPlugin);
 
+    //schedule current notifications
     scheduleNotifications();
 
     //get user's name from shared preferences, and check if it is null, if so, then send user to log in page, else send user to homepage and pass in the user's name
@@ -83,6 +85,7 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
+  //method to schedule current reminders on the database
   void scheduleNotifications() async{
     List<AthenaNotification> notifs = await RequestManager.singleton.getNotifications();
 

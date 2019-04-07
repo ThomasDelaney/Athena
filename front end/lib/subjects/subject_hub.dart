@@ -18,6 +18,7 @@ import 'package:Athena/subjects/add_subject.dart';
 import 'package:Athena/subjects/subject.dart';
 import 'package:Athena/subjects/subject_hub_tile.dart';
 
+//Class to draw the page to display all the users subjects
 class SubjectHub extends StatefulWidget {
   @override
   SubjectHubState createState() => SubjectHubState();
@@ -59,7 +60,6 @@ class SubjectHubState extends State<SubjectHub> {
     super.initState();
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -96,7 +96,6 @@ class SubjectHubState extends State<SubjectHub> {
     }
   }
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -111,7 +110,6 @@ class SubjectHubState extends State<SubjectHub> {
     }
   }
 
-  //get current font from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -149,11 +147,13 @@ class SubjectHubState extends State<SubjectHub> {
     getFontData();
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
 
     ListView sList;
 
+    //if the list is empty, display a card telling the user they can add subjects
     if (subjectList.length == 0 && subjectsLoaded) {
       sList = new ListView(
         shrinkWrap: true,
@@ -193,6 +193,7 @@ class SubjectHubState extends State<SubjectHub> {
         ],
       );
     }
+    //else display the subject list
     else {
       sList = ListView.builder(
         itemCount: subjectList.length,
@@ -540,6 +541,8 @@ class SubjectHubState extends State<SubjectHub> {
       ],
     );
   }
+
+  //method to get all user subjects
   void getSubjects() async {
     List<Subject> reqSubjects = await requestManager.getSubjects();
     this.setState(() {
@@ -548,6 +551,7 @@ class SubjectHubState extends State<SubjectHub> {
     });
   }
 
+  //method to delete a subject
   void deleteSubject(String id, String title) async {
     var response = await requestManager.deleteSubject(id, title);
 
@@ -576,6 +580,7 @@ class SubjectHubState extends State<SubjectHub> {
     }
   }
 
+  //method to draw a dialog when the user attempts delete a subject
   void deleteSubjectDialog(String id, String title) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,

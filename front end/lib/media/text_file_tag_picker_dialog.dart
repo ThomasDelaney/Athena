@@ -3,6 +3,7 @@ import 'package:Athena/design/font_data.dart';
 import 'package:Athena/media/text_file_editor.dart';
 import 'package:Athena/utilities/theme_check.dart';
 
+//Class to draw and handle the state of the alert dialog to allow the user to select a tag when adding a tag to a note
 class TextFileTagPickerDialog extends StatefulWidget {
 
   final FontData fontData;
@@ -31,6 +32,7 @@ class _TextFileTagPickerDialogState extends State<TextFileTagPickerDialog> {
     super.initState();
   }
 
+  //method to draw the dialog
   @override
   Widget build(BuildContext context) {
     return new Center(

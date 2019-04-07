@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 
+//Class to create and handle the state of the custom video manager
 class VideoManager extends StatefulWidget {
 
   VideoManager({Key key, this.controller}) : super(key: key);
@@ -20,10 +21,12 @@ class _VideoManagerState extends State<VideoManager> {
 
   int currentProgress = 0;
 
+  //chewie controller to control the chewie video UI
   ChewieController _chewieController;
   VideoPlayerController _controller;
   double _aspectRatio = 3/2;
 
+  //method to play the video
   void playVideo() async {
     await _chewieController.play();
 
@@ -32,6 +35,7 @@ class _VideoManagerState extends State<VideoManager> {
     });
   }
 
+  //method to stop the video
   void stopVideo() async {
 
     await _controller.pause();
@@ -51,6 +55,7 @@ class _VideoManagerState extends State<VideoManager> {
     init = true;
   }
 
+  //dispose of the video controller, and chewie controller when the page is disposed of
   @override
   void dispose() {
     _chewieController.exitFullScreen();
@@ -79,6 +84,7 @@ class _VideoManagerState extends State<VideoManager> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to draw the custom video manager
   @override
   Widget build(BuildContext context) {
 

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:Athena/design/background_settings.dart';
 import 'package:Athena/design/card_settings.dart';
 import 'package:Athena/design/dyslexia_friendly_settings.dart';
@@ -30,6 +29,7 @@ import 'package:Athena/subjects/subject_file.dart';
 import 'package:marquee/marquee.dart';
 import 'package:Athena/design/athena_icon_data.dart';
 
+//Class to build and manage the state of a Journal page for a specific date
 class Journal extends StatefulWidget {
   Journal({Key key, this.date}) : super(key: key);
 
@@ -43,10 +43,11 @@ class JournalState extends State<Journal> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  //list for image urls, will be general files in final version
+  //list of urls for both subject media files and notes
   List<SubjectFile> subjectFiles = new List<SubjectFile>();
   List<Note> notesList = new List<Note>();
 
+  //list to hold the old urls for both subject files and notes when filtered
   List<SubjectFile> oldSubjectFiles = new List<SubjectFile>();
   List<Note> oldNotesList = new List<Note>();
 
@@ -54,6 +55,7 @@ class JournalState extends State<Journal> {
 
   bool filtered = false;
 
+  //current filter tag
   String filterTag = "";
 
   RequestManager requestManager = RequestManager.singleton;
@@ -61,10 +63,7 @@ class JournalState extends State<Journal> {
   //Recording Manager Object
   RecordingManger recorder = RecordingManger.singleton;
 
-  //container for the image list
-  Container fileList;
   bool filesLoaded = false;
-
   bool notesLoaded = false;
 
   //size of file card
@@ -94,7 +93,7 @@ class JournalState extends State<Journal> {
     }
   }
 
-  //get user images
+  //get user notes
   void getNotes() async
   {
     List<Note> reqNotes = await requestManager.getNotes("journal", widget.date);
@@ -104,7 +103,7 @@ class JournalState extends State<Journal> {
     }
   }
 
-  //get current font from shared preferences if present
+  //get current font data from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -117,7 +116,7 @@ class JournalState extends State<Journal> {
     }
   }
 
-  //get current font from shared preferences if present
+  //get current card colour from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -130,6 +129,7 @@ class JournalState extends State<Journal> {
     }
   }
 
+  //get current background colour from shared preferences if present
   void getBackgroundColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -142,6 +142,7 @@ class JournalState extends State<Journal> {
     }
   }
 
+  //get current theme colour from shared preferences if present
   void getThemeColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -154,7 +155,7 @@ class JournalState extends State<Journal> {
     }
   }
 
-  //get current icon settings from shared preferences if present
+  //get current icon data from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -182,6 +183,7 @@ class JournalState extends State<Journal> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to retrieve and load all current relevant data
   void retrieveData() {
     iconLoaded = false;
     filesLoaded = false;
@@ -202,6 +204,7 @@ class JournalState extends State<Journal> {
     getIconData();
   }
 
+  //method to build journal page
   @override
   Widget build(BuildContext context) {
 
@@ -210,7 +213,7 @@ class JournalState extends State<Journal> {
     double iconFactor = iconLoaded ? iconData.size*0.875 : 0.875;
     double iconScale = iconLoaded ? (ThemeCheck.orientatedScaleFactor(context))/(iconData.size/iconFactor) : (ThemeCheck.orientatedScaleFactor(context))/(iconFactor);
 
-    //if the user has no images stored currently, then create a list with one panel that tells the user they can add photos and images
+    //if the user has no media files stored currently, then create a list with one panel that tells the user they can add photos, audio and videos
     if (subjectFiles.length == 0 && filesLoaded) {
       subjectList = new Container(
         alignment: Alignment.center,
@@ -254,7 +257,7 @@ class JournalState extends State<Journal> {
         ),
       );
     }
-    //else, display the list of images, it is a horizontal list view of cards that are 150px in size, where the images cover the card
+    //else, display the list of media files, it is a horizontal list view of cards that are 150px in size, where the files cover the card
     else if (filesLoaded){
       subjectList =  new Container(
           height: (fileCardSize * iconScale),
@@ -275,7 +278,7 @@ class JournalState extends State<Journal> {
                               //widget that detects gestures made by a user
                               child: GestureDetector(
                                 onTap:() async {
-                                  //go to the file viewer page and pass in the image list, and the index of the image tapped
+                                  //go to the file viewer page and pass in the file list, and the index of the file tapped
                                   final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => FileViewer(
                                     list: subjectFiles,
                                     i: index,
@@ -299,7 +302,7 @@ class JournalState extends State<Journal> {
                                 //the tag allows both pages to know where to return to when the user presses the back button
                                 child: new Hero(
                                   tag: "fileAt"+index.toString(),
-                                  //cached network image from URLs retrieved, witha circular progress indicator placeholder until the image has loaded
+                                  //cached network image from URLs retrieved, with a circular progress indicator placeholder until the image has loaded
                                   child: FileTypeManger.getFileTypeFromURL(subjectFiles[index].url) == "image" ? CachedNetworkImage(
                                       placeholder: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                                       imageUrl: subjectFiles[index].url,
@@ -362,7 +365,7 @@ class JournalState extends State<Journal> {
                           ],
                         )
                     ),
-                    //Keeps the card the same size when the image is loading
+                    //Keeps the card the same size when the file is loading
                     width: (fileCardSize * iconScale),
                     height: (fileCardSize * iconScale),
                   ),
@@ -372,12 +375,13 @@ class JournalState extends State<Journal> {
       );
     }
     else{
-      //display a circular progress indicator when the image list is loading
+      //display a circular progress indicator when the file list is loading
       subjectList =  new Container(child: new Padding(padding: EdgeInsets.all(50.0*ThemeCheck.orientatedScaleFactor(context)), child: new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))));
     }
 
     ListView textFileList;
 
+    //if the user has no notes stored currently, then create a list with one panel that tells the user they can add notes
     if (notesList.length == 0 && notesLoaded) {
       textFileList = new ListView(
         shrinkWrap: true,
@@ -428,6 +432,7 @@ class JournalState extends State<Journal> {
         ],
       );
     }
+    //else, display the list of notes
     else {
       textFileList = ListView.builder(
         itemCount: notesList.length,
@@ -763,13 +768,13 @@ class JournalState extends State<Journal> {
         ),
         body: LayoutBuilder(
           builder: (context, constraints) =>
-          //stack to display the main widgets; the notes and images
+          //stack to display the main widgets; the notes and media files
           MediaQuery.of(context).orientation == Orientation.portrait ?
           Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 new Container(
-                  //note container, which is 60% the size of the screen
+                  //note container, the size varies based on scale factor
                   height:  MediaQuery.of(context).size.height * 0.50,
                   alignment: notesLoaded ? Alignment.topCenter : Alignment.center,
                   child: notesLoaded ? textFileList : new SizedBox(width: 50.0*ThemeCheck.orientatedScaleFactor(context), height: 50.0*ThemeCheck.orientatedScaleFactor(context), child: new CircularProgressIndicator(strokeWidth: 5.0*ThemeCheck.orientatedScaleFactor(context), valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
@@ -891,7 +896,7 @@ class JournalState extends State<Journal> {
   //method for getting an image from the gallery
   void getImage() async
   {
-    //use filepicker to retrieve image from gallery
+    //use filepicker to retrieve file from file browser
     String image = await FilePicker.getFilePath(type: FileType.ANY);
 
     //if image is not null then upload the image and add the url to the image files list
@@ -953,6 +958,7 @@ class JournalState extends State<Journal> {
     showDialog(context: context, barrierDismissible: false, builder: (_) => errorDialog);
   }
 
+  //dialog that displays when a user wants to delete a note
   void deleteNoteDialog(Note note) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,
@@ -981,6 +987,7 @@ class JournalState extends State<Journal> {
     showDialog(context: context, barrierDismissible: false, builder: (_) => areYouSure);
   }
 
+  //method to delete a note
   void deleteNote(Note note) async {
     var response = await requestManager.deleteNote(note.id, "journal", widget.date);
 
@@ -1020,7 +1027,7 @@ class JournalState extends State<Journal> {
     }
   }
 
-  //method for uploading user chosen image
+  //method for uploading user chosen file
   Future<SubjectFile> uploadFile(String filePath) async
   {
     submit(true);
@@ -1037,6 +1044,7 @@ class JournalState extends State<Journal> {
     }
   }
 
+  //dialog to show all the users tags
   void showTagDialog(bool fromWithin, List<String> currentTags) async {
 
     List<String> tagValues;
@@ -1069,6 +1077,7 @@ class JournalState extends State<Journal> {
     );
   }
 
+  //shows the radio tile list of tags, used by tag_filter_dialog_journal.dart
   void showTagList(List<String> tagValues){
     AlertDialog tags = new AlertDialog(
       backgroundColor: cardColour,
@@ -1106,6 +1115,7 @@ class JournalState extends State<Journal> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => tags, );
   }
 
+  //method to filter the note and subject media file lists by a tag
   void filterByTag() async {
     if (filterTag == ""){
       return;

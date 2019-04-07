@@ -9,7 +9,7 @@ import 'package:Athena/utilities/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Athena/utilities/request_manager.dart';
 
-//Widget that displays the settings that allow the user to change the font used in the application
+//Class to build the Font Settings page, allows users to change the font, font colour and font size within the application
 class FontSettings extends StatefulWidget {
   @override
   _FontSettingsState createState() => _FontSettingsState();
@@ -68,7 +68,7 @@ class _FontSettingsState extends State<FontSettings> {
     await getCardColour();
   }
 
-  //get current font from shared preferences if present
+  //get current font from the database
   void getCurrentFontData() async {
 
     FontData data = await requestManager.getFontData();
@@ -80,7 +80,6 @@ class _FontSettingsState extends State<FontSettings> {
     });
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -117,7 +116,6 @@ class _FontSettingsState extends State<FontSettings> {
     }
   }
 
-  //get current icon settings from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -132,6 +130,7 @@ class _FontSettingsState extends State<FontSettings> {
     }
   }
 
+  //check if the card data has been changed
   bool isFileEdited() {
     if (currentData.font == oldData.font) {
       return false;
@@ -141,6 +140,7 @@ class _FontSettingsState extends State<FontSettings> {
     }
   }
 
+  //method to build the font settings page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -190,6 +190,7 @@ class _FontSettingsState extends State<FontSettings> {
                             children: <Widget>[
                               new Container(
                                 margin: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                                //draw dropdown with different font options
                                 child: new DropdownButton<String>(
                                   isExpanded: true,
                                   value: this.currentData.font == "" ? null : this.currentData.font,
@@ -436,12 +437,13 @@ class _FontSettingsState extends State<FontSettings> {
     );
   }
 
+  //method that changes the colour chosen by the user from the colour picker widget, then pops the dialog
   changeColorAndPopout(Color color) => setState(() {
     currentData.color = color;
     Navigator.of(context).pop();
   });
 
-  //method to submit the new font
+  //method to submit the new font data
   void changeFont() async
   {
     submit(true);
@@ -457,6 +459,7 @@ class _FontSettingsState extends State<FontSettings> {
     }
   }
 
+  //method that is called when the user attempts to exit the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -539,6 +542,7 @@ class _FontSettingsState extends State<FontSettings> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //dialog that displays when the user submits the page without selecting a font
   void showMustHaveFontDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,

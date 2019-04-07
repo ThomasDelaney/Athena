@@ -10,6 +10,7 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'timetable_slot.dart';
 
+//Class for the page to add a timeslot
 class AddTimeslot extends StatefulWidget {
 
   AddTimeslot({Key key, this.day, this.lastTime, this.currentTimeslot, this.fontData, this.cardColour, this.themeColour, this.backgroundColour, this.iconData}) : super(key: key);
@@ -52,6 +53,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
 
   bool submitting = true;
 
+  //load info on init
   @override
   void initState() {
     recorder.assignParent(this);
@@ -76,6 +78,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to check if the page has been edited since opened
   bool isFileEdited() {
     if (widget.currentTimeslot == null) {
       if (teacherController.text == "" && timeController.text == "" && roomController.text == "" && selectedSubject == null) {
@@ -95,6 +98,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     }
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -312,6 +316,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     );
   }
 
+  //method to display a alert dialog with the user's current subjects
   void showSubjectList(){
     AlertDialog tags = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -347,6 +352,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => tags, );
   }
 
+  //method to get all the user's subjects
   void getSubjects() async {
     List<Subject> reqSubjects = await requestManager.getSubjects();
 
@@ -423,6 +429,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method that is called when the user exits the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -502,6 +509,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to draw a dialog when the user attempts to submit a timeslot without a subject
   void showMustHaveSubjectDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -523,6 +531,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to draw a dialog when the user attempts to submit a timeslot without a time
   void showMustHaveTimeDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -544,6 +553,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to create or update a timeslot
   void addTimeslot() async {
 
     //create map of subject data
@@ -583,6 +593,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     }
   }
 
+  //method to delete a timeslot
   void deleteTimeslot() async {
     var response = await requestManager.deleteTimeslot(widget.currentTimeslot.id, widget.day);
 
@@ -619,6 +630,7 @@ class _AddTimeslotState extends State<AddTimeslot> {
     }
   }
 
+  //method to draw a dialog when the user attempts to delete a timeslot
   void deleteTimeslotDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,

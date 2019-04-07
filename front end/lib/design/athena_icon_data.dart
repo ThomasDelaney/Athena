@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+//Class to encapsulate icon data
 class AthenaIconData
 {
   Color _color;

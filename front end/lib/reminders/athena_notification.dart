@@ -1,3 +1,4 @@
+//Class to encapsulate reminder data
 class AthenaNotification
 {
   String _id;

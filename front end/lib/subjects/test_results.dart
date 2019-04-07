@@ -18,6 +18,7 @@ import 'package:Athena/utilities/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Athena/subjects/test_result.dart';
 
+//Class for the page that displays all the test results for a subject
 class TestResults extends StatefulWidget {
 
   final Subject subject;
@@ -56,7 +57,6 @@ class _TestResultsState extends State<TestResults> {
   Color backgroundColour;
   Color cardColour;
 
-  //get current font from shared preferences if present
   void getFontData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -69,7 +69,6 @@ class _TestResultsState extends State<TestResults> {
     }
   }
 
-  //get current font from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -106,7 +105,6 @@ class _TestResultsState extends State<TestResults> {
     }
   }
 
-  //get current icon settings from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -153,10 +151,12 @@ class _TestResultsState extends State<TestResults> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the page
   Widget build(BuildContext context) {
 
     ListView rList;
 
+    //if list is empty, draw a card telling the user that they can add new test result
     if (resultsList.length == 0 && resultsLoaded) {
       rList = new ListView(
         shrinkWrap: true,
@@ -194,6 +194,7 @@ class _TestResultsState extends State<TestResults> {
         ],
       );
     }
+    //else draw the list
     else {
       rList = ListView.builder(
         itemCount: resultsList.length,
@@ -595,6 +596,7 @@ class _TestResultsState extends State<TestResults> {
     );
   }
 
+  //method to get all the test results for a subject
   void getTestResults() async {
     List<TestResult> reqResults = await requestManager.getTestResults(widget.subject.id);
     this.setState(() {
@@ -603,6 +605,7 @@ class _TestResultsState extends State<TestResults> {
     });
   }
 
+  //method to delete a test result
   void deleteTestResult(TestResult result) async {
     var response = await requestManager.deleteTestResult(result.id, widget.subject.id);
 
@@ -630,6 +633,7 @@ class _TestResultsState extends State<TestResults> {
     }
   }
 
+  //method to draw a dialog when the user attempts delete a test result
   void deleteTestResultDialog(TestResult result) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,

@@ -15,6 +15,7 @@ import 'package:dio/dio.dart';
 import 'package:Athena/subjects/subject.dart';
 import 'package:Athena/subjects/subject_file.dart';
 
+//Singleton class for handling requests to the back end REST server
 class RequestManager
 {
 
@@ -76,12 +77,13 @@ class RequestManager
 
   Dio dio = new Dio();
 
+  //get user files
   Future<List<SubjectFile>> getFiles(String subjectID, [String date]) async
   {
     List<SubjectFile> reqFiles = new List<SubjectFile>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request user files
     Response response = await dio.get(getFilesUrl, queryParameters: {
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -100,12 +102,12 @@ class RequestManager
     return reqFiles;
   }
 
-  //method for uploading user chosen image
+  //upload media file
   Future<SubjectFile> uploadFile(String filePath, String subjectID, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form with relevant data and image as file
+    //create form with relevant data and media file as a file
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "subjectID": subjectID,
@@ -134,6 +136,7 @@ class RequestManager
     }
   }
 
+  //delete user media file
   dynamic deleteFile(String id, String subjectID, String fileName, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -158,14 +161,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
-  //method to submit the new font
+  //method to update font data
   Future<String> putFontData(FontData fontData) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -187,7 +190,7 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      //else store the new refresh token and font in shared preferences, and display snackbar the data has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         await prefs.setString("font", fontData.font);
@@ -196,22 +199,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //get user's font data
   Future<FontData> getFontData() async
   {
     FontData data;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getFontUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //if response data
     if (response.data['data']?.values != null) {
 
       final values = response.data['data'];
@@ -227,8 +231,10 @@ class RequestManager
       );
     }
 
+    //set font data in shared preferences
     await prefs.setString("font", data.font);
 
+    //if dyslexia mode is not enabled
     if (!await getDyslexiaFriendlyModeEnabled()){
       await prefs.setInt("fontColour", data.color.value);
     }else{
@@ -246,7 +252,7 @@ class RequestManager
     return data;
   }
 
-  //method to submit the new font
+  //method to update icon data
   Future<String> putIconData(AthenaIconData iconData) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -267,7 +273,7 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      //else store the new refresh token and icon data in shared preferences, and display snackbar the data has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         await prefs.setInt("iconColour", iconData.color.value);
@@ -275,22 +281,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //get user's icon data
   Future<AthenaIconData> getIconData() async
   {
     AthenaIconData data;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getIconUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //if response data
     if (response.data['data']?.values != null) {
 
       final values = response.data['data'];
@@ -305,6 +312,7 @@ class RequestManager
       );
     }
 
+    //if dyslexia mode is not enabled
     if (!await getDyslexiaFriendlyModeEnabled()){
       await prefs.setInt("iconColour", data.color.value);
     }else{
@@ -317,17 +325,18 @@ class RequestManager
       }
     }
 
+    //set icon data in shared preferences
     await prefs.setDouble("iconSize", data.size);
 
     return data;
   }
 
-  //method to submit the new font
+  //method to update card colour
   Future<String> putCardColour(Color color) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
+    //create form data for the request, with the new card colour
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -342,29 +351,30 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      //else store the new refresh token and font in shared preferences, and display snackbar the card colour has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         await prefs.setInt("cardColour", color.value);
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get card colour
   Future<Color> getCardColour() async
   {
     Color data;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getCardColourUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //if response data
     if (response.data['data'] != null) {
 
       data = Color(int.tryParse(response.data['data']));
@@ -372,6 +382,7 @@ class RequestManager
       data = Colors.white;
     }
 
+    //if dyslexia mode is enabled
     if (!await getDyslexiaFriendlyModeEnabled()){
       await prefs.setInt("cardColour", data.value);
     }else{
@@ -386,12 +397,12 @@ class RequestManager
     return data;
   }
 
-  //method to submit the new font
+  //method to enable or disable dyslexia friendly mode
   Future<String> putDyslexiaFriendlyModeEnabled(bool enabled) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
+    //create form data for the request, with the boolean value as a string
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -406,47 +417,49 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      //else store the new refresh token and font in shared preferences
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         await prefs.setBool("dyslexiaFriendlyEnabled", enabled);
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get dyslexia friendly mode
   Future<bool> getDyslexiaFriendlyModeEnabled() async
   {
     bool data;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getIsDyslexiaModeEnabledUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //if response data
     if (response.data['data'] != null) {
-
+      //if data is true
       data = response.data['data'].toLowerCase() == 'true';
     }else{
       data = false;
     }
 
+    //set bool in shared preferences
     await prefs.setBool("dyslexiaFriendlyEnabled", data);
 
     return data;
   }
 
-  //method to submit the new font
+  //method to update background colour
   Future<String> putBackgroundColour(Color color) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
+    //create form data for the request, with the new background colour
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -461,39 +474,41 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      //else store the new refresh token and font in shared preferences, and display snackbar the background has been updated
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         await prefs.setInt("backgroundColour", color.value);
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get background colour
   Future<Color> getBackgroundColour() async
   {
     Color data;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getBackgroundColourUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //if response data
     if (response.data['data'] != null) {
-
       data = Color(int.tryParse(response.data['data']));
     }else{
       data = Colors.white;
     }
 
+    //if dyslexia mode enabled
     if (!await getDyslexiaFriendlyModeEnabled()){
       await prefs.setInt("backgroundColour", data.value);
     }else{
+      //set colour in shared preferences
       if(await prefs.getInt("backgroundColour") != null){
         data = await Color(prefs.getInt("backgroundColour"));
       }else{
@@ -505,12 +520,12 @@ class RequestManager
     return data;
   }
 
-  //method to submit the new font
+  //method to update theme colour
   Future<String> putThemeColour(Color color) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //create form data for the request, with the new font
+    //create form data for the request, with the new theme colour
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -525,39 +540,41 @@ class RequestManager
       if(responseObj.data['refreshToken'] == null) {
         return "error";
       }
-      //else store the new refresh token and font in shared preferences, and display snackbar the font has been updated
+      //else store the new refresh token and font in shared preferences
       else {
         await prefs.setString("refreshToken", responseObj.data['refreshToken']);
         await prefs.setInt("themeColour", color.value);
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get theme data
   Future<Color> getThemeColour() async
   {
     Color data;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getThemeColourUrl, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //if response data
     if (response.data['data'] != null) {
-
       data = Color(int.tryParse(response.data['data']));
     }else{
       data = Colors.white;
     }
 
+    //if dyslexia mode enabled
     if (!await getDyslexiaFriendlyModeEnabled()){
       await prefs.setInt("themeColour", data.value);
     }else{
+      //update colour in shared preferences
       if(await prefs.getInt("themeColour") != null){
         data = await Color(prefs.getInt("themeColour"));
       }else{
@@ -569,10 +586,12 @@ class RequestManager
     return data;
   }
 
+  //method to create and update subject
   dynamic putSubject(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    //create form data to post
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -595,13 +614,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to delete subject
   dynamic deleteSubject(String id, String title) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -624,22 +644,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get subjects
   Future<List<Subject>> getSubjects() async
   {
     List<Subject> reqSubjects = new List<Subject>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getSubjectsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //store subjects in a Subject list
     if (response.data['subjects']?.values != null) {
 
       response.data['subjects'].forEach((key, values) {
@@ -653,10 +674,12 @@ class RequestManager
     return reqSubjects;
   }
 
+  //method to create or update tag
   dynamic putTag(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    //create form data for post
     FormData formData = new FormData.from({
       "id": await prefs.getString("id"),
       "nodeID": jsonMap['id'],
@@ -679,13 +702,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to delete tag
   dynamic deleteTag(Tag tag, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -709,22 +733,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get tags
   Future<List<Tag>> getTags() async
   {
     List<Tag> reqTags = new List<Tag>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getTagsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //store tags in a Tag list
     if (response.data['tags']?.values != null) {
 
       response.data['tags'].forEach((key, values) {
@@ -736,14 +761,16 @@ class RequestManager
     return reqTags;
   }
 
+  //method to get notes and files by a tag
   Future<List> getNotesAndFilesByTag(String tag, [String date]) async
   {
+    //lists to store both notes and files
     Map<Subject, Note> notes = new Map<Subject, Note>();
     Map<Subject, SubjectFile> files = new Map<Subject, SubjectFile>();
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getNotesAndFilesWithTagURL, queryParameters: {
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -778,6 +805,7 @@ class RequestManager
     return [notes, files];
   }
 
+  //method to create or update a note
   dynamic putNote(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -808,13 +836,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to update tag on a note
   dynamic putTagOnNote(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -841,13 +870,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to update tag on a file
   dynamic putTagOnFile(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -874,13 +904,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to delete note
   dynamic deleteNote(String id, String subjectID, [String date]) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -904,19 +935,20 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get notes
   Future<List<Note>> getNotes(String subjectID, [String date]) async
   {
     List<Note> reqNotes = new List<Note>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user notes
+    //request data and store response in a Response object
     Response response = await dio.get(getNotesURL, queryParameters: {
       "id": await prefs.getString("id"),
       "refreshToken": await prefs.getString("refreshToken"),
@@ -924,7 +956,7 @@ class RequestManager
       "date": date != null ? date : "null"
     });
 
-    //store images in a string list
+    //store notes in a Note list
     if (response.data['notes']?.values != null) {
 
       response.data['notes'].forEach((key, values) {
@@ -936,6 +968,7 @@ class RequestManager
     return reqNotes;
   }
 
+  //method to make an audio command
   dynamic command(String uri) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -976,6 +1009,7 @@ class RequestManager
     }
   }
 
+  //method to sign in a user
   dynamic signInRequest(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -998,13 +1032,14 @@ class RequestManager
         return {"Success": responseObj.data};
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return {"error": {"response": "An Error Has Occured, Please Try Again!"}};
     }
   }
 
+  //method to register a user
   dynamic register(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1028,22 +1063,23 @@ class RequestManager
         return {"Success": responseObj.data};
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return {"error": {"response": "An Error Has Occured, Please Try Again!"}};
     }
   }
 
+  //method to get timeslots
   Future<Map<String, List<TimetableSlot>>> getTimeslots() async
   {
     Map<String, List<TimetableSlot>> reqTimeslots = new Map<String, List<TimetableSlot>>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user images
+    //request data and store response in a Response object
     Response response = await dio.get(getTimeslotsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //store timeslots in a TimetableSlot list
     if (response.data['timeslots']?.values != null) {
 
       response.data['timeslots'].forEach((key, values) {
@@ -1064,6 +1100,7 @@ class RequestManager
     return reqTimeslots;
   }
 
+  //method to create or update timeslot
   dynamic putTimeslot(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1093,13 +1130,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to delete timeslot
   dynamic deleteTimeslot(String id, String day) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1122,13 +1160,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to create or update a test result
   dynamic putTestResult(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1155,22 +1194,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get test results
   Future<List<TestResult>> getTestResults(String subjectID) async
   {
     List<TestResult> reqResults = new List<TestResult>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user notes
+    //request data and store response in a Response object
     Response response = await dio.get(getTestResultsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
-    //store images in a string list
+    //store test results in a TestResult list
     if (response.data['results']?.values != null) {
 
       response.data['results'].forEach((key, values) {
@@ -1182,6 +1222,7 @@ class RequestManager
     return reqResults;
   }
 
+  //method to delete a test result
   dynamic deleteTestResult(String id, String subjectID) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1204,13 +1245,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to create or update a homework
   dynamic putHomework(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1237,22 +1279,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get user's homework
   Future<List<Homework>> getHomework(String subjectID) async
   {
     List<Homework> reqHomework = new List<Homework>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user notes
+    //request data and store response in a Response object
     Response response = await dio.get(getHomeworkURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
-    //store images in a string list
+    //store homework in a Homework list
     if (response.data['homework']?.values != null) {
 
       response.data['homework'].forEach((key, values) {
@@ -1264,6 +1307,7 @@ class RequestManager
     return reqHomework;
   }
 
+  //method to delete a homework
   dynamic deleteHomework(String id, String subjectID) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1286,22 +1330,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get user's materials
   Future<List<ClassMaterial>> getMaterials(String subjectID) async
   {
     List<ClassMaterial> reqMaterials = new List<ClassMaterial>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user notes
+    //request data and store response in a Response object
     Response response = await dio.get(getMaterialsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken"), "subjectID": subjectID});
 
-    //store images in a string list
+    //store materials in a ClassMaterial list
     if (response.data['materials']?.values != null) {
 
       response.data['materials'].forEach((key, values) {
@@ -1313,7 +1358,7 @@ class RequestManager
     return reqMaterials;
   }
 
-  //method for uploading user chosen image
+  //method for creating or updating a material
   dynamic putMaterial(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1348,6 +1393,7 @@ class RequestManager
     }
   }
 
+  //method to delete a material
   dynamic deleteMaterial(String id, String subjectID, String fileName) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1371,13 +1417,14 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to create or update a reminder
   dynamic putNotification(Map jsonMap) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1403,22 +1450,23 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";
     }
   }
 
+  //method to get all user reminders
   Future<List<AthenaNotification>> getNotifications() async
   {
     List<AthenaNotification> reqNotifs = new List<AthenaNotification>();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    //get user notes
+    //request data and store response in a Response object
     Response response = await dio.get(getNotificationsURL, queryParameters: {"id": await prefs.getString("id"), "refreshToken": await prefs.getString("refreshToken")});
 
-    //store images in a string list
+    //store reminders in an AthenaNotification list
     if (response.data['notifications']?.values != null) {
 
       response.data['notifications'].forEach((key, values) {
@@ -1430,6 +1478,7 @@ class RequestManager
     return reqNotifs;
   }
 
+  //method to delete a reminder
   dynamic deleteNotification(String id) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1451,7 +1500,7 @@ class RequestManager
         return "success";
       }
     }
-    //catch error and display error doalog
+    //catch error and display error dialog
     on DioError catch(e)
     {
       return "error";

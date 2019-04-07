@@ -18,6 +18,7 @@ import 'package:Athena/utilities/theme_check.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Athena/subjects/homework.dart';
 
+//Class for the page that displays all the homework for a subject
 class HomeworkPage extends StatefulWidget {
 
   final Subject subject;
@@ -88,7 +89,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     }
   }
 
-  //get current font from shared preferences if present
+  //get current card colour from shared preferences if present
   void getCardColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -101,6 +102,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     }
   }
 
+  //get current background colour from shared preferences if present
   void getBackgroundColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -113,6 +115,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     }
   }
 
+  //get current theme colour from shared preferences if present
   void getThemeColour() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -125,7 +128,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     }
   }
 
-  //get current icon settings from shared preferences if present
+  //get current icon data from shared preferences if present
   void getIconData() async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -153,10 +156,12 @@ class _HomeworkPageState extends State<HomeworkPage> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     ListView hList;
 
+    //if list is empty, draw a card telling the user that they can add new homework
     if (homeworkList.length == 0 && homeworkLoaded) {
       hList = new ListView(
         shrinkWrap: true,
@@ -200,6 +205,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
         ],
       );
     }
+    //else draw the list
     else {
       hList = ListView.builder(
         itemCount: homeworkList.length,
@@ -609,6 +615,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     );
   }
 
+  //method to get all the homework for a subject
   void getHomework() async {
     List<Homework> reqHomework = await requestManager.getHomework(widget.subject.id);
     this.setState(() {
@@ -617,6 +624,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     });
   }
 
+  //method that is triggered when a user taps the checkbox for a homework, will update the homework on the database asynchronously
   void updateHomework(Homework homework) async{
     //create map of subject data
     Map map = {
@@ -642,6 +650,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     }
   }
 
+  //method to delete a homework
   void deleteHomework(Homework homework) async {
     var response = await requestManager.deleteHomework(homework.id, widget.subject.id);
 
@@ -669,6 +678,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
     }
   }
 
+  //method to draw a dialog when the user attempts delete a homework
   void deleteHomeworkDialog(Homework homework) {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: cardColour,

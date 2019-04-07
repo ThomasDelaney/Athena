@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:Athena/home_page.dart';
 import 'package:Athena/utilities/theme_check.dart';
 
+//Class for the page to add a tag
 class AddTag extends StatefulWidget {
-
   AddTag({Key key, this.tag, this.fontData, this.cardColour, this.themeColour, this.backgroundColour, this.iconData}) : super(key: key);
 
   final Tag tag;
@@ -33,6 +33,7 @@ class _AddTagState extends State<AddTag> {
 
   bool submitting = false;
 
+  //string to store old tag (update only)
   String oldTag = "";
 
   @override
@@ -74,6 +75,8 @@ class _AddTagState extends State<AddTag> {
       }
     }
   }
+
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -243,6 +246,7 @@ class _AddTagState extends State<AddTag> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method that is called when the user exits the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -296,6 +300,7 @@ class _AddTagState extends State<AddTag> {
     }
   }
 
+  //method to draw a dialog when the user attempts to submit a tag without a tag name
   void showYouMustHaveTagDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -317,6 +322,7 @@ class _AddTagState extends State<AddTag> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to draw a dialog when the user attempts to submit a tag with the same name as another tag
   void showDuplicateTagDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,
@@ -338,7 +344,7 @@ class _AddTagState extends State<AddTag> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
-
+  //method to add or update a tag to the database
   Future<String> addTag() async {
     //create map of tag data
     Map map = {"id": widget.tag == null ? null : widget.tag.id, "tag": tagController.text, "oldTag": oldTag};

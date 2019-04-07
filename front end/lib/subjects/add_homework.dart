@@ -8,6 +8,7 @@ import 'package:Athena/subjects/subject.dart';
 import 'package:Athena/subjects/homework.dart';
 import 'package:Athena/utilities/theme_check.dart';
 
+//Class for the page to add a homework for a subject
 class AddHomework extends StatefulWidget {
 
   final Subject subject;
@@ -39,6 +40,7 @@ class _AddHomeworkState extends State<AddHomework> {
 
   bool completedValue;
 
+  //method to check if the page has been edited since opened
   bool isFileEdited() {
     if (widget.currentHomework == null) {
       if (homeworkDescriptionController.text == "") {
@@ -79,6 +81,7 @@ class _AddHomeworkState extends State<AddHomework> {
     super.didUpdateWidget(oldWidget);
   }
 
+  //method to build the page
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -172,6 +175,7 @@ class _AddHomeworkState extends State<AddHomework> {
                                             child: Transform.scale(
                                               alignment: Alignment.center,
                                               scale: 1.25*ThemeCheck.orientatedScaleFactor(context)*widget.iconData.size,
+                                              //checkbox widget
                                               child: new Checkbox(
                                                 materialTapTargetSize: MaterialTapTargetSize.padded,
                                                 activeColor: Color(int.tryParse(widget.subject.colour)),
@@ -234,6 +238,7 @@ class _AddHomeworkState extends State<AddHomework> {
     );
   }
 
+  //method that is called when the user exits the page
   Future<bool> exitCheck() async{
     if (isFileEdited()) {
       AlertDialog areYouSure = new AlertDialog(
@@ -328,6 +333,7 @@ class _AddHomeworkState extends State<AddHomework> {
     showDialog(context: context, barrierDismissible: true, builder: (_) => areYouSure);
   }
 
+  //method to create or update a homework
   void putHomework() async {
 
     //create map of subject data
@@ -364,6 +370,7 @@ class _AddHomeworkState extends State<AddHomework> {
     }
   }
 
+  //method to draw a dialog when the user attempts to submit a homework without a description
   void showYouMustHaveHomeworkDescriptionDialog() {
     AlertDialog areYouSure = new AlertDialog(
       backgroundColor: widget.cardColour,

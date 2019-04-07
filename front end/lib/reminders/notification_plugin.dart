@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+//Singleton class to handle notifications
 class NotificationPlugin
 {
   static final NotificationPlugin singleton = new NotificationPlugin._internal();

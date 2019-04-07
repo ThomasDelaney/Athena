@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+//Class to encapsulate font data
 class FontData
 {
   String _font;

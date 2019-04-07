@@ -3,6 +3,7 @@ import 'package:Athena/design/font_data.dart';
 import 'package:Athena/utilities/theme_check.dart';
 import 'package:Athena/subjects/virtual_hardback.dart';
 
+//Class to display and manage the state of the tag dialog on the virtual hardback page
 class TagFilterDialog extends StatefulWidget {
 
   final FontData fontData;
@@ -30,6 +31,7 @@ class _TagFilterDialogState extends State<TagFilterDialog> {
     super.initState();
   }
 
+  //method to build dialog
   @override
   Widget build(BuildContext context) {
     return new Center(
