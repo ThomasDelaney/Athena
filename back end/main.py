@@ -255,14 +255,17 @@ def get_command_keywords():
     try:
         user = auth.refresh(request.form['refreshToken'])
 
+        print(request.form)
+        print(request.files)
+
         # use audio segment to get the raw audio from the posted file (which is
         # in a .mp4 format)
-        raw_audio = AudioSegment.from_file(request.files['file'])
+        raw_audio = AudioSegment.from_file(request.files['file'], format="m4a")
 
         # use ffmpeg to convert the file to wav, which is a filetype accepted
         # by google speech to text
-        wav_path = "./sample.wav"
-        raw_audio.export(wav_path, format="wav")
+        wav_path = "./sample.flac"
+        raw_audio.export(wav_path, format="flac")
 
         # use the audio recorder to convert the new wav file as raw audio
         with sr.AudioFile(wav_path) as source:
@@ -287,6 +290,8 @@ def get_command_keywords():
 
             # convert the reponse to a dictionary
             responseObject = MessageToDict(response)
+
+            print(responseObject['queryResult']['fulfillmentMessages'])
 
             # get the payload from the response, which returns the intent
             payload = responseObject['queryResult']['fulfillmentMessages'][0]['payload']

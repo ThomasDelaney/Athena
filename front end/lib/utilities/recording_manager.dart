@@ -19,10 +19,12 @@ import 'package:Athena/subjects/virtual_hardback.dart';
 import 'package:Athena/tags/tag.dart';
 import 'package:Athena/utilities/theme_check.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sound/android_encoder.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:Athena/by_tag.dart';
 import 'package:Athena/Timetables/timetable_page.dart';
 import 'package:Athena/utilities/request_manager.dart';
+import 'package:flutter_sound/ios_quality.dart';
 
 //Class to control the state and handling of the recorder that enables voice commands within the application
 class RecordingManger
@@ -67,7 +69,8 @@ class RecordingManger
     });
 
     //get the file URI and start recording
-    this.uri =  await flutterSound.startRecorder(null);
+    this.uri =  await flutterSound.startRecorder(null, sampleRate: 96000, numChannels: 2, bitRate: 32, iosQuality: IosQuality.MEDIUM, androidEncoder: AndroidEncoder.DEFAULT);
+
     audioSubscription = flutterSound.onRecorderStateChanged.listen((e) {});
   }
 
