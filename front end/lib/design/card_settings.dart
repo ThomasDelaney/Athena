@@ -98,20 +98,17 @@ class _CardSettingsState extends State<CardSettings> {
                       onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
                     ),
                   ] : <Widget>[
-                    IconButton(
+                    loaded ? IconButton(
                       icon: Icon(Icons.mic),
                       onPressed: () {setState(() {recorder.recordAudio();});},
-                    ),
-                    IconButton(
+                    ) : new Container(),
+                    loaded ? IconButton(
                         icon: Icon(Icons.home),
-                        onPressed: () async {
-
-                          if(await exitCheck() == null){
-                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false);
-                          }
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false);
                         }
-                    ),
-                  ],
+                    ) : new Container(),
+                  ]
                 ),
                 body: new Stack(
                   children: <Widget>[

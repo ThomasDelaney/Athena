@@ -103,16 +103,17 @@ class _ThemeSettingsState extends State<ThemeSettings> {
                       onPressed: () {if(this.mounted){setState(() {recorder.cancelRecording();});}},
                     ),
                   ] : <Widget>[
-                    IconButton(
-                        icon: Icon(Icons.home),
-                        onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false)
-                    ),
-                    // else display the mic button and settings button
-                    IconButton(
+                    loaded ? IconButton(
                       icon: Icon(Icons.mic),
-                      onPressed: () {if(this.mounted){setState(() {recorder.recordAudio();});}},
-                    ),
-                  ],
+                      onPressed: () {setState(() {recorder.recordAudio();});},
+                    ) : new Container(),
+                    loaded ? IconButton(
+                        icon: Icon(Icons.home),
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => new HomePage()), (Route<dynamic> route) => false);
+                        }
+                    ) : new Container(),
+                  ]
                 ),
                 body: new Stack(
                   children: <Widget>[

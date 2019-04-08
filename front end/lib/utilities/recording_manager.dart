@@ -26,6 +26,7 @@ import 'package:Athena/by_tag.dart';
 import 'package:Athena/Timetables/timetable_page.dart';
 import 'package:Athena/utilities/request_manager.dart';
 import 'package:flutter_sound/ios_quality.dart';
+import 'package:path_provider/path_provider.dart';
 
 //Class to control the state and handling of the recorder that enables voice commands within the application
 class RecordingManger
@@ -58,9 +59,6 @@ class RecordingManger
   //object used to access the devices microphone
   FlutterSound flutterSound = new FlutterSound();
 
-  //stream subscription is used to keep track of the user recording
-  StreamSubscription<RecordStatus> audioSubscription = null;
-
   //method that records audio
   void recordAudio() async
   {
@@ -69,10 +67,12 @@ class RecordingManger
       this._recording = true;
     });
 
-    //get the file URI and start recording
-    this.uri =  await flutterSound.startRecorder(null, sampleRate: 96000, numChannels: 2, bitRate: 32, iosQuality: IosQuality.MEDIUM, androidEncoder: AndroidEncoder.DEFAULT);
-
-    audioSubscription = flutterSound.onRecorderStateChanged.listen((e) {});
+    if (Platform.isIOS) {
+      this.uri =  await flutterSound.startRecorder(null);
+    }
+    else {
+      this.uri =  await flutterSound.startRecorder(null, sampleRate: 96000, numChannels: 2, bitRate: 32, iosQuality: IosQuality.MEDIUM, androidEncoder: AndroidEncoder.DEFAULT);
+    }
   }
 
   //method to cancel recording at any time
@@ -84,12 +84,6 @@ class RecordingManger
     }
 
     _parent.setState((){this._recording = false;});
-
-    //cancel the audio subscription
-    if (audioSubscription != null) {
-      audioSubscription.cancel();
-      audioSubscription = null;
-    }
   }
 
   void assignParent(State<dynamic> state) {
@@ -113,279 +107,271 @@ class RecordingManger
       this._recorderLoading = false;
     });
 
-    //cancel the audio subscription
-    if (audioSubscription != null) {
-      audioSubscription.cancel();
-      audioSubscription = null;
+    if (Platform.isIOS) {
+      uri = uri.replaceAll(RegExp("file://"), "");
+    }
 
-      String oldUri = uri;
+    var result = await requestManager.command(uri);
 
-      if (Platform.isIOS) {
-        uri = uri.replaceAll(RegExp("file://"), "");
-      }
+    if (result == "error") {
+      showCannotUnderstandError(context, fontData, cardColour, themeColour);
+    }
+    else {
 
-      var result = await requestManager.command(uri, oldUri);
+      //switch statement to handle the different functions currently offered by the Dialogflow agent
+      switch(result.data['function'])
+      {
+        case "timetable":
+          _parent.setState((){this._recording = false;});
 
-      if (result == "error") {
-        showCannotUnderstandError(context, fontData, cardColour, themeColour);
-      }
-      else {
+          //static list of days
+          List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-        //switch statement to handle the different functions currently offered by the Dialogflow agent
-        switch(result.data['function'])
-        {
-          case "timetable":
-            _parent.setState((){this._recording = false;});
-
-            //static list of days
-            List<String> weekdays = const <String>["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-            //if the day from the response object is not in the list, then display and error saying the
-            //user does not have classes for that day
-            if (!weekdays.contains(result.data['option'])) {
-              AlertDialog cannotUnderstand = new AlertDialog(
-                backgroundColor: cardColour,
-                content: new Text("You don't have any classes for this day", style: TextStyle(
-                    fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                    fontFamily: fontData.font,
-                    color: fontData.color
-                  ),
+          //if the day from the response object is not in the list, then display and error saying the
+          //user does not have classes for that day
+          if (!weekdays.contains(result.data['option'])) {
+            AlertDialog cannotUnderstand = new AlertDialog(
+              backgroundColor: cardColour,
+              content: new Text("You don't have any classes for this day", style: TextStyle(
+                  fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                  fontFamily: fontData.font,
+                  color: fontData.color
                 ),
-                actions: <Widget>[
-                  new FlatButton(onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: new Text(
-                        "OK",
-                        style: TextStyle(
-                            fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
-                            fontFamily: fontData.font,
-                            fontWeight: FontWeight.bold, color: themeColour
-                        )
-                    )
+              ),
+              actions: <Widget>[
+                new FlatButton(onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: new Text(
+                      "OK",
+                      style: TextStyle(
+                          fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context),
+                          fontFamily: fontData.font,
+                          fontWeight: FontWeight.bold, color: themeColour
+                      )
                   )
-                ],
-              );
+                )
+              ],
+            );
 
-              showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
-            }
-            else {
-              //else go to the timetables page and pass in the day
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => TimetablePage(
-                      initialDay: result.data['option']
-                  ))
-              ).whenComplete(() {
-                this.parent = this._oldParent;
-              });
-            }
-            break;
-
-          case "notes":
-            _parent.setState((){this._recording = false;});
-
-            List<Tag> reqTags = await requestManager.getTags();
-            List<String> tagValues = reqTags.map((tag) => tag.tag.toLowerCase()).toList();
-
-            //if the day from the response object is not in the list, then display and error saying the user does not have classes for that day
-            if (!tagValues.contains(result.data['option'].toString().toLowerCase())) {
-
-              AlertDialog cannotUnderstand = new AlertDialog(
-                backgroundColor: cardColour,
-                content: new Text("You don't have any notes or files with this tag or this tag does not exist", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
-                actions: <Widget>[
-                  new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: themeColour)))
-                ],
-              );
-
-              showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
-            }
-            else {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ByTagViewer(tag: result.data['option']))).whenComplete(() {
-                this.parent = this._oldParent;
-              });
-            }
-            break;
-
-          case "journal":
-            _parent.setState((){this._recording = false;});
-
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => JournalDatePicker())
+            showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
+          }
+          else {
+            //else go to the timetables page and pass in the day
+            Navigator.push(context, MaterialPageRoute(
+                builder: (context) => TimetablePage(
+                    initialDay: result.data['option']
+                ))
             ).whenComplete(() {
               this.parent = this._oldParent;
             });
-            break;
+          }
+          break;
 
-          case "subjects":
-            _parent.setState((){this._recording = false;});
+        case "notes":
+          _parent.setState((){this._recording = false;});
 
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SubjectHub())
+          List<Tag> reqTags = await requestManager.getTags();
+          List<String> tagValues = reqTags.map((tag) => tag.tag.toLowerCase()).toList();
+
+          //if the day from the response object is not in the list, then display and error saying the user does not have classes for that day
+          if (!tagValues.contains(result.data['option'].toString().toLowerCase())) {
+
+            AlertDialog cannotUnderstand = new AlertDialog(
+              backgroundColor: cardColour,
+              content: new Text("You don't have any notes or files with this tag or this tag does not exist", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, color: fontData.color),),
+              actions: <Widget>[
+                new FlatButton(onPressed: () {Navigator.pop(context);}, child: new Text("OK", style: TextStyle(fontSize: 18.0*fontData.size*ThemeCheck.orientatedScaleFactor(context), fontFamily: fontData.font, fontWeight: FontWeight.bold, color: themeColour)))
+              ],
+            );
+
+            showDialog(context: context, barrierDismissible: false, builder: (_) => cannotUnderstand);
+          }
+          else {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ByTagViewer(tag: result.data['option']))).whenComplete(() {
+              this.parent = this._oldParent;
+            });
+          }
+          break;
+
+        case "journal":
+          _parent.setState((){this._recording = false;});
+
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => JournalDatePicker())
+          ).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
+
+        case "subjects":
+          _parent.setState((){this._recording = false;});
+
+          Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => SubjectHub())
+          ).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
+
+        case "reminders":
+          _parent.setState((){this._recording = false;});
+
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => Notifications())
+          ).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
+
+        case "homework":
+          _parent.setState((){this._recording = false;});
+
+          Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
+
+          if (fromOption == null){
+            notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
+          }
+          else{
+            Navigator.push
+              (context, MaterialPageRoute(
+                builder: (context) => HomeworkPage(subject: fromOption,))
             ).whenComplete(() {
               this.parent = this._oldParent;
             });
-            break;
+          }
+          break;
 
-          case "reminders":
-            _parent.setState((){this._recording = false;});
+        case "test results":
+          _parent.setState((){this._recording = false;});
 
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => Notifications())
-            ).whenComplete(() {
+          Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
+
+          if (fromOption == null){
+            notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
+          }
+          else{
+            Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: fromOption,))).whenComplete(() {
               this.parent = this._oldParent;
             });
-            break;
+          }
+          break;
 
-          case "homework":
-            _parent.setState((){this._recording = false;});
+        case "progress":
+          _parent.setState((){this._recording = false;});
 
-            Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
+          Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
 
-            if (fromOption == null){
-              notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
-            }
-            else{
-              Navigator.push
-                (context, MaterialPageRoute(
-                  builder: (context) => HomeworkPage(subject: fromOption,))
-              ).whenComplete(() {
-                this.parent = this._oldParent;
-              });
-            }
-            break;
-
-          case "test results":
-            _parent.setState((){this._recording = false;});
-
-            Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
-
-            if (fromOption == null){
-              notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
-            }
-            else{
-              Navigator.push(context, MaterialPageRoute(builder: (context) => TestResults(subject: fromOption,))).whenComplete(() {
-                this.parent = this._oldParent;
-              });
-            }
-            break;
-
-          case "progress":
-            _parent.setState((){this._recording = false;});
-
-            Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
-
-            if (fromOption == null){
-              notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
-            }
-            else{
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: fromOption,))).whenComplete(() {
-                this.parent = this._oldParent;
-              });
-            }
-            break;
-
-          case "materials":
-            _parent.setState((){this._recording = false;});
-
-            Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
-
-            if (fromOption == null){
-              notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
-            }
-            else{
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: fromOption,))).whenComplete(() {
-                this.parent = this._oldParent;
-              });
-            }
-            break;
-
-          case "hardback":
-            _parent.setState((){this._recording = false;});
-
-            Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
-
-            if (fromOption == null){
-              notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
-            }
-            else{
-              Navigator.push(context, MaterialPageRoute(builder: (context) => VirtualHardback(subject: fromOption,))).whenComplete(() {
-                this.parent = this._oldParent;
-              });
-            }
-            break;
-
-          case "font":
-            _parent.setState((){this._recording = false;});
-
-            Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(() {
+          if (fromOption == null){
+            notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
+          }
+          else{
+            Navigator.push(context, MaterialPageRoute(builder: (context) => Progress(subject: fromOption,))).whenComplete(() {
               this.parent = this._oldParent;
             });
-            break;
+          }
+          break;
 
+        case "materials":
+          _parent.setState((){this._recording = false;});
 
-          case "icon":
-            _parent.setState((){this._recording = false;});
+          Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
 
-            Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(() {
+          if (fromOption == null){
+            notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
+          }
+          else{
+            Navigator.push(context, MaterialPageRoute(builder: (context) => Materials(subject: fromOption,))).whenComplete(() {
               this.parent = this._oldParent;
             });
-            break;
+          }
+          break;
 
-          case "background":
-            _parent.setState((){this._recording = false;});
+        case "hardback":
+          _parent.setState((){this._recording = false;});
 
-            Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(
-              cardColour: cardColour,
-              fontData: fontData,
-              themeColour: themeColour,
-              iconData: iconData,
-            ))).whenComplete(() {
+          Subject fromOption = await Subject.getSubjectByTitle(result.data['option']);
+
+          if (fromOption == null){
+            notASubjectDialog(context, fontData, cardColour, themeColour, result.data['option']);
+          }
+          else{
+            Navigator.push(context, MaterialPageRoute(builder: (context) => VirtualHardback(subject: fromOption,))).whenComplete(() {
               this.parent = this._oldParent;
             });
-            break;
+          }
+          break;
 
-          case "card":
-            _parent.setState((){this._recording = false;});
+        case "font":
+          _parent.setState((){this._recording = false;});
 
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(
-              backgroundColour: backgroundColor,
-              fontData: fontData,
-              themeColour: themeColour,
-              iconData: iconData,
-            ))).whenComplete(() {
-              this.parent = this._oldParent;
-            });
-            break;
+          Navigator.push(context, MaterialPageRoute(builder: (context) => FontSettings())).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
 
-          case "theme":
-            _parent.setState((){this._recording = false;});
 
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(
-              backgroundColour: backgroundColor,
-              fontData: fontData,
-              cardColour: cardColour,
-              iconData: iconData,
-            ))).whenComplete(() {
-              this.parent = this._oldParent;
-            });
-            break;
+        case "icon":
+          _parent.setState((){this._recording = false;});
 
-          case "dyslexia":
-            _parent.setState((){this._recording = false;});
+          Navigator.push(context, MaterialPageRoute(builder: (context) => IconSettings())).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
 
-            Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete(() {
-              this.parent = this._oldParent;
-            });
-            break;
-          default:
-            showCannotUnderstandError(context, fontData, cardColour, themeColour);
-        }
+        case "background":
+          _parent.setState((){this._recording = false;});
+
+          Navigator.push(context, MaterialPageRoute(builder: (context) => BackgroundSettings(
+            cardColour: cardColour,
+            fontData: fontData,
+            themeColour: themeColour,
+            iconData: iconData,
+          ))).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
+
+        case "card":
+          _parent.setState((){this._recording = false;});
+
+          Navigator.push(context, MaterialPageRoute(builder: (context) => CardSettings(
+            backgroundColour: backgroundColor,
+            fontData: fontData,
+            themeColour: themeColour,
+            iconData: iconData,
+          ))).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
+
+        case "theme":
+          _parent.setState((){this._recording = false;});
+
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ThemeSettings(
+            backgroundColour: backgroundColor,
+            fontData: fontData,
+            cardColour: cardColour,
+            iconData: iconData,
+          ))).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
+
+        case "dyslexia":
+          _parent.setState((){this._recording = false;});
+
+          Navigator.push(context, MaterialPageRoute(builder: (context) => DyslexiaFriendlySettings())).whenComplete(() {
+            this.parent = this._oldParent;
+          });
+          break;
+        default:
+          showCannotUnderstandError(context, fontData, cardColour, themeColour);
       }
     }
   }

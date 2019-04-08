@@ -969,7 +969,7 @@ class RequestManager
   }
 
   //method to make an audio commandm oldURI only applicable for IOS
-  dynamic command(String uri, String oldUri) async
+  dynamic command(String uri) async
   {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -991,7 +991,7 @@ class RequestManager
       responseObj = await dio.post(commandUrl, data: formData);
 
       //delete the audio file
-      File currentAudio = File.fromUri(new Uri.file(oldUri));
+      File currentAudio = File.fromUri(new Uri.file(uri));
       currentAudio.deleteSync();
 
       //if the function is null then set the state of the application that recording has stopped
