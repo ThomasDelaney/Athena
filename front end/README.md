@@ -1,6 +1,5 @@
-# my_school_life_prototype
-
-Prototype for FYP
+Athena – A Universally Designed Mobile Application to Enable Secondary School Students to Manage
+Their Daily Life
 
 ## Getting Started
 
